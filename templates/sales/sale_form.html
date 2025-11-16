@@ -1,0 +1,762 @@
+{% extends 'base.html' %}
+{% block title %}New Sale - Baanpaw Shop{% endblock %}
+
+{% block content %}
+
+<style>
+  /* Card improvements */
+  .sale-form-card {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Product image preview */
+  .product-image-preview {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  [data-bs-theme="dark"] .product-image-preview {
+    background: linear-gradient(135deg, #2a2d31 0%, #1e1f22 100%);
+  }
+
+  .product-image-preview img {
+    max-height: 200px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+
+  .product-image-preview:hover img {
+    transform: scale(1.05);
+  }
+
+  .product-image-preview .no-image-placeholder {
+    font-size: 3rem;
+    opacity: 0.3;
+  }
+
+  /* Product info panel */
+  .product-info-panel {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
+    border-left: 3px solid #0d6efd;
+    padding: 0.875rem 1rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+  }
+
+  .product-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+  }
+
+  .product-info-label {
+    font-weight: 500;
+    color: #6c757d;
+  }
+
+  .product-info-value {
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+
+  /* Stock indicator */
+  .stock-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .stock-ok {
+    background: rgba(25, 135, 84, 0.15);
+    color: #198754;
+    border: 1px solid #198754;
+  }
+
+  .stock-low {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+    border: 1px solid #ffc107;
+  }
+
+  .stock-out {
+    background: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+    border: 1px solid #dc3545;
+  }
+
+  /* Form enhancements */
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-label .required {
+    color: #dc3545;
+    margin-left: 0.25rem;
+  }
+
+  .form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+  }
+
+  .input-with-icon {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+  }
+
+  .input-with-icon input {
+    padding-left: 2.5rem;
+  }
+
+  /* Calculation display */
+  .calculation-box {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.05) 100%);
+    border: 2px dashed #198754;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .calc-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.375rem 0;
+    font-size: 0.95rem;
+  }
+
+  .calc-item:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .calc-label {
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .calc-value {
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+  }
+
+  .calc-total {
+    font-size: 1.125rem;
+    color: #198754;
+  }
+
+  /* Error alert improvements */
+  .alert-danger {
+    border-left: 4px solid #dc3545;
+  }
+
+  .alert-danger ul {
+    padding-left: 1.25rem;
+  }
+
+  /* Button improvements */
+  .btn-action {
+    min-width: 120px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-action:active {
+    transform: translateY(0);
+  }
+
+  /* Loading state */
+  .btn-loading {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spinner 0.6s linear infinite;
+  }
+
+  @keyframes spinner {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Quick fill buttons */
+  .quick-fill-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 768px) {
+    .product-image-preview {
+      min-height: 150px;
+    }
+
+    .product-image-preview img {
+      max-height: 150px;
+    }
+
+    .calculation-box {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Tooltip-style help text */
+  .help-tooltip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #6c757d;
+    color: white;
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+    cursor: help;
+  }
+
+  /* Pulse animation for stock warning */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .stock-warning {
+    animation: pulse 2s infinite;
+  }
+</style>
+
+<div class="card shadow-sm sale-form-card">
+  <div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="h4 mb-1">
+          <i class="bi bi-cart-plus"></i> New Sale
+        </h2>
+        <p class="text-secondary mb-0 small">Record a new product sale</p>
+      </div>
+      <a href="{% url 'sales_history' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to History
+      </a>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <h6 class="alert-heading">
+        <i class="bi bi-exclamation-triangle"></i> Form Validation Error
+      </h6>
+      <ul class="mb-0">
+        {% for field, errors in form.errors.items %}
+        <li><strong>{{ field|capfirst }}:</strong> {{ errors|striptags }}</li>
+        {% endfor %}
+        {% for e in form.non_field_errors %}
+        <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <form method="post" class="row g-4" id="saleForm" novalidate>
+      {% csrf_token %}
+
+      <!-- Product Selection & Image -->
+      <div class="col-12">
+        <div class="row g-3">
+          <div class="col-md-7">
+            <label class="form-label">
+              <i class="bi bi-box-seam"></i> Product <span class="required">*</span>
+            </label>
+            {{ form.product }}
+            <div id="product-info" class="product-info-panel d-none">
+              <div class="product-info-item">
+                <span class="product-info-label">
+                  <i class="bi bi-tag"></i> Original Price:
+                </span>
+                <span class="product-info-value text-primary" id="prod-price">-</span>
+              </div>
+              <div class="product-info-item">
+                <span class="product-info-label">
+                  <i class="bi bi-boxes"></i> Available Stock:
+                </span>
+                <span id="stock-display">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <label class="form-label d-none d-md-block">Product Image</label>
+            <div class="product-image-preview" id="image-preview">
+              <img id="prod-image" src="" alt="Product" class="d-none">
+              <div id="no-image" class="no-image-placeholder">
+                <i class="bi bi-image"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quantity & Price -->
+      <div class="col-md-3">
+        <label class="form-label">
+          <i class="bi bi-123"></i> Quantity <span class="required">*</span>
+        </label>
+        <div class="input-with-icon">
+          <span class="input-icon"><i class="bi bi-hash"></i></span>
+          {{ form.quantity }}
+        </div>
+        <div class="form-text small">
+          <span id="qty-warning" class="text-danger fw-semibold d-none"></span>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">
+          <i class="bi bi-currency-exchange"></i> Sale Price (฿) <span class="required">*</span>
+        </label>
+        <div class="input-with-icon">
+          <span class="input-icon">฿</span>
+          {{ form.price_at_sale }}
+        </div>
+        <button type="button" class="btn btn-link btn-sm p-0 mt-1 quick-fill-btn" id="use-original-price">
+          <i class="bi bi-arrow-down-circle"></i> Use original price
+        </button>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">
+          <i class="bi bi-cash-coin"></i> Amount Received (฿) <span class="required">*</span>
+        </label>
+        <div class="input-with-icon">
+          <span class="input-icon">฿</span>
+          {{ form.actual_received }}
+        </div>
+        <div class="form-text small">After commission/fees</div>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label">
+          <i class="bi bi-percent"></i> Discount (%)
+        </label>
+        <div class="input-with-icon">
+          <span class="input-icon">%</span>
+          {{ form.discount_percent }}
+        </div>
+        <div class="form-text small" id="discount-amount">฿0.00 off</div>
+      </div>
+
+      <!-- Date & Note -->
+      <div class="col-md-6">
+        <label class="form-label">
+          <i class="bi bi-calendar-event"></i> Sale Date & Time <span class="required">*</span>
+        </label>
+        {{ form.sold_at }}
+        <div class="form-text small">Default is current time</div>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">
+          <i class="bi bi-sticky"></i> Notes
+          <span class="help-tooltip" title="Optional notes about this sale">?</span>
+        </label>
+        {{ form.note }}
+        <div class="form-text small">Optional details or remarks</div>
+      </div>
+
+      <!-- Calculation Summary -->
+      <div class="col-12">
+        <div class="calculation-box" id="calc-box">
+          <h6 class="mb-3">
+            <i class="bi bi-calculator"></i> Sale Summary
+          </h6>
+          <div class="calc-item">
+            <span class="calc-label">Original Price:</span>
+            <span class="calc-value" id="calc-original">฿0.00</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">Sale Price:</span>
+            <span class="calc-value" id="calc-sale">฿0.00</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">Quantity:</span>
+            <span class="calc-value" id="calc-qty">0</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">Discount:</span>
+            <span class="calc-value text-primary" id="calc-discount">฿0.00 (0%)</span>
+          </div>
+          <div class="calc-item">
+            <span class="calc-label">Amount Received:</span>
+            <span class="calc-value text-info" id="calc-received">฿0.00</span>
+          </div>
+          <div class="calc-item border-top pt-2 mt-2">
+            <span class="calc-label">Total Revenue:</span>
+            <span class="calc-value calc-total" id="calc-total">฿0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="col-12 d-flex gap-2 justify-content-end pt-3 border-top">
+        <a href="{% url 'sales_history' %}" class="btn btn-outline-secondary btn-action">
+          <i class="bi bi-x-circle"></i> Cancel
+        </a>
+        <button type="submit" class="btn btn-primary btn-action" id="submitBtn">
+          <i class="bi bi-check-circle"></i> Save Sale
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function() {
+    'use strict';
+
+    // Data from backend
+    const productPrices = {{ product_prices_json|safe }};
+    const productStocks = {{ product_stocks_json|safe }};
+    const productImages = {{ product_images_json|safe }};
+
+    // Form elements
+    const form = document.getElementById('saleForm');
+    const productSelect = document.getElementById('id_product');
+    const qtyInput = document.getElementById('id_quantity');
+    const priceSaleInput = document.getElementById('id_price_at_sale');
+    const actualInput = document.getElementById('id_actual_received');
+    const discountInput = document.getElementById('id_discount_percent');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Display elements
+    const productInfo = document.getElementById('product-info');
+    const prodPrice = document.getElementById('prod-price');
+    const stockDisplay = document.getElementById('stock-display');
+    const qtyWarning = document.getElementById('qty-warning');
+    const discountAmount = document.getElementById('discount-amount');
+    const prodImage = document.getElementById('prod-image');
+    const noImage = document.getElementById('no-image');
+    const useOriginalBtn = document.getElementById('use-original-price');
+
+    // Calculation display
+    const calcOriginal = document.getElementById('calc-original');
+    const calcSale = document.getElementById('calc-sale');
+    const calcQty = document.getElementById('calc-qty');
+    const calcDiscount = document.getElementById('calc-discount');
+    const calcReceived = document.getElementById('calc-received');
+    const calcTotal = document.getElementById('calc-total');
+
+    let currentProductId = null;
+    let currentStock = 0;
+    let currentPrice = 0;
+
+    // Update product info and image
+    function updateProductInfo() {
+      const productId = productSelect.value;
+      currentProductId = productId;
+
+      if (!productId) {
+        productInfo.classList.add('d-none');
+        prodImage.classList.add('d-none');
+        noImage.classList.remove('d-none');
+        return;
+      }
+
+      productInfo.classList.remove('d-none');
+
+      // Update price
+      currentPrice = parseFloat(productPrices[productId]) || 0;
+      prodPrice.textContent = `฿${currentPrice.toFixed(2)}`;
+
+      // Update stock
+      currentStock = parseInt(productStocks[productId]) || 0;
+      updateStockDisplay();
+
+      // Auto-fill price if empty
+      if (!priceSaleInput.value) {
+        priceSaleInput.value = currentPrice.toFixed(2);
+      }
+
+      // Auto-fill received amount if empty
+      if (!actualInput.value) {
+        actualInput.value = priceSaleInput.value;
+      }
+
+      // Update image
+      const imageUrl = productImages[productId];
+      if (imageUrl) {
+        prodImage.src = imageUrl;
+        prodImage.classList.remove('d-none');
+        noImage.classList.add('d-none');
+      } else {
+        prodImage.classList.add('d-none');
+        noImage.classList.remove('d-none');
+      }
+
+      calculateDiscount();
+      updateCalculationDisplay();
+    }
+
+    // Update stock display with color coding
+    function updateStockDisplay() {
+      let stockClass = 'stock-ok';
+      let icon = 'check-circle-fill';
+      
+      if (currentStock === 0) {
+        stockClass = 'stock-out stock-warning';
+        icon = 'x-circle-fill';
+      } else if (currentStock <= 5) {
+        stockClass = 'stock-low stock-warning';
+        icon = 'exclamation-circle-fill';
+      }
+
+      stockDisplay.innerHTML = `
+        <span class="stock-indicator ${stockClass}">
+          <i class="bi bi-${icon}"></i>
+          ${currentStock} units
+        </span>
+      `;
+    }
+
+    // Calculate discount percentage from prices
+    function calculateDiscount() {
+      if (!currentPrice || currentPrice === 0) return;
+
+      const salePrice = parseFloat(priceSaleInput.value) || 0;
+      const discountAmt = currentPrice - salePrice;
+      const discountPct = (discountAmt / currentPrice) * 100;
+
+      if (!isNaN(discountPct)) {
+        discountInput.value = Math.max(0, discountPct).toFixed(2);
+        discountAmount.textContent = `฿${Math.max(0, discountAmt).toFixed(2)} off`;
+      }
+    }
+
+    // Calculate price from discount percentage
+    function calculatePriceFromDiscount() {
+      if (!currentPrice) return;
+
+      const discountPct = parseFloat(discountInput.value) || 0;
+      const salePrice = currentPrice * (100 - discountPct) / 100;
+      
+      priceSaleInput.value = Math.max(0, salePrice).toFixed(2);
+      
+      // Auto-update received if not manually changed
+      if (!actualInput.dataset.manuallyEdited) {
+        actualInput.value = priceSaleInput.value;
+      }
+      
+      const discountAmt = currentPrice - salePrice;
+      discountAmount.textContent = `฿${Math.max(0, discountAmt).toFixed(2)} off`;
+      
+      updateCalculationDisplay();
+    }
+
+    // Update calculation display
+    function updateCalculationDisplay() {
+      const qty = parseInt(qtyInput.value) || 0;
+      const salePrice = parseFloat(priceSaleInput.value) || 0;
+      const received = parseFloat(actualInput.value) || 0;
+      const discountPct = parseFloat(discountInput.value) || 0;
+      const discountAmt = currentPrice - salePrice;
+
+      calcOriginal.textContent = `฿${currentPrice.toFixed(2)}`;
+      calcSale.textContent = `฿${salePrice.toFixed(2)}`;
+      calcQty.textContent = qty;
+      calcDiscount.textContent = `฿${Math.max(0, discountAmt).toFixed(2)} (${discountPct.toFixed(1)}%)`;
+      calcReceived.textContent = `฿${received.toFixed(2)}`;
+      calcTotal.textContent = `฿${(salePrice * qty).toFixed(2)}`;
+    }
+
+    // Check stock availability
+    function checkStock() {
+      const qty = parseInt(qtyInput.value) || 0;
+      
+      if (qty > currentStock) {
+        qtyWarning.textContent = `⚠️ Insufficient stock! Only ${currentStock} available`;
+        qtyWarning.classList.remove('d-none');
+        return false;
+      } else if (qty === currentStock && currentStock > 0) {
+        qtyWarning.textContent = `ℹ️ This will deplete the stock`;
+        qtyWarning.classList.remove('d-none');
+        qtyWarning.classList.remove('text-danger');
+        qtyWarning.classList.add('text-warning');
+        return true;
+      } else {
+        qtyWarning.classList.add('d-none');
+        return true;
+      }
+    }
+
+    // Use original price button
+    useOriginalBtn.addEventListener('click', () => {
+      if (currentPrice > 0) {
+        priceSaleInput.value = currentPrice.toFixed(2);
+        actualInput.value = currentPrice.toFixed(2);
+        discountInput.value = '0.00';
+        discountAmount.textContent = '฿0.00 off';
+        updateCalculationDisplay();
+        notify('Price set to original', true);
+      }
+    });
+
+    // Event listeners
+    productSelect.addEventListener('change', updateProductInfo);
+    
+    qtyInput.addEventListener('input', () => {
+      checkStock();
+      updateCalculationDisplay();
+    });
+    
+    priceSaleInput.addEventListener('input', () => {
+      calculateDiscount();
+      // Auto-update received if not manually changed
+      if (!actualInput.dataset.manuallyEdited) {
+        actualInput.value = priceSaleInput.value;
+      }
+      updateCalculationDisplay();
+    });
+    
+    actualInput.addEventListener('input', () => {
+      actualInput.dataset.manuallyEdited = 'true';
+      updateCalculationDisplay();
+    });
+    
+    discountInput.addEventListener('input', calculatePriceFromDiscount);
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Validate stock
+      if (!checkStock()) {
+        const confirmSubmit = confirm(
+          `Stock is insufficient (${currentStock} available, ${qtyInput.value} requested).\n\n` +
+          'Do you want to proceed anyway? This may result in negative stock.'
+        );
+        if (!confirmSubmit) return;
+      }
+
+      // Validate required fields
+      if (!productSelect.value) {
+        notify('Please select a product', false);
+        productSelect.focus();
+        return;
+      }
+
+      if (!qtyInput.value || qtyInput.value <= 0) {
+        notify('Please enter a valid quantity', false);
+        qtyInput.focus();
+        return;
+      }
+
+      if (!priceSaleInput.value || priceSaleInput.value < 0) {
+        notify('Please enter a valid sale price', false);
+        priceSaleInput.focus();
+        return;
+      }
+
+      // Add loading state
+      submitBtn.classList.add('btn-loading');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+      // Submit form
+      this.submit();
+    });
+
+    // Initialize
+    updateProductInfo();
+
+    // Auto-save to localStorage (draft feature)
+    const autoSaveKey = 'baanpaw_sale_draft';
+    
+    function saveDraft() {
+      try {
+        const draft = {
+          product: productSelect.value,
+          quantity: qtyInput.value,
+          price: priceSaleInput.value,
+          received: actualInput.value,
+          discount: discountInput.value,
+          timestamp: Date.now()
+        };
+        localStorage.setItem(autoSaveKey, JSON.stringify(draft));
+      } catch (e) {
+        console.warn('Could not save draft:', e);
+      }
+    }
+
+    function loadDraft() {
+      try {
+        const draft = JSON.parse(localStorage.getItem(autoSaveKey));
+        if (draft && Date.now() - draft.timestamp < 3600000) { // 1 hour
+          const loadDraftConfirm = confirm('Found a saved draft. Do you want to restore it?');
+          if (loadDraftConfirm) {
+            if (draft.product) productSelect.value = draft.product;
+            if (draft.quantity) qtyInput.value = draft.quantity;
+            if (draft.price) priceSaleInput.value = draft.price;
+            if (draft.received) actualInput.value = draft.received;
+            if (draft.discount) discountInput.value = draft.discount;
+            updateProductInfo();
+            notify('Draft restored', true);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load draft:', e);
+      }
+    }
+
+    // Auto-save on input changes
+    [productSelect, qtyInput, priceSaleInput, actualInput, discountInput].forEach(el => {
+      el.addEventListener('input', saveDraft);
+    });
+
+    // Load draft on page load
+    loadDraft();
+
+    // Clear draft on successful submission
+    form.addEventListener('submit', () => {
+      try {
+        localStorage.removeItem(autoSaveKey);
+      } catch (e) {}
+    });
+  })();
+</script>
+
+{% endblock %}

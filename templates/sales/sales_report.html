@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}Sales Report{% endblock %}
+{% block content %}
+
+<!-- Filters -->
+<div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+  <div>
+    <label class="form-label mb-1">Start</label>
+    <input type="date" id="start" class="form-control" value="{{ start }}">
+  </div>
+  <div>
+    <label class="form-label mb-1">End</label>
+    <input type="date" id="end" class="form-control" value="{{ end }}">
+  </div>
+  <div>
+    <label class="form-label mb-1">Product</label>
+    <select id="product" class="form-select">
+      <option value="">All products</option>
+      {% for p in products %}
+        <option value="{{ p.id }}" {% if selected_product|stringformat:"s" == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="form-label mb-1">Granularity</label>
+    <select id="granularity" class="form-select">
+      <option value="day" {% if granularity == 'day' %}selected{% endif %}>Daily</option>
+      <option value="month" {% if granularity == 'month' %}selected{% endif %}>Monthly</option>
+    </select>
+  </div>
+
+  <div class="ms-auto d-flex flex-wrap gap-2">
+    <button class="btn btn-outline-secondary" data-range="today">Today</button>
+    <button class="btn btn-outline-secondary" data-range="7d">Last 7D</button>
+    <button class="btn btn-outline-secondary" data-range="30d">Last 30D</button>
+    <button class="btn btn-outline-secondary" data-range="thism">This Month</button>
+    <button class="btn btn-outline-secondary" data-range="lastm">Last Month</button>
+    <button id="download" class="btn btn-success">
+      <span class="d-none d-sm-inline">Download CSV</span>
+      <span class="d-inline d-sm-none">CSV</span>
+    </button>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-3">
+  <div class="col-12 col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary small">Total Revenue</div>
+        <div id="kpi-amount" class="fs-4 fw-bold text-primary">
+          <span class="spinner-border spinner-border-sm"></span>
+        </div>
+        <div id="kpi-amount-change" class="small mt-1"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary small">Total Quantity</div>
+        <div id="kpi-qty" class="fs-4 fw-bold text-success">
+          <span class="spinner-border spinner-border-sm"></span>
+        </div>
+        <div id="kpi-qty-change" class="small mt-1"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary small">Total Profit</div>
+        <div id="kpi-profit" class="fs-4 fw-bold text-warning">
+          <span class="spinner-border spinner-border-sm"></span>
+        </div>
+        <div id="kpi-profit-change" class="small mt-1"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-3">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-secondary small">Avg Sale (฿/record)</div>
+        <div id="kpi-avg" class="fs-4 fw-bold text-info">
+          <span class="spinner-border spinner-border-sm"></span>
+        </div>
+        <div id="kpi-avg-change" class="small mt-1"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error Alert -->
+<div id="error-alert" class="alert alert-danger alert-dismissible fade show d-none">
+  <strong>Error!</strong> <span id="error-message"></span>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<!-- Revenue Chart -->
+<div class="card shadow-sm mb-3 position-relative">
+  <div id="loader-amount" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-75 d-none" style="z-index:10;">
+    <div class="spinner-border text-primary"></div>
+  </div>
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="card-title mb-0">Revenue</h5>
+      <div class="btn-group btn-group-sm">
+        <input type="radio" class="btn-check" name="amountChartType" id="amountBar" value="bar" checked>
+        <label class="btn btn-outline-secondary" for="amountBar">Bar</label>
+        <input type="radio" class="btn-check" name="amountChartType" id="amountLine" value="line">
+        <label class="btn btn-outline-secondary" for="amountLine">Line</label>
+      </div>
+    </div>
+    <canvas id="amountChart" height="120"></canvas>
+    <div id="empty-amount" class="text-center text-secondary py-5 d-none">No data.</div>
+  </div>
+</div>
+
+<!-- Quantity Chart -->
+<div class="card shadow-sm mb-3 position-relative">
+  <div id="loader-qty" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-75 d-none" style="z-index:10;">
+    <div class="spinner-border text-success"></div>
+  </div>
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="card-title mb-0">Quantity</h5>
+      <div class="btn-group btn-group-sm">
+        <input type="radio" class="btn-check" name="qtyChartType" id="qtyBar" value="bar">
+        <label class="btn btn-outline-secondary" for="qtyBar">Bar</label>
+        <input type="radio" class="btn-check" name="qtyChartType" id="qtyLine" value="line" checked>
+        <label class="btn btn-outline-secondary" for="qtyLine">Line</label>
+      </div>
+    </div>
+    <canvas id="qtyChart" height="120"></canvas>
+    <div id="empty-qty" class="text-center text-secondary py-5 d-none">No data.</div>
+  </div>
+</div>
+
+<!-- Profit Chart -->
+<div class="card shadow-sm mb-3 position-relative">
+  <div id="loader-profit" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-75 d-none" style="z-index:10;">
+    <div class="spinner-border text-warning"></div>
+  </div>
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="card-title mb-0">Profit</h5>
+      <div class="btn-group btn-group-sm">
+        <input type="radio" class="btn-check" name="profitChartType" id="profitBar" value="bar" checked>
+        <label class="btn btn-outline-secondary" for="profitBar">Bar</label>
+        <input type="radio" class="btn-check" name="profitChartType" id="profitLine" value="line">
+        <label class="btn btn-outline-secondary" for="profitLine">Line</label>
+      </div>
+    </div>
+    <canvas id="profitChart" height="120"></canvas>
+    <div id="empty-profit" class="text-center text-secondary py-5 d-none">No data.</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const fmtTHB = n => Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+let amountChart, qtyChart, profitChart;
+
+// ✅ updated to include profit
+async function loadData(){
+  try{
+    const res = await fetch(`/api/sales/series/?${new URLSearchParams({
+      start: $('#start').value,
+      end: $('#end').value,
+      g: $('#granularity').value,
+      product: $('#product').value
+    })}`);
+    const data = await res.json();
+
+    const labels = data.labels || [];
+    const amounts = data.amounts || [];
+    const qtys = data.qtys || [];
+    const profits = data.profits || [];
+
+    // KPIs
+    $('#kpi-amount').textContent = fmtTHB(data.totals.amount);
+    $('#kpi-qty').textContent = data.totals.qty;
+    $('#kpi-profit').textContent = fmtTHB(data.totals.profit);
+    $('#kpi-avg').textContent = data.totals.count_sales ? fmtTHB(data.totals.amount / data.totals.count_sales) : '0.00';
+
+    // Charts
+    const updateChart = (chart, id, color, dataArr, label) => {
+      if (chart) chart.destroy();
+      const ctx = document.getElementById(id);
+      const type = $(`input[name="${id.replace('Chart','')}ChartType"]:checked`)?.value || 'bar';
+      return new Chart(ctx,{
+        type,
+        data:{labels,datasets:[{label,data:dataArr,backgroundColor:color+'66',borderColor:color,borderWidth:2,tension:0.3}]},
+        options:{scales:{y:{beginAtZero:true}}}
+      });
+    };
+    amountChart = updateChart(amountChart,'amountChart','rgb(54,162,235)',amounts,'Revenue');
+    qtyChart = updateChart(qtyChart,'qtyChart','rgb(75,192,192)',qtys,'Quantity');
+    profitChart = updateChart(profitChart,'profitChart','rgb(255,159,64)',profits,'Profit');
+  }catch(err){
+    console.error(err);
+  }
+}
+
+['#start','#end','#product','#granularity'].forEach(id=>{
+  $(id).addEventListener('change',loadData);
+});
+$$('input[type=radio]').forEach(r=>r.addEventListener('change',loadData));
+
+loadData();
+</script>
+{% endblock %}

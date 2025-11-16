@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="th" data-bs-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Baanpaw Shop Management System">
+  <title>{% block title %}Baanpaw Shop{% endblock %}</title>
+
+  <!-- Prevent theme flash by setting theme immediately -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('baanpaw-theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      } catch (e) {
+        console.warn('Could not load theme preference:', e);
+      }
+    })();
+  </script>
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/style.css">
+
+  <style>
+    :root {
+      --nav-height: 56px;
+    }
+
+    /* Smooth theme transitions */
+    * {
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    /* Custom navbar styling */
+    .navbar {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+    }
+
+    .navbar-brand {
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+      transition: transform 0.2s ease;
+    }
+
+    .navbar-brand:hover {
+      transform: scale(1.05);
+    }
+
+    .nav-link {
+      position: relative;
+      transition: color 0.2s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: currentColor;
+      transition: width 0.2s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 80%;
+    }
+
+    /* Clock styling */
+    #clock {
+      font-family: 'Courier New', monospace;
+      font-weight: 500;
+      padding: 0.375rem 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    /* Theme toggle improvements */
+    .theme-toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+    }
+
+    .form-switch .form-check-input {
+      cursor: pointer;
+      width: 3em;
+      height: 1.5em;
+    }
+
+    .form-switch .form-check-input:checked {
+      background-color: #0d6efd;
+    }
+
+    .theme-icon {
+      font-size: 1.1rem;
+      transition: transform 0.3s ease;
+    }
+
+    .form-check-input:checked ~ label .theme-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Toast improvements */
+    .toast {
+      min-width: 250px;
+      backdrop-filter: blur(10px);
+    }
+
+    .toast-body {
+      font-weight: 500;
+    }
+
+    /* Main content area */
+    main {
+      min-height: calc(100vh - var(--nav-height) - 2rem);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 991.98px) {
+      #clock {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .theme-toggle-wrapper {
+        margin-top: 0.5rem;
+        justify-content: center;
+      }
+
+      .navbar-nav {
+        padding-top: 0.5rem;
+      }
+
+      .nav-link::after {
+        display: none;
+      }
+    }
+
+    /* Loading indicator for page transitions */
+    .page-loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* Accessibility improvements */
+    .navbar-toggler:focus {
+      box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+    }
+
+    /* Dark theme specific adjustments */
+    [data-bs-theme="dark"] #clock {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    [data-bs-theme="dark"] .theme-toggle-wrapper {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    [data-bs-theme="dark"] .navbar {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+
+  {% block extra_head %}
+  
+  {% endblock %}
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark" role="navigation">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="{% url 'home' %}" aria-label="Baanpaw Home">
+        <i class="bi bi-bag-fill"></i> Baanpaw
+      </a>
+
+      <button class="navbar-toggler" type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#navbarMain" 
+              aria-controls="navbarMain" 
+              aria-expanded="false" 
+              aria-label="Toggle navigation menu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div id="navbarMain" class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+               href="{% url 'home' %}">
+              <i class="bi bi-grid"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" 
+               href="{% url 'product_list' %}">
+              <i class="bi bi-grid"></i> Products
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'product_create' %}active{% endif %}" 
+               href="{% url 'product_create' %}">
+              <i class="bi bi-plus-circle"></i> Add Product
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}" 
+               href="{% url 'sale_create' %}">
+              <i class="bi bi-cart-plus"></i> New Sale
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'sales_history' %}active{% endif %}" 
+               href="{% url 'sales_history' %}">
+              <i class="bi bi-clock-history"></i> Sales History
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}" 
+               href="{% url 'sales_report' %}">
+              <i class="bi bi-graph-up"></i> Sales Report
+            </a>
+          </li>
+        </ul>
+
+        <!-- Real-time Clock -->
+        <div id="clock" class="text-white small" role="status" aria-live="off">
+          {% now "d/m/Y H:i:s" %} น.
+        </div>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle-wrapper">
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" 
+                   type="checkbox" 
+                   role="switch"
+                   id="themeToggler" 
+                   aria-label="Toggle dark mode">
+            <label class="form-check-label text-white" for="themeToggler">
+              <i class="bi bi-sun-fill theme-icon"></i>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container my-4" role="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Toast Notification System -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
+    <div id="toast" 
+         class="toast align-items-center border-0" 
+         role="alert" 
+         aria-live="assertive" 
+         aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body"></div>
+        <button type="button" 
+                class="btn-close me-2 m-auto" 
+                data-bs-dismiss="toast" 
+                aria-label="Close notification"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+          crossorigin="anonymous"></script>
+
+  <script>
+    'use strict';
+
+    // Constants
+    const THEME_KEY = 'baanpaw-theme';
+    const TOAST_DURATION = 3000;
+
+    // Toast Notification System
+    window.notify = function(message, isSuccess = true) {
+      if (!message) return;
+      
+      const toastEl = document.getElementById('toast');
+      if (!toastEl) return;
+
+      const bgClass = isSuccess ? 'text-bg-success' : 'text-bg-danger';
+      const icon = isSuccess ? '✓' : '✗';
+      
+      // Update toast classes and content
+      toastEl.className = `toast align-items-center border-0 ${bgClass}`;
+      toastEl.querySelector('.toast-body').textContent = `${icon} ${message}`;
+      
+      // Update close button color
+      const closeBtn = toastEl.querySelector('.btn-close');
+      closeBtn.className = isSuccess ? 'btn-close btn-close-white me-2 m-auto' : 'btn-close me-2 m-auto';
+      
+      // Show toast
+      const toast = new bootstrap.Toast(toastEl, {
+        autohide: true,
+        delay: TOAST_DURATION
+      });
+      toast.show();
+    };
+
+    // Theme Management
+    (function initTheme() {
+      const toggler = document.getElementById('themeToggler');
+      const themeIcon = toggler?.nextElementSibling?.querySelector('.theme-icon');
+      
+      if (!toggler) return;
+
+      // Load saved theme
+      try {
+        const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+        const isDark = savedTheme === 'dark';
+        toggler.checked = isDark;
+        updateThemeIcon(isDark);
+      } catch (error) {
+        console.warn('Could not load theme preference:', error);
+      }
+
+      // Handle theme changes
+      toggler.addEventListener('change', function() {
+        const isDark = this.checked;
+        const theme = isDark ? 'dark' : 'light';
+        
+        // Apply theme
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        updateThemeIcon(isDark);
+        
+        // Save preference
+        try {
+          localStorage.setItem(THEME_KEY, theme);
+        } catch (error) {
+          console.warn('Could not save theme preference:', error);
+        }
+      });
+
+      function updateThemeIcon(isDark) {
+        if (!themeIcon) return;
+        themeIcon.className = isDark ? 'bi bi-moon-fill theme-icon' : 'bi bi-sun-fill theme-icon';
+      }
+    })();
+
+    // Real-time Clock
+    (function initClock() {
+      const clockEl = document.getElementById('clock');
+      if (!clockEl) return;
+
+      let clockInterval;
+
+      function updateClock() {
+        try {
+          const formatter = new Intl.DateTimeFormat('th-TH', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+            timeZone: 'Asia/Bangkok'
+          });
+          
+          clockEl.textContent = formatter.format(new Date()) + ' น.';
+        } catch (error) {
+          // Fallback for browsers without Intl support
+          const now = new Date();
+          const pad = num => String(num).padStart(2, '0');
+          clockEl.textContent = 
+            `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ` +
+            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} น.`;
+        }
+      }
+
+      // Initial update
+      updateClock();
+      
+      // Update every second
+      clockInterval = setInterval(updateClock, 1000);
+
+      // Cleanup on page unload
+      window.addEventListener('beforeunload', () => {
+        if (clockInterval) clearInterval(clockInterval);
+      });
+
+      // Pause clock when page is hidden (performance optimization)
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          if (clockInterval) clearInterval(clockInterval);
+        } else {
+          updateClock();
+          clockInterval = setInterval(updateClock, 1000);
+        }
+      });
+    })();
+
+    // Navbar active state management
+    (function manageNavLinks() {
+      const currentPath = window.location.pathname;
+      const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+      
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('active');
+          link.setAttribute('aria-current', 'page');
+        }
+      });
+    })();
+
+    // Accessibility: Announce page changes to screen readers
+    (function announcePageChange() {
+      const pageTitle = document.title;
+      const announcement = document.createElement('div');
+      announcement.setAttribute('role', 'status');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.className = 'visually-hidden';
+      announcement.textContent = `Navigated to ${pageTitle}`;
+      document.body.appendChild(announcement);
+      
+      setTimeout(() => announcement.remove(), 1000);
+    })();
+
+    // Handle forms with confirmation
+    document.addEventListener('submit', function(e) {
+      const form = e.target;
+      if (form.hasAttribute('data-confirm')) {
+        const message = form.getAttribute('data-confirm');
+        if (!confirm(message)) {
+          e.preventDefault();
+        }
+      }
+    });
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

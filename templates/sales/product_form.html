@@ -1,0 +1,1041 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Edit Product{% else %}Add New Product{% endif %} - Baanpaw Shop{% endblock %}
+
+{% block content %}
+
+<style>
+  /* Form container */
+  .product-form-card {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Form layout improvements */
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #495057;
+  }
+
+  [data-bs-theme="dark"] .form-label {
+    color: #dee2e6;
+  }
+
+  .form-label .required {
+    color: #dc3545;
+    margin-left: 0.25rem;
+  }
+
+  .form-label .badge {
+    font-weight: 400;
+    margin-left: 0.5rem;
+  }
+
+  /* Input enhancements */
+  .input-with-icon {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .input-with-icon input,
+  .input-with-icon select {
+    padding-left: 2.5rem;
+  }
+
+  /* Stock counter */
+  .stock-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .stock-counter input {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+
+  .stock-counter button {
+    min-width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.25rem;
+    transition: all 0.2s ease;
+  }
+
+  .stock-counter button:hover:not(:disabled) {
+    transform: scale(1.05);
+  }
+
+  .stock-counter button:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  .stock-counter button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Image preview section */
+  .image-preview-card {
+    position: sticky;
+    top: 80px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #dee2e6;
+  }
+
+  [data-bs-theme="dark"] .image-preview-card {
+    background: linear-gradient(135deg, #2a2d31 0%, #1e1f22 100%);
+    border-color: #495057;
+  }
+
+  .image-preview-container {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    position: relative;
+  }
+
+  [data-bs-theme="dark"] .image-preview-container {
+    background: #000;
+  }
+
+  .image-preview-container img {
+    max-height: 350px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+
+  .image-preview-container:hover img {
+    transform: scale(1.05);
+  }
+
+  .image-placeholder {
+    text-align: center;
+    color: #6c757d;
+  }
+
+  .image-placeholder i {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+  }
+
+  /* Current image display */
+  .current-image-wrapper {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .current-image-wrapper img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+  }
+
+  .image-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  /* File upload button */
+  .file-upload-wrapper {
+    position: relative;
+  }
+
+  .file-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #0d6efd;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  .file-upload-label:hover {
+    background: #0b5ed7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+  }
+
+  .file-upload-label i {
+    font-size: 1.125rem;
+  }
+
+  input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .file-name-display {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(13, 110, 253, 0.1);
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #0d6efd;
+    display: none;
+  }
+
+  .file-name-display.active {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Profit margin calculator */
+  .profit-calculator {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.05) 100%);
+    border: 2px solid #198754;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .profit-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+  }
+
+  .profit-item:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .profit-label {
+    font-weight: 500;
+    color: #6c757d;
+  }
+
+  .profit-value {
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+  }
+
+  .profit-value.positive {
+    color: #198754;
+  }
+
+  .profit-value.negative {
+    color: #dc3545;
+  }
+
+  /* Action buttons */
+  .action-buttons {
+    padding-top: 1.5rem;
+    border-top: 2px solid #dee2e6;
+  }
+
+  [data-bs-theme="dark"] .action-buttons {
+    border-color: #495057;
+  }
+
+  .btn-action {
+    min-width: 120px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-action:active {
+    transform: translateY(0);
+  }
+
+  /* Delete button for edit mode */
+  .danger-zone {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 2px solid #dc3545;
+    border-radius: 8px;
+    background: rgba(220, 53, 69, 0.05);
+  }
+
+  /* Loading state */
+  .btn-loading {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spinner 0.6s linear infinite;
+  }
+
+  @keyframes spinner {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Color tag input enhancement */
+  .color-tags-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+  }
+
+  .color-tag {
+    padding: 0.25rem 0.5rem;
+    background: #e9ecef;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  [data-bs-theme="dark"] .color-tag {
+    background: #495057;
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 991.98px) {
+    .image-preview-card {
+      position: relative;
+      top: 0;
+    }
+
+    .image-preview-container {
+      min-height: 200px;
+    }
+
+    .image-preview-container img {
+      max-height: 250px;
+    }
+  }
+
+  /* Focus improvements */
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+  }
+
+  /* Validation states */
+  .was-validated .form-control:invalid {
+    border-color: #dc3545;
+  }
+
+  .was-validated .form-control:valid {
+    border-color: #198754;
+  }
+</style>
+
+<div class="card shadow-sm product-form-card">
+  <div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="h4 mb-1">
+          <i class="bi bi-{% if form.instance.pk %}pencil-square{% else %}plus-circle{% endif %}"></i>
+          {% if form.instance.pk %}Edit Product{% else %}Add New Product{% endif %}
+        </h2>
+        <p class="text-secondary mb-0 small">
+          {% if form.instance.pk %}
+          Update product information and inventory
+          {% else %}
+          Fill in the details to add a new product
+          {% endif %}
+        </p>
+      </div>
+      <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Products
+      </a>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <h6 class="alert-heading">
+        <i class="bi bi-exclamation-triangle"></i> Form Validation Error
+      </h6>
+      <ul class="mb-0">
+        {% for field, errors in form.errors.items %}
+        <li><strong>{{ field|capfirst }}:</strong> {{ errors|striptags }}</li>
+        {% endfor %}
+        {% for e in form.non_field_errors %}
+        <li>{{ e }}</li>
+        {% endfor %}
+      </ul>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" id="productForm" novalidate>
+      {% csrf_token %}
+
+      <div class="row g-4">
+        <!-- Left Column: Main Form -->
+        <div class="col-12 col-lg-7">
+          <div class="row g-3">
+            <!-- Product Name -->
+            <div class="col-12">
+              <label class="form-label">
+                <i class="bi bi-box-seam"></i> Product Name <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <span class="input-icon"><i class="bi bi-tag"></i></span>
+                {{ form.name }}
+              </div>
+            </div>
+
+            <!-- SKU -->
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-upc-scan"></i> SKU
+                <span class="badge bg-secondary">Optional</span>
+              </label>
+              <div class="input-with-icon">
+                <span class="input-icon"><i class="bi bi-hash"></i></span>
+                {{ form.sku }}
+              </div>
+              <div class="form-text small">Stock Keeping Unit for tracking</div>
+            </div>
+
+            <!-- Stock -->
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-boxes"></i> Stock Quantity <span class="required">*</span>
+              </label>
+              <div class="stock-counter">
+                <button type="button" id="btn-minus" class="btn btn-outline-secondary" aria-label="Decrease stock">
+                  <i class="bi bi-dash"></i>
+                </button>
+                {{ form.stock }}
+                <button type="button" id="btn-plus" class="btn btn-outline-secondary" aria-label="Increase stock">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+              <div class="form-text small">Available units in inventory</div>
+            </div>
+
+            <!-- Price -->
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-currency-exchange"></i> Sale Price (฿) <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <span class="input-icon">฿</span>
+                {{ form.price }}
+              </div>
+              <div class="form-text small">Selling price to customers</div>
+            </div>
+
+            <!-- Cost -->
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-cash-stack"></i> Cost Price (฿) <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <span class="input-icon">฿</span>
+                {{ form.cost }}
+              </div>
+              <div class="form-text small">Purchase or production cost</div>
+            </div>
+
+            <!-- Colors -->
+            <div class="col-12">
+              <label class="form-label">
+                <i class="bi bi-palette"></i> Available Colors
+                <span class="badge bg-secondary">Optional</span>
+              </label>
+              {{ form.colors }}
+              <div class="form-text small">
+                Separate multiple colors with commas (e.g., "Black, White, Navy Blue")
+              </div>
+              <div id="color-tags" class="color-tags-wrapper"></div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="col-12">
+              <label class="form-label">
+                <i class="bi bi-image"></i> Product Image
+              </label>
+              <div class="file-upload-wrapper">
+                <label for="id_image" class="file-upload-label">
+                  <i class="bi bi-cloud-upload"></i>
+                  <span>Choose Image</span>
+                </label>
+                {{ form.image }}
+                <div id="file-name" class="file-name-display">
+                  <i class="bi bi-file-image"></i>
+                  <span></span>
+                </div>
+              </div>
+              <div class="form-text small">
+                Supported formats: JPG, PNG, WebP (Max: 5MB)
+              </div>
+            </div>
+
+            <!-- Profit Calculator -->
+            <div class="col-12">
+              <div class="profit-calculator">
+                <h6 class="mb-3">
+                  <i class="bi bi-calculator"></i> Profit Analysis
+                </h6>
+                <div class="profit-item">
+                  <span class="profit-label">Sale Price:</span>
+                  <span class="profit-value" id="calc-price">฿0.00</span>
+                </div>
+                <div class="profit-item">
+                  <span class="profit-label">Cost Price:</span>
+                  <span class="profit-value" id="calc-cost">฿0.00</span>
+                </div>
+                <div class="profit-item">
+                  <span class="profit-label">Profit per Unit:</span>
+                  <span class="profit-value" id="calc-profit">฿0.00</span>
+                </div>
+                <div class="profit-item">
+                  <span class="profit-label">Profit Margin:</span>
+                  <span class="profit-value" id="calc-margin">0%</span>
+                </div>
+                <div class="profit-item border-top pt-2 mt-2">
+                  <span class="profit-label">Total Inventory Value:</span>
+                  <span class="profit-value text-primary" id="calc-inventory">฿0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons mt-4">
+            <div class="d-flex gap-2 justify-content-end">
+              <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-action">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+              <button type="submit" class="btn btn-primary btn-action" id="submitBtn">
+                <i class="bi bi-check-circle"></i>
+                {% if form.instance.pk %}Update Product{% else %}Save Product{% endif %}
+              </button>
+            </div>
+          </div>
+
+          <!-- Delete Zone (Edit Mode Only) -->
+          {% if form.instance.pk %}
+          <div class="danger-zone">
+            <h6 class="text-danger mb-2">
+              <i class="bi bi-exclamation-triangle"></i> Danger Zone
+            </h6>
+            <p class="text-secondary small mb-2">
+              Permanently delete this product. This action cannot be undone.
+            </p>
+            <button type="button" class="btn btn-outline-danger btn-sm" id="deleteBtn">
+              <i class="bi bi-trash"></i> Delete Product
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Right Column: Image Preview -->
+        <div class="col-12 col-lg-5">
+          <div class="card image-preview-card h-100">
+            <div class="card-body">
+              <h6 class="mb-3">
+                <i class="bi bi-eye"></i> Image Preview
+              </h6>
+
+              <!-- Current Image (Edit Mode) -->
+              {% if form.instance.pk and form.instance.image %}
+              <div class="mb-3">
+                <div class="text-secondary small mb-2">Current Image:</div>
+                <div class="current-image-wrapper">
+                  <img src="{{ form.instance.image.url }}" alt="{{ form.instance.name }}" class="rounded">
+                  <span class="image-badge">
+                    <i class="bi bi-check-circle"></i> Active
+                  </span>
+                </div>
+              </div>
+              <hr>
+              <div class="text-secondary small mb-2">New Image Preview:</div>
+              {% endif %}
+
+              <!-- New Image Preview -->
+              <div class="image-preview-container" id="preview-container">
+                <img id="preview" class="d-none" alt="Preview">
+                <div id="preview-empty" class="image-placeholder">
+                  <i class="bi bi-image"></i>
+                  <p class="mb-0">No image selected</p>
+                  <small>Upload an image to see preview</small>
+                </div>
+              </div>
+
+              <!-- Image Info -->
+              <div id="image-info" class="mt-3 d-none">
+                <div class="small text-secondary">
+                  <div class="d-flex justify-content-between mb-1">
+                    <span><i class="bi bi-file-earmark"></i> File size:</span>
+                    <span id="file-size">-</span>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span><i class="bi bi-aspect-ratio"></i> Dimensions:</span>
+                    <span id="file-dimensions">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function() {
+    'use strict';
+
+    // Form elements
+    const form = document.getElementById('productForm');
+    const stockInput = document.getElementById('id_stock');
+    const priceInput = document.getElementById('id_price');
+    const costInput = document.getElementById('id_cost');
+    const colorsInput = document.getElementById('id_colors');
+    const fileInput = document.getElementById('id_image');
+    const submitBtn = document.getElementById('submitBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+
+    // Display elements
+    const preview = document.getElementById('preview');
+    const previewEmpty = document.getElementById('preview-empty');
+    const fileNameDisplay = document.getElementById('file-name');
+    const imageInfo = document.getElementById('image-info');
+    const colorTags = document.getElementById('color-tags');
+
+    // Calculation displays
+    const calcPrice = document.getElementById('calc-price');
+    const calcCost = document.getElementById('calc-cost');
+    const calcProfit = document.getElementById('calc-profit');
+    const calcMargin = document.getElementById('calc-margin');
+    const calcInventory = document.getElementById('calc-inventory');
+
+    // Stock counter buttons
+    const btnPlus = document.getElementById('btn-plus');
+    const btnMinus = document.getElementById('btn-minus');
+
+    // Stock counter functionality
+    btnPlus?.addEventListener('click', () => {
+      let value = parseInt(stockInput.value) || 0;
+      stockInput.value = value + 1;
+      updateCalculations();
+    });
+
+    btnMinus?.addEventListener('click', () => {
+      let value = parseInt(stockInput.value) || 0;
+      if (value > 0) {
+        stockInput.value = value - 1;
+        updateCalculations();
+      }
+    });
+
+    // Update stock input validation
+    stockInput?.addEventListener('input', () => {
+      let value = parseInt(stockInput.value) || 0;
+      if (value < 0) stockInput.value = 0;
+      btnMinus.disabled = value <= 0;
+      updateCalculations();
+    });
+
+    // Image preview functionality
+    fileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      
+      if (!file) {
+        resetPreview();
+        return;
+      }
+
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        notify('Please select a valid image file (JPG, PNG, WebP)', false);
+        resetPreview();
+        return;
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        notify('Image size must be less than 5MB', false);
+        resetPreview();
+        return;
+      }
+
+      // Show file name
+      fileNameDisplay.querySelector('span').textContent = file.name;
+      fileNameDisplay.classList.add('active');
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.classList.remove('d-none');
+        previewEmpty.classList.add('d-none');
+
+        // Get image dimensions
+        const img = new Image();
+        img.onload = () => {
+          document.getElementById('file-size').textContent = formatFileSize(file.size);
+          document.getElementById('file-dimensions').textContent = `${img.width} × ${img.height}px`;
+          imageInfo.classList.remove('d-none');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function resetPreview() {
+      preview.classList.add('d-none');
+      preview.src = '';
+      previewEmpty.classList.remove('d-none');
+      fileNameDisplay.classList.remove('active');
+      imageInfo.classList.add('d-none');
+      fileInput.value = '';
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Color tags visualization
+    colorsInput?.addEventListener('input', () => {
+      const colors = colorsInput.value.split(',').map(c => c.trim()).filter(Boolean);
+      
+      colorTags.innerHTML = '';
+      colors.forEach(color => {
+        const tag = document.createElement('span');
+        tag.className = 'color-tag';
+        tag.innerHTML = `<i class="bi bi-circle-fill" style="color: ${getColorCode(color)}"></i> ${color}`;
+        colorTags.appendChild(tag);
+      });
+    });
+
+    function getColorCode(colorName) {
+      const colors = {
+        'black': '#000000', 'white': '#ffffff', 'red': '#ff0000',
+        'blue': '#0000ff', 'green': '#00ff00', 'yellow': '#ffff00',
+        'pink': '#ffc0cb', 'purple': '#800080', 'orange': '#ffa500',
+        'brown': '#a52a2a', 'gray': '#808080', 'grey': '#808080'
+      };
+      const name = colorName.toLowerCase().split(' ').pop();
+      return colors[name] || '#6c757d';
+    }
+
+    // Profit calculations
+    function updateCalculations() {
+      const price = parseFloat(priceInput?.value) || 0;
+      const cost = parseFloat(costInput?.value) || 0;
+      const stock = parseInt(stockInput?.value) || 0;
+
+      const profit = price - cost;
+      const margin = price > 0 ? (profit / price * 100) : 0;
+      const inventoryValue = cost * stock;
+
+      calcPrice.textContent = `฿${price.toFixed(2)}`;
+      calcCost.textContent = `฿${cost.toFixed(2)}`;
+      calcProfit.textContent = `฿${profit.toFixed(2)}`;
+      calcProfit.className = `profit-value ${profit >= 0 ? 'positive' : 'negative'}`;
+      calcMargin.textContent = `${margin.toFixed(1)}%`;
+      calcMargin.className = `profit-value ${margin >= 0 ? 'positive' : 'negative'}`;
+      calcInventory.textContent = `฿${inventoryValue.toFixed(2)}`;
+    }
+
+    // Add event listeners for calculations
+    [priceInput, costInput, stockInput].forEach(input => {
+      input?.addEventListener('input', updateCalculations);
+    });
+
+    // Initial calculation
+    updateCalculations();
+
+    // Trigger color tags on load
+    if (colorsInput?.value) {
+      colorsInput.dispatchEvent(new Event('input'));
+    }
+
+    // Form submission
+    form?.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Basic validation
+      const name = document.getElementById('id_name')?.value;
+      const price = parseFloat(priceInput?.value) || 0;
+      const cost = parseFloat(costInput?.value) || 0;
+      const stock = parseInt(stockInput?.value) || 0;
+
+      if (!name || !name.trim()) {
+        notify('Please enter a product name', false);
+        document.getElementById('id_name')?.focus();
+        return;
+      }
+
+      if (price < 0) {
+        notify('Price cannot be negative', false);
+        priceInput?.focus();
+        return;
+      }
+
+      if (cost < 0) {
+        notify('Cost cannot be negative', false);
+        costInput?.focus();
+        return;
+      }
+
+      if (stock < 0) {
+        notify('Stock cannot be negative', false);
+        stockInput?.focus();
+        return;
+      }
+
+      // Profit warning
+      if (cost > price) {
+        const confirmSubmit = confirm(
+          'Warning: Cost price is higher than sale price. You will lose money on each sale.\n\n' +
+          'Do you want to continue?'
+        );
+        if (!confirmSubmit) return;
+      }
+
+      // Add loading state
+      submitBtn.classList.add('btn-loading');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+      // Submit form
+      this.submit();
+    });
+
+    // Delete button (edit mode only)
+    deleteBtn?.addEventListener('click', function() {
+      const productName = document.getElementById('id_name')?.value || 'this product';
+      
+      const confirmation = prompt(
+        `⚠️ DELETE CONFIRMATION\n\n` +
+        `You are about to permanently delete "${productName}".\n\n` +
+        `This action CANNOT be undone. All sales history for this product will remain but will reference a deleted product.\n\n` +
+        `Type "DELETE" (in capital letters) to confirm:`
+      );
+
+      if (confirmation === 'DELETE') {
+        // Create and submit delete form
+        const deleteForm = document.createElement('form');
+        deleteForm.method = 'post';
+        deleteForm.action = '{% if form.instance.pk %}{% url "product_delete" form.instance.pk %}{% endif %}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        deleteForm.appendChild(csrfInput);
+        document.body.appendChild(deleteForm);
+        deleteForm.submit();
+      } else if (confirmation !== null) {
+        notify('Deletion cancelled - confirmation did not match', false);
+      }
+    });
+
+    // Auto-save draft (optional feature)
+    const draftKey = 'baanpaw_product_draft';
+    
+    function saveDraft() {
+      {% if not form.instance.pk %}
+      try {
+        const draft = {
+          name: document.getElementById('id_name')?.value || '',
+          sku: document.getElementById('id_sku')?.value || '',
+          price: priceInput?.value || '',
+          cost: costInput?.value || '',
+          stock: stockInput?.value || '',
+          colors: colorsInput?.value || '',
+          timestamp: Date.now()
+        };
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+      } catch (e) {
+        console.warn('Could not save draft:', e);
+      }
+      {% endif %}
+    }
+
+    function loadDraft() {
+      {% if not form.instance.pk %}
+      try {
+        const draft = JSON.parse(localStorage.getItem(draftKey));
+        if (draft && Date.now() - draft.timestamp < 3600000) { // 1 hour
+          const loadDraftConfirm = confirm('Found a saved draft from earlier. Do you want to restore it?');
+          if (loadDraftConfirm) {
+            if (draft.name) document.getElementById('id_name').value = draft.name;
+            if (draft.sku) document.getElementById('id_sku').value = draft.sku;
+            if (draft.price) priceInput.value = draft.price;
+            if (draft.cost) costInput.value = draft.cost;
+            if (draft.stock) stockInput.value = draft.stock;
+            if (draft.colors) {
+              colorsInput.value = draft.colors;
+              colorsInput.dispatchEvent(new Event('input'));
+            }
+            updateCalculations();
+            notify('Draft restored successfully', true);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load draft:', e);
+      }
+      {% endif %}
+    }
+
+    // Auto-save on input changes (for new products only)
+    {% if not form.instance.pk %}
+    const draftInputs = [
+      document.getElementById('id_name'),
+      document.getElementById('id_sku'),
+      priceInput,
+      costInput,
+      stockInput,
+      colorsInput
+    ];
+    
+    draftInputs.forEach(input => {
+      input?.addEventListener('input', saveDraft);
+    });
+
+    // Load draft on page load
+    loadDraft();
+    {% endif %}
+
+    // Clear draft on successful submission
+    form?.addEventListener('submit', () => {
+      try {
+        localStorage.removeItem(draftKey);
+      } catch (e) {}
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd + S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        submitBtn?.click();
+      }
+      
+      // Ctrl/Cmd + K to focus on stock input
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        stockInput?.focus();
+        stockInput?.select();
+      }
+    });
+
+    // Warn about unsaved changes
+    let formModified = false;
+    const formInputs = form?.querySelectorAll('input, select, textarea');
+    
+    formInputs?.forEach(input => {
+      input.addEventListener('change', () => {
+        formModified = true;
+      });
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (formModified) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    // Remove warning after successful submission
+    form?.addEventListener('submit', () => {
+      formModified = false;
+    });
+
+    // Initialize stock button state
+    btnMinus.disabled = (parseInt(stockInput?.value) || 0) <= 0;
+
+    // Price validation - warn if prices seem unusual
+    priceInput?.addEventListener('blur', () => {
+      const price = parseFloat(priceInput.value) || 0;
+      if (price > 100000) {
+        const confirm = window.confirm(
+          `The price ฿${price.toLocaleString()} seems very high.\n\nIs this correct?`
+        );
+        if (!confirm) {
+          priceInput.focus();
+        }
+      }
+    });
+
+    costInput?.addEventListener('blur', () => {
+      const cost = parseFloat(costInput.value) || 0;
+      if (cost > 100000) {
+        const confirm = window.confirm(
+          `The cost ฿${cost.toLocaleString()} seems very high.\n\nIs this correct?`
+        );
+        if (!confirm) {
+          costInput.focus();
+        }
+      }
+    });
+
+    // Format currency inputs on blur
+    [priceInput, costInput].forEach(input => {
+      input?.addEventListener('blur', function() {
+        const value = parseFloat(this.value);
+        if (!isNaN(value)) {
+          this.value = value.toFixed(2);
+          updateCalculations();
+        }
+      });
+    });
+
+    // Prevent negative values
+    [priceInput, costInput, stockInput].forEach(input => {
+      input?.addEventListener('input', function() {
+        if (this.value < 0) {
+          this.value = 0;
+        }
+      });
+    });
+
+  })();
+</script>
+
+{% endblock %}
