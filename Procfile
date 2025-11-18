@@ -1,1 +1,1 @@
-web: gunicorn baanpawsite.wsgi
+web: gunicorn BAANPAWSITE.wsgi
