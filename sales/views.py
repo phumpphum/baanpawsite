@@ -281,13 +281,11 @@ def sales_history(request):
 
 @require_http_methods(["GET", "POST"])
 def sale_create(request):
-    """Create a new sale with stock validation."""
     if request.method == 'POST':
         form = SaleForm(request.POST)
         if form.is_valid():
             sale = form.save(commit=False)
 
-            # Set defaults
             if not sale.sold_at:
                 sale.sold_at = timezone.now()
 
@@ -297,13 +295,12 @@ def sale_create(request):
             if not sale.actual_received:
                 sale.actual_received = sale.price_at_sale
 
-            # Validate and update stock atomically
             try:
                 with transaction.atomic():
                     product = Product.objects.select_for_update().get(pk=sale.product_id)
 
                     if sale.quantity > (product.stock or 0):
-                        form.add_error('quantity', f'สต็อกคงเหลือไม่พอ (เหลือ {product.stock})')
+                        form.add_error('quantity', f'สต็อกไม่พอ (เหลือ {product.stock})')
                     else:
                         sale.save()
                         Product.objects.filter(pk=product.pk).update(
@@ -319,17 +316,17 @@ def sale_create(request):
             'sold_at': timezone.localtime().strftime('%Y-%m-%dT%H:%M'),
         })
 
-    # ✅ ส่ง dict แยก 3 ตัวให้ JS ใช้
     products = Product.objects.only('id', 'price', 'stock', 'image')
-    product_prices = {p.id: float(p.price) for p in products}
-    product_stocks = {p.id: int(p.stock or 0) for p in products}
-    product_images = {p.id: (p.image.url if p.image else '') for p in products}
+
+    product_data = {
+        'prices': {str(p.id): float(p.price) for p in products},
+        'stocks': {str(p.id): int(p.stock or 0) for p in products},
+        'images': {str(p.id): (p.image.url if p.image else '') for p in products},
+    }
 
     return render(request, 'sales/sale_form.html', {
         'form': form,
-        'product_prices_json': json.dumps(product_prices),
-        'product_stocks_json': json.dumps(product_stocks),
-        'product_images_json': json.dumps(product_images),
+        'product_data_json': json.dumps(product_data),
         'action': 'create',
     })
 
