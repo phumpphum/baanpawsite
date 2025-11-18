@@ -2,213 +2,316 @@
 {% block title %}Sales Report{% endblock %}
 {% block content %}
 
-<!-- Filters -->
-<div class="d-flex flex-wrap gap-2 align-items-end mb-3">
-  <div>
-    <label class="form-label mb-1">Start</label>
-    <input type="date" id="start" class="form-control" value="{{ start }}">
-  </div>
-  <div>
-    <label class="form-label mb-1">End</label>
-    <input type="date" id="end" class="form-control" value="{{ end }}">
-  </div>
-  <div>
-    <label class="form-label mb-1">Product</label>
-    <select id="product" class="form-select">
-      <option value="">All products</option>
-      {% for p in products %}
-        <option value="{{ p.id }}" {% if selected_product|stringformat:"s" == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div>
-    <label class="form-label mb-1">Granularity</label>
-    <select id="granularity" class="form-select">
-      <option value="day" {% if granularity == 'day' %}selected{% endif %}>Daily</option>
-      <option value="month" {% if granularity == 'month' %}selected{% endif %}>Monthly</option>
-    </select>
-  </div>
+<style>
+/* Shopify Dashboard look */
+.kpi-card {
+    border-radius: 12px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.kpi-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+.kpi-value {
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+.kpi-sub {
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
+.btn-preset.active {
+    background:#0d6efd !important;
+    color:white !important;
+}
+</style>
 
-  <div class="ms-auto d-flex flex-wrap gap-2">
-    <button class="btn btn-outline-secondary" data-range="today">Today</button>
-    <button class="btn btn-outline-secondary" data-range="7d">Last 7D</button>
-    <button class="btn btn-outline-secondary" data-range="30d">Last 30D</button>
-    <button class="btn btn-outline-secondary" data-range="thism">This Month</button>
-    <button class="btn btn-outline-secondary" data-range="lastm">Last Month</button>
-    <button id="download" class="btn btn-success">
-      <span class="d-none d-sm-inline">Download CSV</span>
-      <span class="d-inline d-sm-none">CSV</span>
-    </button>
-  </div>
-</div>
-
-<!-- KPIs -->
-<div class="row g-3 mb-3">
-  <div class="col-12 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-secondary small">Total Revenue</div>
-        <div id="kpi-amount" class="fs-4 fw-bold text-primary">
-          <span class="spinner-border spinner-border-sm"></span>
-        </div>
-        <div id="kpi-amount-change" class="small mt-1"></div>
-      </div>
-    </div>
-  </div>
-  <div class="col-12 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-secondary small">Total Quantity</div>
-        <div id="kpi-qty" class="fs-4 fw-bold text-success">
-          <span class="spinner-border spinner-border-sm"></span>
-        </div>
-        <div id="kpi-qty-change" class="small mt-1"></div>
-      </div>
-    </div>
-  </div>
-  <div class="col-12 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-secondary small">Total Profit</div>
-        <div id="kpi-profit" class="fs-4 fw-bold text-warning">
-          <span class="spinner-border spinner-border-sm"></span>
-        </div>
-        <div id="kpi-profit-change" class="small mt-1"></div>
-      </div>
-    </div>
-  </div>
-  <div class="col-12 col-md-3">
-    <div class="card shadow-sm h-100">
-      <div class="card-body">
-        <div class="text-secondary small">Avg Sale (฿/record)</div>
-        <div id="kpi-avg" class="fs-4 fw-bold text-info">
-          <span class="spinner-border spinner-border-sm"></span>
-        </div>
-        <div id="kpi-avg-change" class="small mt-1"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Error Alert -->
-<div id="error-alert" class="alert alert-danger alert-dismissible fade show d-none">
-  <strong>Error!</strong> <span id="error-message"></span>
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-
-<!-- Revenue Chart -->
-<div class="card shadow-sm mb-3 position-relative">
-  <div id="loader-amount" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-75 d-none" style="z-index:10;">
-    <div class="spinner-border text-primary"></div>
-  </div>
+<!-- FILTER BAR -->
+<div class="card mb-3 border-0">
   <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="card-title mb-0">Revenue</h5>
-      <div class="btn-group btn-group-sm">
-        <input type="radio" class="btn-check" name="amountChartType" id="amountBar" value="bar" checked>
-        <label class="btn btn-outline-secondary" for="amountBar">Bar</label>
-        <input type="radio" class="btn-check" name="amountChartType" id="amountLine" value="line">
-        <label class="btn btn-outline-secondary" for="amountLine">Line</label>
+
+    <!-- Row 1: Date + Dropdowns -->
+    <div class="row g-3 align-items-end">
+
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">Start</label>
+        <input type="date" id="start" class="form-control" value="{{ start }}">
       </div>
+
+      <div class="col-md-2">
+        <label class="form-label fw-semibold">End</label>
+        <input type="date" id="end" class="form-control" value="{{ end }}">
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Product</label>
+        <select id="product" class="form-select">
+          <option value="">All products</option>
+          {% for p in products %}
+            <option value="{{ p.id }}"
+              {% if selected_product|stringformat:"s" == p.id|stringformat:"s" %}selected{% endif %}>
+              {{ p.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">Granularity</label>
+        <select id="granularity" class="form-select">
+          <option value="day" {% if granularity == 'day' %}selected{% endif %}>Daily</option>
+          <option value="month" {% if granularity == 'month' %}selected{% endif %}>Monthly</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 text-end">
+        <button id="download" class="btn btn-success w-100">
+          <span class="d-none d-sm-inline">Download CSV</span>
+          <span class="d-inline d-sm-none">CSV</span>
+        </button>
+      </div>
+
     </div>
+
+    <!-- Row 2: Quick Range Buttons -->
+    <div class="d-flex flex-wrap gap-2 mt-3">
+
+      <button class="btn btn-outline-secondary preset-btn" data-range="today">Today</button>
+      <button class="btn btn-outline-secondary preset-btn" data-range="7d">Last 7D</button>
+      <button class="btn btn-outline-secondary preset-btn" data-range="30d">Last 30D</button>
+      <button class="btn btn-outline-secondary preset-btn" data-range="thism">This Month</button>
+      <button class="btn btn-outline-secondary preset-btn" data-range="lastm">Last Month</button>
+
+      <!-- 💙 Highlight All-Time -->
+      <button class="btn btn-outline-secondary preset-btn" data-range="all">All Time</button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- KPIs ROW -->
+<div class="row g-3 mb-4">
+  
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Revenue</div>
+      <div id="kpi-amount" class="kpi-value text-primary">0.00</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Quantity</div>
+      <div id="kpi-qty" class="kpi-value text-success">0</div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Profit</div>
+      <div id="kpi-profit" class="kpi-value text-warning">0.00</div>
+      <div id="kpi-profit-avg" class="kpi-sub"></div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="kpi-card">
+      <div class="kpi-label">Margin / ROI</div>
+      <div id="kpi-margin" class="kpi-value text-info">0%</div>
+      <div id="kpi-roi" class="kpi-sub"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CHART -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h5 class="card-title">Revenue</h5>
     <canvas id="amountChart" height="120"></canvas>
-    <div id="empty-amount" class="text-center text-secondary py-5 d-none">No data.</div>
   </div>
 </div>
 
-<!-- Quantity Chart -->
-<div class="card shadow-sm mb-3 position-relative">
-  <div id="loader-qty" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-75 d-none" style="z-index:10;">
-    <div class="spinner-border text-success"></div>
-  </div>
+<div class="card shadow-sm mb-3">
   <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="card-title mb-0">Quantity</h5>
-      <div class="btn-group btn-group-sm">
-        <input type="radio" class="btn-check" name="qtyChartType" id="qtyBar" value="bar">
-        <label class="btn btn-outline-secondary" for="qtyBar">Bar</label>
-        <input type="radio" class="btn-check" name="qtyChartType" id="qtyLine" value="line" checked>
-        <label class="btn btn-outline-secondary" for="qtyLine">Line</label>
-      </div>
-    </div>
+    <h5 class="card-title">Quantity</h5>
     <canvas id="qtyChart" height="120"></canvas>
-    <div id="empty-qty" class="text-center text-secondary py-5 d-none">No data.</div>
   </div>
 </div>
 
-<!-- Profit Chart -->
-<div class="card shadow-sm mb-3 position-relative">
-  <div id="loader-profit" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-body bg-opacity-75 d-none" style="z-index:10;">
-    <div class="spinner-border text-warning"></div>
-  </div>
+<div class="card shadow-sm mb-3">
   <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="card-title mb-0">Profit</h5>
-      <div class="btn-group btn-group-sm">
-        <input type="radio" class="btn-check" name="profitChartType" id="profitBar" value="bar" checked>
-        <label class="btn btn-outline-secondary" for="profitBar">Bar</label>
-        <input type="radio" class="btn-check" name="profitChartType" id="profitLine" value="line">
-        <label class="btn btn-outline-secondary" for="profitLine">Line</label>
-      </div>
-    </div>
+    <h5 class="card-title">Profit</h5>
     <canvas id="profitChart" height="120"></canvas>
-    <div id="empty-profit" class="text-center text-secondary py-5 d-none">No data.</div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
-const fmtTHB = n => Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt = n => Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2});
+
 let amountChart, qtyChart, profitChart;
 
-// ✅ updated to include profit
+/* ---------------- LOAD DATA ---------------- */
 async function loadData(){
-  try{
     const res = await fetch(`/api/sales/series/?${new URLSearchParams({
-      start: $('#start').value,
-      end: $('#end').value,
-      g: $('#granularity').value,
-      product: $('#product').value
+        start: $('#start').value,
+        end: $('#end').value,
+        g: $('#granularity').value,
+        product: $('#product').value
     })}`);
+
     const data = await res.json();
 
-    const labels = data.labels || [];
-    const amounts = data.amounts || [];
-    const qtys = data.qtys || [];
-    const profits = data.profits || [];
+    const totalRev = data.totals.amount;
+    const totalQty = data.totals.qty;
+    const totalProfit = data.totals.profit;
+    const totalCost = data.totals.cost;
 
-    // KPIs
-    $('#kpi-amount').textContent = fmtTHB(data.totals.amount);
-    $('#kpi-qty').textContent = data.totals.qty;
-    $('#kpi-profit').textContent = fmtTHB(data.totals.profit);
-    $('#kpi-avg').textContent = data.totals.count_sales ? fmtTHB(data.totals.amount / data.totals.count_sales) : '0.00';
+    /* ---- SET KPIs ---- */
+    $('#kpi-amount').textContent = fmt(totalRev);
+    $('#kpi-qty').textContent = totalQty;
+    $('#kpi-profit').textContent = fmt(totalProfit);
 
-    // Charts
-    const updateChart = (chart, id, color, dataArr, label) => {
-      if (chart) chart.destroy();
-      const ctx = document.getElementById(id);
-      const type = $(`input[name="${id.replace('Chart','')}ChartType"]:checked`)?.value || 'bar';
-      return new Chart(ctx,{
-        type,
-        data:{labels,datasets:[{label,data:dataArr,backgroundColor:color+'66',borderColor:color,borderWidth:2,tension:0.3}]},
-        options:{scales:{y:{beginAtZero:true}}}
-      });
-    };
-    amountChart = updateChart(amountChart,'amountChart','rgb(54,162,235)',amounts,'Revenue');
-    qtyChart = updateChart(qtyChart,'qtyChart','rgb(75,192,192)',qtys,'Quantity');
-    profitChart = updateChart(profitChart,'profitChart','rgb(255,159,64)',profits,'Profit');
-  }catch(err){
-    console.error(err);
-  }
+    const avgProfit = totalQty ? totalProfit / totalQty : 0;
+    $('#kpi-profit-avg').textContent = "Avg Profit: " + fmt(avgProfit);
+
+    const margin = totalRev ? (totalProfit / totalRev * 100) : 0;
+    $('#kpi-margin').textContent = margin.toFixed(1) + "%";
+
+    const roi = totalCost ? (totalProfit / totalCost * 100) : 0;
+    $('#kpi-roi').textContent = "ROI: " + roi.toFixed(1) + "%";
+
+    /* ---- CHART ---- */
+    updateChart(amountChart, 'amountChart', data.labels, data.amounts, 'Revenue');
+    updateChart(qtyChart, 'qtyChart', data.labels, data.qtys, 'Quantity');
+    updateChart(profitChart, 'profitChart', data.labels, data.profits, 'Profit');
 }
 
-['#start','#end','#product','#granularity'].forEach(id=>{
-  $(id).addEventListener('change',loadData);
+function updateChart(chartObj, id, labels, values, label){
+    if(chartObj) chartObj.destroy();
+    const ctx = document.getElementById(id);
+
+    return new Chart(ctx,{
+        type:'bar',
+        data:{labels,datasets:[{
+            label: label,
+            data: values,
+            backgroundColor:'rgba(80,150,255,0.5)',
+            borderColor:'rgb(80,150,255)',
+            borderWidth:2
+        }]},
+        options:{scales:{y:{beginAtZero:true}}}
+    });
+}
+
+// Apply preset selection
+function applyPreset(range) {
+    const today = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const toDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+    let s, e = today;
+
+    if (range === 'today') {
+        s = today;
+    }
+    if (range === '7d') {
+        s = new Date(today); s.setDate(s.getDate() - 6);
+    }
+    if (range === '30d') {
+        s = new Date(today); s.setDate(s.getDate() - 29);
+    }
+    if (range === 'thism') {
+        s = new Date(today.getFullYear(), today.getMonth(), 1);
+    }
+    if (range === 'lastm') {
+        s = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        e = new Date(today.getFullYear(), today.getMonth(), 0);
+    }
+    if (range === 'all') {
+        s = ""; e = "";
+    }
+
+    $('#start').value = s ? toDate(s) : "";
+    $('#end').value = e ? toDate(e) : "";
+
+    loadData();  // refresh charts & KPI
+
+    document.querySelectorAll(".preset-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.range === range);
+    });
+}
+
+document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.addEventListener("click", () => applyPreset(btn.dataset.range));
 });
-$$('input[type=radio]').forEach(r=>r.addEventListener('change',loadData));
+
+
+/* ---------------- PRESETS ---------------- */
+function getPresetDates(range){
+    const today = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+    if(range === 'today') return {start: fmtDate(today), end: fmtDate(today)};
+    if(range === '7d'){
+        const d = new Date(today); d.setDate(d.getDate()-6);
+        return {start:fmtDate(d), end:fmtDate(today)};
+    }
+    if(range === '30d'){
+        const d = new Date(today); d.setDate(d.getDate()-29);
+        return {start:fmtDate(d), end:fmtDate(today)};
+    }
+    if(range === 'thism'){
+        const first = new Date(today.getFullYear(), today.getMonth(), 1);
+        return {start:fmtDate(first), end:fmtDate(today)};
+    }
+    if(range === 'lastm'){
+        const first = new Date(today.getFullYear(), today.getMonth()-1, 1);
+        const last = new Date(today.getFullYear(), today.getMonth(), 0);
+        return {start:fmtDate(first), end:fmtDate(last)};
+    }
+    if(range === 'all'){
+        return {start:"", end:""};
+    }
+}
+
+$$('.btn-preset').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+        const {start,end}=getPresetDates(btn.dataset.range);
+        $('#start').value = start;
+        $('#end').value = end;
+
+        $$('.btn-preset').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+
+        loadData();
+    });
+});
+
+$('#start').addEventListener('change',loadData);
+$('#end').addEventListener('change',loadData);
+$('#granularity').addEventListener('change',loadData);
+$('#product').addEventListener('change',loadData);
 
 loadData();
 </script>
+
+<style>
+  .preset-btn.active {
+    background: #0d6efd !important;
+    color: #fff !important;
+    border-color: #0d6efd !important;
+  }
+</style>
+
 {% endblock %}

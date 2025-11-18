@@ -3,142 +3,236 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Baanpaw Shop Management System">
+  <meta name="description" content="Baanpaw Shop - Modern inventory and sales management system">
+  <meta name="theme-color" content="#667eea">
   <title>{% block title %}Baanpaw Shop{% endblock %}</title>
 
-  <!-- Prevent theme flash by setting theme immediately -->
+  <!-- Prevent theme flash -->
   <script>
     (function() {
       try {
         const savedTheme = localStorage.getItem('baanpaw-theme') || 'light';
         document.documentElement.setAttribute('data-bs-theme', savedTheme);
       } catch (e) {
-        console.warn('Could not load theme preference:', e);
+        console.warn('Theme preference not available:', e);
       }
     })();
   </script>
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
   <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Preconnect for performance -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="/static/style.css">
-
   <style>
     :root {
-      --nav-height: 56px;
+      --nav-height: 64px;
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --sidebar-width: 260px;
+      --transition-speed: 0.3s;
     }
 
-    /* Smooth theme transitions */
     * {
       transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
 
-    /* Custom navbar styling */
-    .navbar {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+
+    [data-bs-theme="dark"] body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    /* Modern Navbar */
+    .modern-navbar {
+      background: white;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       position: sticky;
       top: 0;
-      z-index: 1030;
+      z-index: 1040;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    [data-bs-theme="dark"] .modern-navbar {
+      background: rgba(26, 26, 46, 0.95);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
 
     .navbar-brand {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       letter-spacing: -0.5px;
-      transition: transform 0.2s ease;
     }
 
     .navbar-brand:hover {
-      transform: scale(1.05);
+      transform: scale(1.05) rotate(-2deg);
     }
 
-    .nav-link {
+    .navbar-brand i {
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Modern Nav Links */
+    .modern-nav-link {
       position: relative;
-      transition: color 0.2s ease;
-    }
-
-    .nav-link::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 2px;
-      background: currentColor;
-      transition: width 0.2s ease;
-    }
-
-    .nav-link:hover::after,
-    .nav-link.active::after {
-      width: 80%;
-    }
-
-    /* Clock styling */
-    #clock {
-      font-family: 'Courier New', monospace;
+      padding: 0.625rem 1rem !important;
+      margin: 0 0.25rem;
+      border-radius: 10px;
       font-weight: 500;
-      padding: 0.375rem 0.75rem;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      min-width: 180px;
-      text-align: center;
-    }
-
-    /* Theme toggle improvements */
-    .theme-toggle-wrapper {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: #4a5568 !important;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.375rem 0.75rem;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
     }
 
-    .form-switch .form-check-input {
+    [data-bs-theme="dark"] .modern-nav-link {
+      color: #e2e8f0 !important;
+    }
+
+    .modern-nav-link:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea !important;
+      transform: translateY(-2px);
+    }
+
+    .modern-nav-link.active {
+      background: var(--primary-gradient);
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .modern-nav-link.active i {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Clock Widget */
+    .clock-widget {
+      background: rgba(102, 126, 234, 0.1);
+      padding: 0.5rem 1.25rem;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #667eea;
+      min-width: 200px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+      border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+
+    [data-bs-theme="dark"] .clock-widget {
+      background: rgba(102, 126, 234, 0.2);
+      color: #a5b4fc;
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .clock-icon {
+      animation: rotate 4s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Theme Toggle */
+    .theme-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 12px;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+
+    [data-bs-theme="dark"] .theme-toggle-container {
+      background: rgba(102, 126, 234, 0.2);
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .theme-toggle {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: #cbd5e0;
+      border-radius: 15px;
       cursor: pointer;
-      width: 3em;
-      height: 1.5em;
+      transition: all 0.3s ease;
+      border: none;
+      padding: 0;
     }
 
-    .form-switch .form-check-input:checked {
-      background-color: #0d6efd;
+    .theme-toggle:checked {
+      background: var(--primary-gradient);
+    }
+
+    .theme-toggle::before {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: white;
+      top: 3px;
+      left: 3px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .theme-toggle:checked::before {
+      transform: translateX(30px);
     }
 
     .theme-icon {
-      font-size: 1.1rem;
-      transition: transform 0.3s ease;
+      font-size: 1.25rem;
+      transition: all 0.3s ease;
+      color: #667eea;
     }
 
-    .form-check-input:checked ~ label .theme-icon {
+    [data-bs-theme="dark"] .theme-icon {
+      color: #a5b4fc;
+    }
+
+    .theme-toggle:checked ~ .theme-icon {
       transform: rotate(180deg);
     }
 
-    /* Toast improvements */
-    .toast {
-      min-width: 250px;
-      backdrop-filter: blur(10px);
-    }
-
-    .toast-body {
-      font-weight: 500;
-    }
-
-    /* Main content area */
+    /* Main Content */
     main {
       min-height: calc(100vh - var(--nav-height) - 2rem);
-      animation: fadeIn 0.3s ease;
+      padding-top: 1.5rem;
+      padding-bottom: 3rem;
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    @keyframes fadeIn {
+    @keyframes fadeInUp {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
@@ -146,153 +240,283 @@
       }
     }
 
-    /* Mobile optimizations */
+    /* Enhanced Toast System */
+    .modern-toast {
+      min-width: 320px;
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .modern-toast::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: currentColor;
+    }
+
+    .modern-toast.success {
+      background: linear-gradient(135deg, rgba(17, 153, 142, 0.95) 0%, rgba(56, 239, 125, 0.95) 100%);
+      color: white;
+    }
+
+    .modern-toast.error {
+      background: linear-gradient(135deg, rgba(235, 51, 73, 0.95) 0%, rgba(244, 92, 67, 0.95) 100%);
+      color: white;
+    }
+
+    .modern-toast.warning {
+      background: linear-gradient(135deg, rgba(240, 147, 251, 0.95) 0%, rgba(245, 87, 108, 0.95) 100%);
+      color: white;
+    }
+
+    .modern-toast.info {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.95) 0%, rgba(0, 242, 254, 0.95) 100%);
+      color: white;
+    }
+
+    .toast-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 1.25rem;
+    }
+
+    .toast-content {
+      flex: 1;
+      padding: 0 1rem;
+    }
+
+    .toast-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .toast-message {
+      font-size: 0.85rem;
+      opacity: 0.95;
+    }
+
+    /* Navbar Toggler */
+    .navbar-toggler {
+      border: none;
+      padding: 0.5rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-toggler:hover {
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .navbar-toggler:focus {
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23667eea' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    /* Loading State */
+    .page-loading {
+      opacity: 0.6;
+      pointer-events: none;
+      filter: blur(2px);
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-gradient);
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+
+    [data-bs-theme="dark"] ::-webkit-scrollbar-track {
+      background: #1a1a2e;
+    }
+
+    /* Mobile Optimizations */
     @media (max-width: 991.98px) {
-      #clock {
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
+      .modern-navbar {
+        padding: 0.75rem 0;
       }
 
-      .theme-toggle-wrapper {
-        margin-top: 0.5rem;
+      .modern-nav-link {
+        margin: 0.25rem 0;
+      }
+
+      .clock-widget,
+      .theme-toggle-container {
+        margin-top: 1rem;
         justify-content: center;
       }
 
       .navbar-nav {
-        padding-top: 0.5rem;
+        padding-top: 1rem;
+        gap: 0.25rem;
       }
 
-      .nav-link::after {
-        display: none;
+      main {
+        padding-top: 1rem;
       }
     }
 
-    /* Loading indicator for page transitions */
-    .page-loading {
-      opacity: 0.6;
-      pointer-events: none;
+    /* Accessibility */
+    .visually-hidden-focusable:not(:focus):not(:focus-within) {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
     }
 
-    /* Accessibility improvements */
-    .navbar-toggler:focus {
-      box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
-    }
-
-    /* Dark theme specific adjustments */
-    [data-bs-theme="dark"] #clock {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    [data-bs-theme="dark"] .theme-toggle-wrapper {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    [data-bs-theme="dark"] .navbar {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 
-  {% block extra_head %}
-  
-  {% endblock %}
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg bg-dark navbar-dark" role="navigation">
-    <div class="container">
-      <a class="navbar-brand fw-bold" href="{% url 'home' %}" aria-label="Baanpaw Home">
-        <i class="bi bi-bag-fill"></i> Baanpaw
+  <!-- Skip to main content for accessibility -->
+  <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+  <!-- Modern Navigation -->
+  <nav class="navbar navbar-expand-lg modern-navbar" role="navigation" aria-label="Main navigation">
+    <div class="container-fluid px-3 px-lg-4">
+      <a class="navbar-brand" href="{% url 'home' %}" aria-label="Baanpaw Home">
+        <i class="bi bi-shop"></i> Baanpaw
       </a>
 
-      <button class="navbar-toggler" type="button" 
+      <button class="navbar-toggler" 
+              type="button" 
               data-bs-toggle="collapse" 
               data-bs-target="#navbarMain" 
               aria-controls="navbarMain" 
               aria-expanded="false" 
-              aria-label="Toggle navigation menu">
+              aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div id="navbarMain" class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
-               href="{% url 'home' %}">
-              <i class="bi bi-grid"></i> Home
+            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+               href="{% url 'home' %}"
+               aria-current="{% if request.resolver_match.url_name == 'home' %}page{% endif %}">
+              <i class="bi bi-house-door-fill"></i> Dashboard
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" 
-               href="{% url 'product_list' %}">
-              <i class="bi bi-grid"></i> Products
+            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" 
+               href="{% url 'product_list' %}"
+               aria-current="{% if request.resolver_match.url_name == 'product_list' %}page{% endif %}">
+              <i class="bi bi-grid-3x3-gap-fill"></i> Products
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'product_create' %}active{% endif %}" 
-               href="{% url 'product_create' %}">
-              <i class="bi bi-plus-circle"></i> Add Product
+            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'product_create' %}active{% endif %}" 
+               href="{% url 'product_create' %}"
+               aria-current="{% if request.resolver_match.url_name == 'product_create' %}page{% endif %}">
+              <i class="bi bi-plus-circle-fill"></i> Add Product
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}" 
-               href="{% url 'sale_create' %}">
-              <i class="bi bi-cart-plus"></i> New Sale
+            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}" 
+               href="{% url 'sale_create' %}"
+               aria-current="{% if request.resolver_match.url_name == 'sale_create' %}page{% endif %}">
+              <i class="bi bi-cart-plus-fill"></i> New Sale
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'sales_history' %}active{% endif %}" 
-               href="{% url 'sales_history' %}">
-              <i class="bi bi-clock-history"></i> Sales History
+            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'sales_history' %}active{% endif %}" 
+               href="{% url 'sales_history' %}"
+               aria-current="{% if request.resolver_match.url_name == 'sales_history' %}page{% endif %}">
+              <i class="bi bi-clock-history"></i> History
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}" 
-               href="{% url 'sales_report' %}">
-              <i class="bi bi-graph-up"></i> Sales Report
+            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}" 
+               href="{% url 'sales_report' %}"
+               aria-current="{% if request.resolver_match.url_name == 'sales_report' %}page{% endif %}">
+              <i class="bi bi-graph-up-arrow"></i> Reports
             </a>
           </li>
         </ul>
 
-        <!-- Real-time Clock -->
-        <div id="clock" class="text-white small" role="status" aria-live="off">
-          {% now "d/m/Y H:i:s" %} น.
+        <!-- Clock Widget -->
+        <div class="clock-widget me-3" role="status" aria-live="off" aria-atomic="true">
+          <i class="bi bi-clock clock-icon"></i>
+          <span id="clock">{% now "d/m/Y H:i:s" %} น.</span>
         </div>
 
         <!-- Theme Toggle -->
-        <div class="theme-toggle-wrapper">
-          <div class="form-check form-switch mb-0">
-            <input class="form-check-input" 
-                   type="checkbox" 
-                   role="switch"
-                   id="themeToggler" 
-                   aria-label="Toggle dark mode">
-            <label class="form-check-label text-white" for="themeToggler">
-              <i class="bi bi-sun-fill theme-icon"></i>
-            </label>
-          </div>
+        <div class="theme-toggle-container">
+          <i class="bi bi-sun-fill theme-icon" id="themeIcon"></i>
+          <input type="checkbox" 
+                 class="theme-toggle" 
+                 id="themeToggler"
+                 role="switch"
+                 aria-label="Toggle dark mode"
+                 aria-checked="false">
         </div>
       </div>
     </div>
   </nav>
 
   <!-- Main Content -->
-  <main class="container my-4" role="main">
+  <main class="container-fluid px-3 px-lg-4" id="main-content" role="main">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Toast Notification System -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080">
-    <div id="toast" 
-         class="toast align-items-center border-0" 
-         role="alert" 
-         aria-live="assertive" 
-         aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body"></div>
+  <!-- Toast Notification Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090" aria-live="polite" aria-atomic="true">
+    <div id="toast" class="toast modern-toast" role="alert">
+      <div class="d-flex align-items-center p-3">
+        <div class="toast-icon" id="toastIcon">
+          <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <div class="toast-content">
+          <div class="toast-title" id="toastTitle">Success</div>
+          <div class="toast-message" id="toastMessage"></div>
+        </div>
         <button type="button" 
-                class="btn-close me-2 m-auto" 
+                class="btn-close btn-close-white ms-2" 
                 data-bs-dismiss="toast" 
-                aria-label="Close notification"></button>
+                aria-label="Close"></button>
       </div>
     </div>
   </div>
@@ -307,71 +531,101 @@
 
     // Constants
     const THEME_KEY = 'baanpaw-theme';
-    const TOAST_DURATION = 3000;
+    const TOAST_DURATION = 4000;
 
-    // Toast Notification System
-    window.notify = function(message, isSuccess = true) {
+    // Enhanced Toast System
+    window.notify = function(message, type = 'success', title = null) {
       if (!message) return;
       
       const toastEl = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastMessage = document.getElementById('toastMessage');
+      
       if (!toastEl) return;
 
-      const bgClass = isSuccess ? 'text-bg-success' : 'text-bg-danger';
-      const icon = isSuccess ? '✓' : '✗';
-      
-      // Update toast classes and content
-      toastEl.className = `toast align-items-center border-0 ${bgClass}`;
-      toastEl.querySelector('.toast-body').textContent = `${icon} ${message}`;
-      
-      // Update close button color
-      const closeBtn = toastEl.querySelector('.btn-close');
-      closeBtn.className = isSuccess ? 'btn-close btn-close-white me-2 m-auto' : 'btn-close me-2 m-auto';
-      
+      // Configuration for different types
+      const config = {
+        success: {
+          title: title || 'Success',
+          icon: 'bi-check-circle-fill',
+          class: 'success'
+        },
+        error: {
+          title: title || 'Error',
+          icon: 'bi-x-circle-fill',
+          class: 'error'
+        },
+        warning: {
+          title: title || 'Warning',
+          icon: 'bi-exclamation-triangle-fill',
+          class: 'warning'
+        },
+        info: {
+          title: title || 'Info',
+          icon: 'bi-info-circle-fill',
+          class: 'info'
+        }
+      };
+
+      const settings = config[type] || config.success;
+
+      // Update toast
+      toastEl.className = `toast modern-toast ${settings.class}`;
+      toastIcon.innerHTML = `<i class="bi ${settings.icon}"></i>`;
+      toastTitle.textContent = settings.title;
+      toastMessage.textContent = message;
+
       // Show toast
       const toast = new bootstrap.Toast(toastEl, {
         autohide: true,
         delay: TOAST_DURATION
       });
       toast.show();
+
+      // Add entrance animation
+      toastEl.style.animation = 'slideInRight 0.3s ease';
     };
 
     // Theme Management
     (function initTheme() {
       const toggler = document.getElementById('themeToggler');
-      const themeIcon = toggler?.nextElementSibling?.querySelector('.theme-icon');
+      const themeIcon = document.getElementById('themeIcon');
       
-      if (!toggler) return;
+      if (!toggler || !themeIcon) return;
 
       // Load saved theme
       try {
         const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
         const isDark = savedTheme === 'dark';
         toggler.checked = isDark;
-        updateThemeIcon(isDark);
+        toggler.setAttribute('aria-checked', isDark);
+        updateTheme(isDark);
       } catch (error) {
-        console.warn('Could not load theme preference:', error);
+        console.warn('Theme preference not available:', error);
       }
 
       // Handle theme changes
       toggler.addEventListener('change', function() {
         const isDark = this.checked;
-        const theme = isDark ? 'dark' : 'light';
-        
-        // Apply theme
-        document.documentElement.setAttribute('data-bs-theme', theme);
-        updateThemeIcon(isDark);
+        this.setAttribute('aria-checked', isDark);
+        updateTheme(isDark);
         
         // Save preference
         try {
-          localStorage.setItem(THEME_KEY, theme);
+          localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
         } catch (error) {
           console.warn('Could not save theme preference:', error);
         }
+
+        // Show notification
+        notify(`Switched to ${isDark ? 'dark' : 'light'} mode`, 'info', 'Theme Changed');
       });
 
-      function updateThemeIcon(isDark) {
-        if (!themeIcon) return;
-        themeIcon.className = isDark ? 'bi bi-moon-fill theme-icon' : 'bi bi-sun-fill theme-icon';
+      function updateTheme(isDark) {
+        const theme = isDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        themeIcon.className = isDark ? 'bi bi-moon-stars-fill theme-icon' : 'bi bi-sun-fill theme-icon';
       }
     })();
 
@@ -381,6 +635,7 @@
       if (!clockEl) return;
 
       let clockInterval;
+      let isPageVisible = true;
 
       function updateClock() {
         try {
@@ -397,73 +652,124 @@
           
           clockEl.textContent = formatter.format(new Date()) + ' น.';
         } catch (error) {
-          // Fallback for browsers without Intl support
+          // Fallback
           const now = new Date();
-          const pad = num => String(num).padStart(2, '0');
+          const pad = n => String(n).padStart(2, '0');
           clockEl.textContent = 
             `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ` +
             `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} น.`;
         }
       }
 
-      // Initial update
-      updateClock();
-      
-      // Update every second
-      clockInterval = setInterval(updateClock, 1000);
+      // Start clock
+      function startClock() {
+        updateClock();
+        clockInterval = setInterval(updateClock, 1000);
+      }
 
-      // Cleanup on page unload
-      window.addEventListener('beforeunload', () => {
-        if (clockInterval) clearInterval(clockInterval);
-      });
+      // Stop clock
+      function stopClock() {
+        if (clockInterval) {
+          clearInterval(clockInterval);
+          clockInterval = null;
+        }
+      }
 
-      // Pause clock when page is hidden (performance optimization)
+      // Initial start
+      startClock();
+
+      // Pause when page hidden (performance optimization)
       document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          if (clockInterval) clearInterval(clockInterval);
+        isPageVisible = !document.hidden;
+        if (isPageVisible) {
+          startClock();
         } else {
-          updateClock();
-          clockInterval = setInterval(updateClock, 1000);
+          stopClock();
         }
       });
+
+      // Cleanup
+      window.addEventListener('beforeunload', stopClock);
     })();
 
-    // Navbar active state management
-    (function manageNavLinks() {
-      const currentPath = window.location.pathname;
-      const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+    // Enhanced Form Handling
+    document.addEventListener('submit', function(e) {
+      const form = e.target;
       
-      navLinks.forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-          link.classList.add('active');
-          link.setAttribute('aria-current', 'page');
+      // Confirmation
+      if (form.hasAttribute('data-confirm')) {
+        const message = form.getAttribute('data-confirm');
+        if (!confirm(message)) {
+          e.preventDefault();
+          return;
         }
-      });
-    })();
+      }
 
-    // Accessibility: Announce page changes to screen readers
+      // Loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn && !form.hasAttribute('data-no-loading')) {
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        submitBtn.disabled = true;
+
+        // Restore if form validation fails
+        setTimeout(() => {
+          if (form.checkValidity && !form.checkValidity()) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        }, 100);
+      }
+    });
+
+    // Page transition effects
+    window.addEventListener('beforeunload', function() {
+      document.querySelector('main')?.classList.add('page-loading');
+    });
+
+    // Announce page changes for accessibility
     (function announcePageChange() {
       const pageTitle = document.title;
       const announcement = document.createElement('div');
       announcement.setAttribute('role', 'status');
       announcement.setAttribute('aria-live', 'polite');
       announcement.className = 'visually-hidden';
-      announcement.textContent = `Navigated to ${pageTitle}`;
+      announcement.textContent = `Page loaded: ${pageTitle}`;
       document.body.appendChild(announcement);
       
-      setTimeout(() => announcement.remove(), 1000);
+      setTimeout(() => announcement.remove(), 2000);
     })();
 
-    // Handle forms with confirmation
-    document.addEventListener('submit', function(e) {
-      const form = e.target;
-      if (form.hasAttribute('data-confirm')) {
-        const message = form.getAttribute('data-confirm');
-        if (!confirm(message)) {
-          e.preventDefault();
-        }
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      // Alt + T: Toggle theme
+      if (e.altKey && e.key === 't') {
+        e.preventDefault();
+        document.getElementById('themeToggler')?.click();
+      }
+      
+      // Alt + H: Go home
+      if (e.altKey && e.key === 'h') {
+        e.preventDefault();
+        window.location.href = "{% url 'home' %}";
       }
     });
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 
   {% block extra_scripts %}{% endblock %}
