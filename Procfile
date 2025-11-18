@@ -1,0 +1,1 @@
+web: gunicorn baanpawsite.wsgi
