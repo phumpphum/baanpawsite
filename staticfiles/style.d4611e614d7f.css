@@ -1,0 +1,11 @@
+/* ภาพในแต่ละโหมด */
+.product-img-grid { height: 180px; object-fit: cover; }
+.product-img-list { width: 72px; height: 48px; object-fit: cover; }
+.product-img-compact { width: 100%; height: 100px; object-fit: cover; border-top-left-radius: .5rem; border-top-right-radius: .5rem; }
+
+/* การ์ด compact แน่นขึ้น */
+.product-compact .badge { font-weight: 600; }
+.btn.btn-xs { padding: .125rem .25rem; line-height: 1; }
+
+/* ปุ่มมุมมอง active */
+[data-view].active { background-color: var(--bs-secondary); color: #fff; }
