@@ -446,317 +446,97 @@
 </div>
 
 <script>
-  (function() {
-    'use strict';
-
-    // Data from backend
-    const productPrices = {{ product_prices_json|safe }};
-    const productStocks = {{ product_stocks_json|safe }};
-    const productImages = {{ product_images_json|safe }};
-
-    // Form elements
-    const form = document.getElementById('saleForm');
-    const productSelect = document.getElementById('id_product');
-    const qtyInput = document.getElementById('id_quantity');
-    const priceSaleInput = document.getElementById('id_price_at_sale');
-    const actualInput = document.getElementById('id_actual_received');
-    const discountInput = document.getElementById('id_discount_percent');
-    const submitBtn = document.getElementById('submitBtn');
-
-    // Display elements
-    const productInfo = document.getElementById('product-info');
-    const prodPrice = document.getElementById('prod-price');
-    const stockDisplay = document.getElementById('stock-display');
-    const qtyWarning = document.getElementById('qty-warning');
-    const discountAmount = document.getElementById('discount-amount');
-    const prodImage = document.getElementById('prod-image');
-    const noImage = document.getElementById('no-image');
-    const useOriginalBtn = document.getElementById('use-original-price');
-
-    // Calculation display
-    const calcOriginal = document.getElementById('calc-original');
-    const calcSale = document.getElementById('calc-sale');
-    const calcQty = document.getElementById('calc-qty');
-    const calcDiscount = document.getElementById('calc-discount');
-    const calcReceived = document.getElementById('calc-received');
-    const calcTotal = document.getElementById('calc-total');
-
-    let currentProductId = null;
-    let currentStock = 0;
-    let currentPrice = 0;
-
-    // Update product info and image
-    function updateProductInfo() {
-      const productId = productSelect.value;
-      currentProductId = productId;
-
-      if (!productId) {
-        productInfo.classList.add('d-none');
-        prodImage.classList.add('d-none');
-        noImage.classList.remove('d-none');
-        return;
-      }
-
-      productInfo.classList.remove('d-none');
-
-      // Update price
-      currentPrice = parseFloat(productPrices[productId]) || 0;
-      prodPrice.textContent = `฿${currentPrice.toFixed(2)}`;
-
-      // Update stock
-      currentStock = parseInt(productStocks[productId]) || 0;
-      updateStockDisplay();
-
-      // Auto-fill price if empty
-      if (!priceSaleInput.value) {
-        priceSaleInput.value = currentPrice.toFixed(2);
-      }
-
-      // Auto-fill received amount if empty
-      if (!actualInput.value) {
-        actualInput.value = priceSaleInput.value;
-      }
-
-      // Update image
-      const imageUrl = productImages[productId];
-      if (imageUrl) {
-        prodImage.src = imageUrl;
-        prodImage.classList.remove('d-none');
-        noImage.classList.add('d-none');
-      } else {
-        prodImage.classList.add('d-none');
-        noImage.classList.remove('d-none');
-      }
-
-      calculateDiscount();
-      updateCalculationDisplay();
-    }
-
-    // Update stock display with color coding
-    function updateStockDisplay() {
-      let stockClass = 'stock-ok';
-      let icon = 'check-circle-fill';
-      
-      if (currentStock === 0) {
-        stockClass = 'stock-out stock-warning';
-        icon = 'x-circle-fill';
-      } else if (currentStock <= 5) {
-        stockClass = 'stock-low stock-warning';
-        icon = 'exclamation-circle-fill';
-      }
-
-      stockDisplay.innerHTML = `
-        <span class="stock-indicator ${stockClass}">
-          <i class="bi bi-${icon}"></i>
-          ${currentStock} units
-        </span>
-      `;
-    }
-
-    // Calculate discount percentage from prices
-    function calculateDiscount() {
-      if (!currentPrice || currentPrice === 0) return;
-
-      const salePrice = parseFloat(priceSaleInput.value) || 0;
-      const discountAmt = currentPrice - salePrice;
-      const discountPct = (discountAmt / currentPrice) * 100;
-
-      if (!isNaN(discountPct)) {
-        discountInput.value = Math.max(0, discountPct).toFixed(2);
-        discountAmount.textContent = `฿${Math.max(0, discountAmt).toFixed(2)} off`;
-      }
-    }
-
-    // Calculate price from discount percentage
-    function calculatePriceFromDiscount() {
-      if (!currentPrice) return;
-
-      const discountPct = parseFloat(discountInput.value) || 0;
-      const salePrice = currentPrice * (100 - discountPct) / 100;
-      
-      priceSaleInput.value = Math.max(0, salePrice).toFixed(2);
-      
-      // Auto-update received if not manually changed
-      if (!actualInput.dataset.manuallyEdited) {
-        actualInput.value = priceSaleInput.value;
-      }
-      
-      const discountAmt = currentPrice - salePrice;
-      discountAmount.textContent = `฿${Math.max(0, discountAmt).toFixed(2)} off`;
-      
-      updateCalculationDisplay();
-    }
-
-    // Update calculation display
-    function updateCalculationDisplay() {
-      const qty = parseInt(qtyInput.value) || 0;
-      const salePrice = parseFloat(priceSaleInput.value) || 0;
-      const received = parseFloat(actualInput.value) || 0;
-      const discountPct = parseFloat(discountInput.value) || 0;
-      const discountAmt = currentPrice - salePrice;
-
-      calcOriginal.textContent = `฿${currentPrice.toFixed(2)}`;
-      calcSale.textContent = `฿${salePrice.toFixed(2)}`;
-      calcQty.textContent = qty;
-      calcDiscount.textContent = `฿${Math.max(0, discountAmt).toFixed(2)} (${discountPct.toFixed(1)}%)`;
-      calcReceived.textContent = `฿${received.toFixed(2)}`;
-      calcTotal.textContent = `฿${(salePrice * qty).toFixed(2)}`;
-    }
-
-    // Check stock availability
-    function checkStock() {
-      const qty = parseInt(qtyInput.value) || 0;
-      
-      if (qty > currentStock) {
-        qtyWarning.textContent = `⚠️ Insufficient stock! Only ${currentStock} available`;
-        qtyWarning.classList.remove('d-none');
-        return false;
-      } else if (qty === currentStock && currentStock > 0) {
-        qtyWarning.textContent = `ℹ️ This will deplete the stock`;
-        qtyWarning.classList.remove('d-none');
-        qtyWarning.classList.remove('text-danger');
-        qtyWarning.classList.add('text-warning');
-        return true;
-      } else {
-        qtyWarning.classList.add('d-none');
-        return true;
-      }
-    }
-
-    // Use original price button
-    useOriginalBtn.addEventListener('click', () => {
-      if (currentPrice > 0) {
-        priceSaleInput.value = currentPrice.toFixed(2);
-        actualInput.value = currentPrice.toFixed(2);
-        discountInput.value = '0.00';
-        discountAmount.textContent = '฿0.00 off';
-        updateCalculationDisplay();
-        notify('Price set to original', true);
-      }
-    });
-
-    // Event listeners
-    productSelect.addEventListener('change', updateProductInfo);
     
-    qtyInput.addEventListener('input', () => {
-      checkStock();
-      updateCalculationDisplay();
-    });
-    
-    priceSaleInput.addEventListener('input', () => {
-      calculateDiscount();
-      // Auto-update received if not manually changed
-      if (!actualInput.dataset.manuallyEdited) {
-        actualInput.value = priceSaleInput.value;
-      }
-      updateCalculationDisplay();
-    });
-    
-    actualInput.addEventListener('input', () => {
-      actualInput.dataset.manuallyEdited = 'true';
-      updateCalculationDisplay();
-    });
-    
-    discountInput.addEventListener('input', calculatePriceFromDiscount);
+(function() {
+  'use strict';
 
-    // Form submission
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
+  // ==== DATA FROM BACKEND ====
+  const PRODUCT_PRICES = {{ product_prices_json|safe }};
+  const PRODUCT_STOCKS = {{ product_stocks_json|safe }};
+  const PRODUCT_IMAGES = {{ product_images_json|safe }};
 
-      // Validate stock
-      if (!checkStock()) {
-        const confirmSubmit = confirm(
-          `Stock is insufficient (${currentStock} available, ${qtyInput.value} requested).\n\n` +
-          'Do you want to proceed anyway? This may result in negative stock.'
-        );
-        if (!confirmSubmit) return;
-      }
+  // ==== FORM ELEMENTS ====
+  const productSelect = document.getElementById('id_product');
+  const qtyInput = document.getElementById('id_quantity');
+  const priceSaleInput = document.getElementById('id_price_at_sale');
+  const actualInput = document.getElementById('id_actual_received');
+  const discountInput = document.getElementById('id_discount_percent');
 
-      // Validate required fields
-      if (!productSelect.value) {
-        notify('Please select a product', false);
-        productSelect.focus();
-        return;
-      }
+  const prodPrice = document.getElementById('prod-price');
+  const stockDisplay = document.getElementById('stock-display');
+  const prodImage = document.getElementById('prod-image');
+  const noImage = document.getElementById('no-image');
 
-      if (!qtyInput.value || qtyInput.value <= 0) {
-        notify('Please enter a valid quantity', false);
-        qtyInput.focus();
-        return;
-      }
+  let currentPrice = 0;
+  let currentStock = 0;
 
-      if (!priceSaleInput.value || priceSaleInput.value < 0) {
-        notify('Please enter a valid sale price', false);
-        priceSaleInput.focus();
-        return;
-      }
+  // ==== UPDATE PRODUCT INFO ====
+  function updateProductInfo() {
+    const productId = productSelect.value;
 
-      // Add loading state
-      submitBtn.classList.add('btn-loading');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    if (!productId) return;
 
-      // Submit form
-      this.submit();
-    });
+    currentPrice = parseFloat(PRODUCT_PRICES[productId]) || 0;
+    currentStock = parseInt(PRODUCT_STOCKS[productId]) || 0;
 
-    // Initialize
-    updateProductInfo();
+    // Update price display
+    prodPrice.textContent = `฿${currentPrice.toFixed(2)}`;
 
-    // Auto-save to localStorage (draft feature)
-    const autoSaveKey = 'baanpaw_sale_draft';
-    
-    function saveDraft() {
-      try {
-        const draft = {
-          product: productSelect.value,
-          quantity: qtyInput.value,
-          price: priceSaleInput.value,
-          received: actualInput.value,
-          discount: discountInput.value,
-          timestamp: Date.now()
-        };
-        localStorage.setItem(autoSaveKey, JSON.stringify(draft));
-      } catch (e) {
-        console.warn('Could not save draft:', e);
-      }
+    // Update stock
+    updateStockDisplay();
+
+    // Autofill sale price
+    if (!priceSaleInput.value) {
+      priceSaleInput.value = currentPrice.toFixed(2);
     }
 
-    function loadDraft() {
-      try {
-        const draft = JSON.parse(localStorage.getItem(autoSaveKey));
-        if (draft && Date.now() - draft.timestamp < 3600000) { // 1 hour
-          const loadDraftConfirm = confirm('Found a saved draft. Do you want to restore it?');
-          if (loadDraftConfirm) {
-            if (draft.product) productSelect.value = draft.product;
-            if (draft.quantity) qtyInput.value = draft.quantity;
-            if (draft.price) priceSaleInput.value = draft.price;
-            if (draft.received) actualInput.value = draft.received;
-            if (draft.discount) discountInput.value = draft.discount;
-            updateProductInfo();
-            notify('Draft restored', true);
-          }
-        }
-      } catch (e) {
-        console.warn('Could not load draft:', e);
-      }
+    // Autofill amount received
+    if (!actualInput.value) {
+      actualInput.value = priceSaleInput.value;
     }
 
-    // Auto-save on input changes
-    [productSelect, qtyInput, priceSaleInput, actualInput, discountInput].forEach(el => {
-      el.addEventListener('input', saveDraft);
-    });
+    // Update image
+    const imgUrl = PRODUCT_IMAGES[productId];
+    if (imgUrl) {
+      prodImage.src = imgUrl;
+      prodImage.classList.remove("d-none");
+      noImage.classList.add("d-none");
+    } else {
+      prodImage.classList.add("d-none");
+      noImage.classList.remove("d-none");
+    }
 
-    // Load draft on page load
-    loadDraft();
+    updateCalculationDisplay();
+  }
 
-    // Clear draft on successful submission
-    form.addEventListener('submit', () => {
-      try {
-        localStorage.removeItem(autoSaveKey);
-      } catch (e) {}
-    });
-  })();
+  // ==== STOCK DISPLAY ====
+  function updateStockDisplay() {
+    stockDisplay.textContent = `${currentStock} units`;
+  }
+
+  // ==== UPDATE SUMMARY ====
+  function updateCalculationDisplay() {
+    const qty = parseInt(qtyInput.value) || 0;
+    const salePrice = parseFloat(priceSaleInput.value) || 0;
+    const received = parseFloat(actualInput.value) || 0;
+
+    document.getElementById("calc-original").textContent = `฿${currentPrice.toFixed(2)}`;
+    document.getElementById("calc-sale").textContent = `฿${salePrice.toFixed(2)}`;
+    document.getElementById("calc-qty").textContent = qty;
+    document.getElementById("calc-received").textContent = `฿${received.toFixed(2)}`;
+    document.getElementById("calc-total").textContent = `฿${(salePrice * qty).toFixed(2)}`;
+  }
+
+  // ==== ADD EVENT LISTENERS ====
+  productSelect.addEventListener("change", updateProductInfo);
+  qtyInput.addEventListener("input", updateCalculationDisplay);
+  priceSaleInput.addEventListener("input", updateCalculationDisplay);
+  actualInput.addEventListener("input", updateCalculationDisplay);
+
+  // Load initial
+  updateProductInfo();
+
+})();
 </script>
 
 {% endblock %}

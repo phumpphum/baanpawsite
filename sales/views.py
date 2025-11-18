@@ -286,22 +286,22 @@ def sale_create(request):
         form = SaleForm(request.POST)
         if form.is_valid():
             sale = form.save(commit=False)
-            
+
             # Set defaults
             if not sale.sold_at:
                 sale.sold_at = timezone.now()
-            
+
             if sale.discount_percent is None:
                 sale.discount_percent = Decimal('0')
-            
+
             if not sale.actual_received:
                 sale.actual_received = sale.price_at_sale
-            
+
             # Validate and update stock atomically
             try:
                 with transaction.atomic():
                     product = Product.objects.select_for_update().get(pk=sale.product_id)
-                    
+
                     if sale.quantity > (product.stock or 0):
                         form.add_error('quantity', f'สต็อกคงเหลือไม่พอ (เหลือ {product.stock})')
                     else:
@@ -318,19 +318,52 @@ def sale_create(request):
             'quantity': 1,
             'sold_at': timezone.localtime().strftime('%Y-%m-%dT%H:%M'),
         })
-    
-    # Prepare product data for JavaScript
+
+    # ✅ ส่ง dict แยก 3 ตัวให้ JS ใช้
     products = Product.objects.only('id', 'price', 'stock', 'image')
-    product_data = {
-        'prices': {p.id: float(p.price) for p in products},
-        'stocks': {p.id: int(p.stock or 0) for p in products},
-        'images': {p.id: (p.image.url if p.image else '') for p in products},
-    }
-    
+    product_prices = {p.id: float(p.price) for p in products}
+    product_stocks = {p.id: int(p.stock or 0) for p in products}
+    product_images = {p.id: (p.image.url if p.image else '') for p in products}
+
     return render(request, 'sales/sale_form.html', {
         'form': form,
-        'product_data_json': json.dumps(product_data),
+        'product_prices_json': json.dumps(product_prices),
+        'product_stocks_json': json.dumps(product_stocks),
+        'product_images_json': json.dumps(product_images),
         'action': 'create',
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def sale_edit(request, pk):
+    """Edit an existing sale."""
+    sale = get_object_or_404(Sale, pk=pk)
+
+    if request.method == 'POST':
+        form = SaleForm(request.POST, instance=sale)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'อัปเดตรายการขายเรียบร้อย')
+            return redirect('sales_history')
+    else:
+        initial = {}
+        if sale.sold_at:
+            initial['sold_at'] = timezone.localtime(sale.sold_at).strftime('%Y-%m-%dT%H:%M')
+        form = SaleForm(instance=sale, initial=initial)
+
+    # ✅ ส่ง dict แยก 3 ตัวให้ JS ใช้เหมือนหน้า create
+    products = Product.objects.only('id', 'price', 'stock', 'image')
+    product_prices = {p.id: float(p.price) for p in products}
+    product_stocks = {p.id: int(p.stock or 0) for p in products}
+    product_images = {p.id: (p.image.url if p.image else '') for p in products}
+
+    return render(request, 'sales/sale_form.html', {
+        'form': form,
+        'sale': sale,
+        'product_prices_json': json.dumps(product_prices),
+        'product_stocks_json': json.dumps(product_stocks),
+        'product_images_json': json.dumps(product_images),
+        'action': 'edit',
     })
 
 
