@@ -4,7 +4,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-change-me'
 DEBUG = True
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['baanpawsite.onrender.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -27,7 +27,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
-ROOT_URLCONF = 'shopsite.urls'
+ROOT_URLCONF = 'baanpawsite.urls'
 
 TEMPLATES = [
     {
@@ -45,7 +45,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'shopsite.wsgi.application'
+WSGI_APPLICATION = 'baanpawsite.wsgi.application'
 
 DATABASES = {
     'default': {
