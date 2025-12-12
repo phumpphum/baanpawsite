@@ -1,0 +1,779 @@
+{% extends 'base.html' %}
+{% block title %}Products - Baanpaw Shop{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<script>
+  (function() {
+    {% for m in messages %}
+    notify("{{ m|escapejs }}", "{{ m.tags }}" === "success");
+    {% endfor %}
+  })();
+</script>
+{% endif %}
+
+<style>
+  /* Product Images */
+  .product-img-grid {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .card:hover .product-img-grid {
+    transform: scale(1.05);
+  }
+
+  .product-img-list {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+  }
+
+  .product-img-compact {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+  }
+
+  /* Card Improvements */
+  .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .product-compact {
+    font-size: 0.875rem;
+  }
+
+  /* Smooth view transitions */
+  .view-mode {
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Badge improvements */
+  .badge {
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+  }
+
+  /* Search input improvements */
+  .search-wrapper {
+    position: relative;
+  }
+
+  .search-wrapper input[type="search"] {
+    padding-right: 2.5rem;
+    min-width: 250px;
+  }
+
+  .search-wrapper .search-clear {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    display: none;
+  }
+
+  .search-wrapper input[type="search"]:not(:placeholder-shown) ~ .search-clear {
+    display: block;
+  }
+
+  /* View mode buttons */
+  .view-toggle-btn {
+    transition: all 0.2s ease;
+  }
+
+  .view-toggle-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .view-toggle-btn:hover:not(.active) {
+    transform: translateY(-2px);
+  }
+
+  /* Table improvements */
+  .table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Stock badge */
+  .stock-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .stock-low {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ff9800;
+    border: 1px solid #ff9800;
+  }
+
+  .stock-out {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+    border: 1px solid #dc3545;
+  }
+
+  .stock-ok {
+    background-color: rgba(25, 135, 84, 0.15);
+    color: #198754;
+    border: 1px solid #198754;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+
+  .empty-state-icon {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+  }
+
+  /* Pagination improvements */
+  .pagination {
+    --bs-pagination-hover-bg: #e9ecef;
+  }
+
+  [data-bs-theme="dark"] .pagination {
+    --bs-pagination-hover-bg: #2a2d31;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .search-wrapper input[type="search"] {
+      min-width: 100%;
+    }
+
+    .product-img-grid {
+      height: 160px;
+    }
+
+    .action-buttons-mobile {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .action-buttons-mobile .btn {
+      width: 100%;
+    }
+  }
+
+  /* Loading skeleton (optional) */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Price display */
+  .price-display {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .cost-display {
+    font-size: 0.875rem;
+    opacity: 0.8;
+  }
+
+  /* Profit margin indicator */
+  .profit-indicator {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 3px;
+    margin-left: 0.25rem;
+  }
+
+  /* Hover effects for buttons */
+  .btn-action {
+    transition: all 0.2s ease;
+  }
+
+  .btn-action:hover {
+    transform: translateY(-2px);
+  }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h2 class="mb-1">
+      <i class="bi bi-box-seam"></i> Products
+    </h2>
+    <p class="text-secondary mb-0">
+      <span class="badge bg-secondary">{{ page_obj.paginator.count }} total</span>
+      {% if q %}
+      <span class="badge bg-info">Filtered</span>
+      {% endif %}
+    </p>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <!-- Search -->
+    <form method="get" class="search-wrapper" role="search">
+      <input type="search" 
+             name="q" 
+             value="{{ q|default:'' }}" 
+             class="form-control" 
+             placeholder="Search name / SKU / color..."
+             aria-label="Search products"
+             autocomplete="off">
+      <button type="button" class="search-clear" aria-label="Clear search">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </form>
+
+    <!-- Add Product Button -->
+    <a href="{% url 'product_create' %}" class="btn btn-primary btn-action">
+      <i class="bi bi-plus-circle"></i> Add Product
+    </a>
+
+    <!-- View Mode Toggle -->
+    <div class="btn-group" role="group" aria-label="View mode selector">
+      <button type="button" 
+              class="btn btn-outline-secondary view-toggle-btn" 
+              data-view="grid" 
+              title="Grid view"
+              aria-label="Switch to grid view">
+        <i class="bi bi-grid-3x3-gap"></i>
+      </button>
+      <button type="button" 
+              class="btn btn-outline-secondary view-toggle-btn" 
+              data-view="list" 
+              title="List view"
+              aria-label="Switch to list view">
+        <i class="bi bi-list-ul"></i>
+      </button>
+      <button type="button" 
+              class="btn btn-outline-secondary view-toggle-btn" 
+              data-view="compact" 
+              title="Compact view"
+              aria-label="Switch to compact view">
+        <i class="bi bi-grid-1x2"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Pagination Top -->
+{% if page_obj.has_other_pages %}
+<nav class="mb-3" aria-label="Product pagination">
+  <div class="d-flex flex-wrap align-items-center gap-3 justify-content-between">
+    <ul class="pagination mb-0">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page=1" aria-label="First page">
+          <i class="bi bi-chevron-double-left"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous page">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link"><i class="bi bi-chevron-double-left"></i></span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+      </li>
+      {% endif %}
+
+      <li class="page-item active">
+        <span class="page-link">
+          {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+      </li>
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next page">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Last page">
+          <i class="bi bi-chevron-double-right"></i>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+      </li>
+      <li class="page-item disabled">
+        <span class="page-link"><i class="bi bi-chevron-double-right"></i></span>
+      </li>
+      {% endif %}
+    </ul>
+
+    <div class="d-flex gap-2">
+      {% if show_all %}
+      <a href="?{% if q %}q={{ q }}{% endif %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-layout-sidebar"></i> Paginate
+      </a>
+      {% else %}
+      <a href="?{% if q %}q={{ q }}&{% endif %}all=true" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-collection"></i> Show All
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+{% if products %}
+
+<!-- Grid View -->
+<div id="view-grid" class="view-mode">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+    {% for p in products %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        {% if p.image %}
+        <img src="{{ p.image.url }}" 
+             class="card-img-top product-img-grid" 
+             alt="{{ p.name }}"
+             loading="lazy">
+        {% else %}
+        <div class="product-img-grid bg-body-secondary d-flex align-items-center justify-content-center">
+          <span class="text-secondary fs-1">
+            <i class="bi bi-image"></i>
+          </span>
+        </div>
+        {% endif %}
+        
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title mb-1" title="{{ p.name }}">
+            {{ p.name|truncatewords:5 }}
+          </h5>
+
+          <div class="small text-secondary mb-2">
+            <div><strong>SKU:</strong> {{ p.sku|default:"N/A" }}</div>
+            {% if p.colors %}
+            <div><strong>Colors:</strong> {{ p.colors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mt-auto">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="price-display text-success">฿{{ p.price|floatformat:2 }}</div>
+                <div class="cost-display text-secondary">Cost: ฿{{ p.cost|floatformat:2 }}</div>
+              </div>
+              <div class="text-end">
+                {% if p.stock == 0 %}
+                <span class="stock-badge stock-out">Out of Stock</span>
+                {% elif p.stock <= 5 %}
+                <span class="stock-badge stock-low">Low: {{ p.stock }}</span>
+                {% else %}
+                <span class="stock-badge stock-ok">{{ p.stock }} in stock</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <a href="{% url 'product_edit' p.pk %}" 
+                 class="btn btn-sm btn-outline-primary btn-action flex-fill">
+                <i class="bi bi-pencil"></i> Edit
+              </a>
+              <form method="post" 
+                    action="{% url 'product_delete' p.pk %}" 
+                    onsubmit="return confirm('Confirm delete {{ p.name|escapejs }}?');"
+                    class="flex-fill">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger btn-action w-100">
+                  <i class="bi bi-trash"></i> Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- List View -->
+<div id="view-list" class="view-mode d-none">
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width:80px">Image</th>
+            <th>Product Name</th>
+            <th>SKU</th>
+            <th>Colors</th>
+            <th class="text-end">Cost</th>
+            <th class="text-end">Price</th>
+            <th class="text-center">Stock</th>
+            <th class="text-end" style="width:140px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td>
+              {% if p.image %}
+              <img src="{{ p.image.url }}" 
+                   class="rounded product-img-list" 
+                   alt="{{ p.name }}"
+                   loading="lazy">
+              {% else %}
+              <div class="rounded bg-body-secondary d-flex align-items-center justify-content-center product-img-list">
+                <i class="bi bi-image text-secondary"></i>
+              </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="fw-semibold">{{ p.name }}</div>
+            </td>
+            <td class="text-secondary">{{ p.sku|default:"N/A" }}</td>
+            <td class="text-secondary">{{ p.colors|default:"-" }}</td>
+            <td class="text-end text-secondary">฿{{ p.cost|floatformat:2 }}</td>
+            <td class="text-end fw-semibold text-success">฿{{ p.price|floatformat:2 }}</td>
+            <td class="text-center">
+              {% if p.stock == 0 %}
+              <span class="stock-badge stock-out">0</span>
+              {% elif p.stock <= 5 %}
+              <span class="stock-badge stock-low">{{ p.stock }}</span>
+              {% else %}
+              <span class="stock-badge stock-ok">{{ p.stock }}</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="d-flex gap-1 justify-content-end">
+                <a href="{% url 'product_edit' p.pk %}" 
+                   class="btn btn-sm btn-outline-primary btn-action"
+                   title="Edit product">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="post" 
+                      action="{% url 'product_delete' p.pk %}" 
+                      onsubmit="return confirm('Confirm delete {{ p.name|escapejs }}?');">
+                  {% csrf_token %}
+                  <button type="submit" 
+                          class="btn btn-sm btn-outline-danger btn-action"
+                          title="Delete product">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Compact View -->
+<div id="view-compact" class="view-mode d-none">
+  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2">
+    {% for p in products %}
+    <div class="col">
+      <div class="card h-100 shadow-sm product-compact">
+        {% if p.image %}
+        <img src="{{ p.image.url }}" 
+             class="product-img-compact" 
+             alt="{{ p.name }}"
+             loading="lazy">
+        {% else %}
+        <div class="product-img-compact bg-body-secondary d-flex align-items-center justify-content-center">
+          <i class="bi bi-image text-secondary fs-3"></i>
+        </div>
+        {% endif %}
+        
+        <div class="p-2">
+          <div class="fw-semibold text-truncate mb-1" title="{{ p.name }}">
+            {{ p.name }}
+          </div>
+          <div class="small text-secondary text-truncate mb-1">
+            {{ p.sku|default:"No SKU" }}
+          </div>
+          
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-success">฿{{ p.price|floatformat:0 }}</span>
+            {% if p.stock == 0 %}
+            <span class="badge bg-danger">Out</span>
+            {% elif p.stock <= 5 %}
+            <span class="badge bg-warning text-dark">{{ p.stock }}</span>
+            {% else %}
+            <span class="badge bg-secondary">{{ p.stock }}</span>
+            {% endif %}
+          </div>
+
+          <div class="d-flex gap-1">
+            <a href="{% url 'product_edit' p.pk %}" 
+               class="btn btn-outline-primary btn-sm flex-fill py-1"
+               style="font-size:0.75rem">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="post" 
+                  action="{% url 'product_delete' p.pk %}" 
+                  onsubmit="return confirm('Delete {{ p.name|escapejs }}?');"
+                  class="flex-fill">
+              {% csrf_token %}
+              <button type="submit" 
+                      class="btn btn-outline-danger btn-sm w-100 py-1"
+                      style="font-size:0.75rem">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="empty-state">
+  <div class="empty-state-icon">
+    <i class="bi bi-box-seam"></i>
+  </div>
+  <h4>No products found</h4>
+  <p class="text-secondary mb-4">
+    {% if q %}
+    Try adjusting your search terms or 
+    <a href="{% url 'product_list' %}">clear filters</a>
+    {% else %}
+    Get started by adding your first product
+    {% endif %}
+  </p>
+  {% if not q %}
+  <a href="{% url 'product_create' %}" class="btn btn-primary">
+    <i class="bi bi-plus-circle"></i> Add Your First Product
+  </a>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Pagination Bottom (same as top) -->
+{% if page_obj.has_other_pages and products %}
+<nav class="mt-4" aria-label="Product pagination">
+  <ul class="pagination justify-content-center mb-0">
+    {% if page_obj.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page=1">
+        <i class="bi bi-chevron-double-left"></i>
+      </a>
+    </li>
+    <li class="page-item">
+      <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.previous_page_number }}">
+        <i class="bi bi-chevron-left"></i>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link"><i class="bi bi-chevron-double-left"></i></span>
+    </li>
+    <li class="page-item disabled">
+      <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+    </li>
+    {% endif %}
+
+    <li class="page-item active">
+      <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    </li>
+
+    {% if page_obj.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.next_page_number }}">
+        <i class="bi bi-chevron-right"></i>
+      </a>
+    </li>
+    <li class="page-item">
+      <a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
+        <i class="bi bi-chevron-double-right"></i>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+    </li>
+    <li class="page-item disabled">
+      <span class="page-link"><i class="bi bi-chevron-double-right"></i></span>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+<script>
+  (function() {
+    'use strict';
+
+    const VIEW_STORAGE_KEY = 'baanpaw_products_view';
+    
+    // View mode management
+    const viewButtons = document.querySelectorAll('[data-view]');
+    const viewModes = {
+      grid: document.getElementById('view-grid'),
+      list: document.getElementById('view-list'),
+      compact: document.getElementById('view-compact'),
+    };
+
+    function setActiveView(viewName) {
+      // Validate view name
+      if (!viewModes[viewName]) {
+        viewName = 'grid'; // fallback to grid
+      }
+
+      // Hide all views
+      Object.values(viewModes).forEach(el => {
+        if (el) el.classList.add('d-none');
+      });
+
+      // Show selected view
+      if (viewModes[viewName]) {
+        viewModes[viewName].classList.remove('d-none');
+      }
+
+      // Update button states
+      viewButtons.forEach(btn => {
+        if (btn.dataset.view === viewName) {
+          btn.classList.add('active');
+          btn.setAttribute('aria-pressed', 'true');
+        } else {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-pressed', 'false');
+        }
+      });
+
+      // Save to localStorage
+      try {
+        localStorage.setItem(VIEW_STORAGE_KEY, viewName);
+      } catch (error) {
+        console.warn('Could not save view preference:', error);
+      }
+    }
+
+    // Load saved view preference
+    let initialView = 'grid';
+    try {
+      const savedView = localStorage.getItem(VIEW_STORAGE_KEY);
+      if (savedView && viewModes[savedView]) {
+        initialView = savedView;
+      }
+    } catch (error) {
+      console.warn('Could not load view preference:', error);
+    }
+
+    // Set initial view
+    setActiveView(initialView);
+
+    // Add click handlers to view buttons
+    viewButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setActiveView(btn.dataset.view);
+      });
+    });
+
+    // Search clear button functionality
+    const searchInput = document.querySelector('input[name="q"]');
+    const clearBtn = document.querySelector('.search-clear');
+    
+    if (searchInput && clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.focus();
+        // Optionally auto-submit the form
+        // searchInput.closest('form').submit();
+      });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Alt+1 = Grid, Alt+2 = List, Alt+3 = Compact
+      if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        const viewMap = {
+          '1': 'grid',
+          '2': 'list',
+          '3': 'compact'
+        };
+        
+        if (viewMap[e.key]) {
+          e.preventDefault();
+          setActiveView(viewMap[e.key]);
+        }
+      }
+      
+      // Focus search with / key
+      if (e.key === '/' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        const activeElement = document.activeElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+          return; // Don't interfere if already in an input
+        }
+        e.preventDefault();
+        searchInput?.focus();
+      }
+    });
+
+    // Smooth scroll to top on pagination
+    const paginationLinks = document.querySelectorAll('.pagination .page-link');
+    paginationLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Add loading state to delete buttons
+    const deleteForms = document.querySelectorAll('form[action*="delete"]');
+    deleteForms.forEach(form => {
+      form.addEventListener('submit', function(e) {
+        const btn = this.querySelector('button[type="submit"]');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        }
+      });
+    });
+  })();
+</script>
+
+{% endblock %}

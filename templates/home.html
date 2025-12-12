@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <h1 class="display-4 fw-bold mb-4">Welcome to Baanpaw 🐶🐱</h1>
+    <p class="lead text-secondary mb-4">
+        Manage your products, sales, reports, and more — all in one place.
+    </p>
+
+    <div class="row g-4 mt-4">
+        <div class="col-md-4">
+            <a href="{% url 'product_list' %}" class="text-decoration-none" aria-label="Go to Products">
+                <div class="card shadow-sm p-4 h-100 border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h4 class="text-white">📦 Products</h4>
+                    <p class="text-white opacity-75">Add & manage your products</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'sales_history' %}" class="text-decoration-none" aria-label="Go to Sales History">
+                <div class="card shadow-sm p-4 h-100 border-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h4 class="text-white">🧾 Sales History</h4>
+                    <p class="text-white opacity-75">View all transaction records</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{% url 'sales_report' %}" class="text-decoration-none" aria-label="Go to Reports">
+                <div class="card shadow-sm p-4 h-100 border-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <h4 class="text-white">📊 Reports</h4>
+                    <p class="text-white opacity-75">Analytics & performance dashboard</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2) !important;
+}
+.feature-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: #667eea;
+    box-shadow: 0 0.5rem 1.5rem rgba(102, 126, 234, 0.15) !important;
+}
+</style>
+{% endblock %}
