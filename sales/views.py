@@ -230,6 +230,9 @@ def sales_history(request):
     start_str = request.GET.get('start')
     end_str = request.GET.get('end')
     
+    # ✅ เพิ่ม: search note
+    note_q = (request.GET.get('note') or '').strip()
+
     # Base queryset
     qs = Sale.objects.select_related('product').filter(
         is_deleted=False
@@ -241,6 +244,10 @@ def sales_history(request):
         qs = qs.filter(sold_at__gte=start_dt)
     if end_dt:
         qs = qs.filter(sold_at__lte=end_dt)
+
+    # ✅ เพิ่ม: note filter
+    if note_q:
+        qs = qs.filter(note__icontains=note_q)
     
     # Get calculation expressions
     commission_expr, commission_pct_expr = get_commission_expressions()
@@ -255,6 +262,12 @@ def sales_history(request):
         discounted_price=discounted_price_expr,
         profit=profit_expr,
         profit_pct=profit_pct_expr,
+    )
+
+    # ✅ เพิ่ม total_received (actual_received * quantity)
+    total_received_expr = ExpressionWrapper(
+        F('actual_received') * F('quantity'),
+        output_field=DecimalField(max_digits=12, decimal_places=2)
     )
     
     # Calculate summary statistics
@@ -277,6 +290,8 @@ def sales_history(request):
         'summary': summary,
         'start': start_str,
         'end': end_str,
+        'note': note_q,  # ✅ ส่งค่าไปเติมในช่อง search
+
     })
 
 

@@ -565,18 +565,35 @@
 <!-- Filter Card -->
 <div class="filter-card">
   <form class="row g-3" method="get" id="filterForm">
+    
     <div class="col-md-4">
       <label class="form-label">
         <i class="bi bi-calendar-event"></i> Start Date
       </label>
       <input type="date" name="start" value="{{ start|default:'' }}" class="form-control modern-input">
     </div>
+
     <div class="col-md-4">
       <label class="form-label">
         <i class="bi bi-calendar-check"></i> End Date
       </label>
       <input type="date" name="end" value="{{ end|default:'' }}" class="form-control modern-input">
     </div>
+
+      <!-- ✅ เพิ่มช่อง Search Note -->
+    <div class="col-md-4">
+      <label class="form-label">
+        <i class="bi bi-search"></i> Search Note
+      </label>
+     <input
+        type="text"
+        name="note"
+        value="{{ note|default:'' }}"
+        class="form-control modern-input"
+       placeholder="ค้นหาจาก note เช่น ลูกค้าประจำ / ส่วนลด / Shopee"
+      >
+    </div>
+  
     <div class="col-md-4 d-flex align-items-end gap-2">
       <button type="submit" class="btn btn-modern btn-primary-modern flex-grow-1">
         <i class="bi bi-funnel-fill"></i> Apply Filter
