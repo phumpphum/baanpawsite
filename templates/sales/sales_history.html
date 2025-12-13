@@ -62,6 +62,30 @@
     margin-bottom: 1.5rem;
   }
 
+  .filter-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .filter-toggle-icon {
+    transition: transform 0.3s ease;
+    border: none;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Rotate icon when not collapsed */
+  .filter-toggle-icon:not(.collapsed) {
+    transform: rotate(180deg);
+  }
+
   .filter-card .form-label {
     font-weight: 600;
     font-size: 0.85rem;
@@ -78,6 +102,7 @@
     padding: 0.625rem 1rem;
     transition: all 0.2s ease;
     background: white;
+    width: 100%;
   }
 
   .modern-input:focus {
@@ -95,6 +120,7 @@
     border: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
@@ -438,7 +464,36 @@
     backdrop-filter: blur(10px);
   }
 
-  /* Responsive */
+  /* Responsive & Animation */
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+
+  .loading {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+    background-size: 1000px 100%;
+  }
+
+  .table-responsive::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  }
+
   @media (max-width: 768px) {
     .page-header {
       padding: 1.5rem;
@@ -470,40 +525,8 @@
       height: 50px;
     }
   }
-
-  /* Loading Animation */
-  @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-  }
-
-  .loading {
-    animation: shimmer 2s infinite;
-    background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-    background-size: 1000px 100%;
-  }
-
-  /* Scrollbar Styling */
-  .table-responsive::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  .table-responsive::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-
-  .table-responsive::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-  }
-
-  .table-responsive::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  }
 </style>
 
-<!-- Page Header -->
 <div class="page-header">
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
     <div>
@@ -519,7 +542,6 @@
   </div>
 </div>
 
-<!-- Statistics Cards -->
 <div class="stats-grid">
   <div class="stat-card quantity">
     <div class="stat-icon">
@@ -562,50 +584,65 @@
   </div>
 </div>
 
-<!-- Filter Card -->
 <div class="filter-card">
-  <form class="row g-3" method="get" id="filterForm">
-    
-    <div class="col-md-4">
-      <label class="form-label">
-        <i class="bi bi-calendar-event"></i> Start Date
-      </label>
-      <input type="date" name="start" value="{{ start|default:'' }}" class="form-control modern-input">
-    </div>
+  <div class="filter-card-header" 
+       data-bs-toggle="collapse" 
+       data-bs-target="#filterCollapse" 
+       aria-expanded="{% if start or end or note %}true{% else %}false{% endif %}" 
+       aria-controls="filterCollapse">
+    <h5 class="mb-0 text-dark d-flex align-items-center">
+      <i class="bi bi-funnel me-2" style="color: #667eea;"></i> Sales Filters
+    </h5>
+    <button class="filter-toggle-icon {% if not start and not end and not note %}collapsed{% endif %}">
+      <i class="bi bi-chevron-down text-secondary"></i>
+    </button>
+  </div>
 
-    <div class="col-md-4">
-      <label class="form-label">
-        <i class="bi bi-calendar-check"></i> End Date
-      </label>
-      <input type="date" name="end" value="{{ end|default:'' }}" class="form-control modern-input">
-    </div>
+  <div class="collapse {% if start or end or note %}show{% endif %}" id="filterCollapse">
+    <div class="pt-3 border-top mt-3">
+      <form class="row g-3" method="get" id="filterForm">
+        
+        <div class="col-lg-3 col-md-6 col-12">
+          <label class="form-label">
+            <i class="bi bi-calendar-event"></i> Start Date
+          </label>
+          <input type="date" name="start" value="{{ start|default:'' }}" class="form-control modern-input">
+        </div>
 
-      <!-- ✅ เพิ่มช่อง Search Note -->
-    <div class="col-md-4">
-      <label class="form-label">
-        <i class="bi bi-search"></i> Search Note
-      </label>
-     <input
-        type="text"
-        name="note"
-        value="{{ note|default:'' }}"
-        class="form-control modern-input"
-       placeholder="ค้นหาจาก note เช่น ลูกค้าประจำ / ส่วนลด / Shopee"
-      >
+        <div class="col-lg-3 col-md-6 col-12">
+          <label class="form-label">
+            <i class="bi bi-calendar-check"></i> End Date
+          </label>
+          <input type="date" name="end" value="{{ end|default:'' }}" class="form-control modern-input">
+        </div>
+
+        <div class="col-lg-3 col-md-6 col-12">
+          <label class="form-label">
+            <i class="bi bi-search"></i> Search Note
+          </label>
+          <input
+            type="text"
+            name="note"
+            value="{{ note|default:'' }}"
+            class="form-control modern-input"
+            placeholder="ค้นหาจาก note..."
+          >
+        </div>
+      
+        <div class="col-lg-3 col-md-6 col-12 d-flex align-items-end gap-2">
+          <button type="submit" class="btn btn-modern btn-primary-modern flex-grow-1">
+            <i class="bi bi-funnel-fill"></i> Apply
+          </button>
+          <a class="btn btn-modern btn-secondary-modern" href="{% url 'sales_history' %}" title="Clear">
+            <i class="bi bi-arrow-clockwise"></i>
+          </a>
+        </div>
+
+      </form>
     </div>
-  
-    <div class="col-md-4 d-flex align-items-end gap-2">
-      <button type="submit" class="btn btn-modern btn-primary-modern flex-grow-1">
-        <i class="bi bi-funnel-fill"></i> Apply Filter
-      </button>
-      <a class="btn btn-modern btn-secondary-modern" href="{% url 'sales_history' %}">
-        <i class="bi bi-arrow-clockwise"></i>
-      </a>
-    </div>
-  </form>
+  </div>
 </div>
 
-<!-- Sales Table -->
 <div class="modern-table-wrapper">
   <div class="table-responsive">
     <table class="modern-table">
@@ -746,7 +783,6 @@
   {% endif %}
 </div>
 
-<!-- Image Modal -->
 <div class="modal fade image-modal" id="imageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content">
@@ -810,6 +846,20 @@
       const submitBtn = filterForm.querySelector('button[type="submit"]');
       submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
       submitBtn.disabled = true;
+    });
+  }
+
+  // Filter Collapse Icon Rotation
+  const filterCollapse = document.getElementById('filterCollapse');
+  if (filterCollapse) {
+    const toggleIcon = document.querySelector('.filter-toggle-icon');
+    
+    filterCollapse.addEventListener('show.bs.collapse', () => {
+      toggleIcon.classList.remove('collapsed');
+    });
+    
+    filterCollapse.addEventListener('hide.bs.collapse', () => {
+      toggleIcon.classList.add('collapsed');
     });
   }
 </script>
