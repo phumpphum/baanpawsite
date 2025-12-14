@@ -4,7 +4,6 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  /* Import monospace font for clear numeric data */
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
 
   :root {
@@ -37,7 +36,6 @@
   }
 
   /* --- PERFORMANCE OPTIMIZATION --- */
-  /* ช่วยให้ Scroll ลื่นขึ้นเมื่อมีข้อมูลเยอะๆ */
   .luxury-table tbody tr {
     content-visibility: auto; 
     contain-intrinsic-size: 80px; 
@@ -462,6 +460,7 @@
           <th class="text-end">Discount</th>
           <th class="text-end">Final</th>
           <th class="text-end">Received</th>
+          <th class="text-end">Comm.</th>
           <th class="text-end">Profit</th>
           <th class="text-center">Actions</th>
         </tr>
@@ -525,6 +524,18 @@
           <!-- Received -->
           <td class="text-end fw-bold text-dark num-font" style="font-size: 1rem;">
             {{ s.actual_received|floatformat:2 }}
+          </td>
+
+          <!-- Commission -->
+          <td class="text-end">
+            <div class="profit-wrapper">
+              <span class="text-danger num-font" style="font-size: 0.9rem;">
+                {{ s.commission|floatformat:2 }}
+              </span>
+              <span class="badge-frame warning">
+                {{ s.commission_pct|floatformat:1 }}%
+              </span>
+            </div>
           </td>
 
           <!-- Profit & Margin -->
