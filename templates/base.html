@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Baanpaw Shop - Modern inventory and sales management system">
-  <meta name="theme-color" content="#667eea">
+  <meta name="theme-color" content="#0f172a">
   <title>{% block title %}Baanpaw Shop{% endblock %}</title>
 
   <!-- Prevent theme flash -->
@@ -21,522 +21,412 @@
 
   <!-- Preconnect for performance -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
   <!-- Custom Styles -->
-  <style>
-    :root {
-      --nav-height: 64px;
-      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      --sidebar-width: 260px;
-      --transition-speed: 0.3s;
-    }
+<style>
+  :root {
+    --nav-height: 70px;
 
-    * {
-      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-    }
+    /* Luxury Palette - Light Mode */
+    --bg-body: #f9fafb;
+    --surface: #ffffff;
+    --surface-glass: rgba(255, 255, 255, 0.9);
+    
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      min-height: 100vh;
-    }
+    --primary-color: #0f172a; /* Slate 900 */
+    --primary-hover: #1e293b;
+    --accent-color: #6366f1;
 
-    [data-bs-theme="dark"] body {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    }
+    --border-color: #e5e7eb;
+    --border-hover: #d1d5db;
 
-    /* Modern Navbar */
-    .modern-navbar {
-      background: white;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      position: sticky;
-      top: 0;
-      z-index: 1040;
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --radius-full: 9999px;
 
-    [data-bs-theme="dark"] .modern-navbar {
-      background: rgba(26, 26, 46, 0.95);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    }
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    
+    /* Status Colors */
+    --success-bg: #ecfdf5; --success-text: #059669;
+    --danger-bg: #fef2f2; --danger-text: #dc2626;
+    --warning-bg: #fffbeb; --warning-text: #d97706;
+    --info-bg: #eff6ff; --info-text: #3b82f6;
+  }
 
-    .navbar-brand {
-      font-size: 1.5rem;
-      font-weight: 800;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      letter-spacing: -0.5px;
-    }
+  [data-bs-theme="dark"] {
+    /* Luxury Palette - Dark Mode */
+    --bg-body: #111827; /* Gray 900 */
+    --surface: #1f2937; /* Gray 800 */
+    --surface-glass: rgba(31, 41, 55, 0.9);
+    
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --text-tertiary: #6b7280;
 
-    .navbar-brand:hover {
-      transform: scale(1.05) rotate(-2deg);
-    }
+    --primary-color: #f3f4f6;
+    --primary-hover: #e5e7eb;
+    
+    --border-color: #374151;
+    --border-hover: #4b5563;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  }
 
-    .navbar-brand i {
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+  * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
 
-    /* Modern Nav Links */
-    .modern-nav-link {
-      position: relative;
-      padding: 0.625rem 1rem !important;
-      margin: 0 0.25rem;
-      border-radius: 10px;
-      font-weight: 500;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      color: #4a5568 !important;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-    [data-bs-theme="dark"] .modern-nav-link {
-      color: #e2e8f0 !important;
-    }
+  /* Navbar */
+  .modern-navbar {
+    background: var(--surface-glass);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 0;
+  }
 
-    .modern-nav-link:hover {
-      background: rgba(102, 126, 234, 0.1);
-      color: #667eea !important;
-      transform: translateY(-2px);
-    }
+  .navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: -0.025em;
+  }
+  
+  .navbar-brand i {
+    color: var(--text-primary);
+  }
 
-    .modern-nav-link.active {
-      background: var(--primary-gradient);
-      color: white !important;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
+  /* Nav Links */
+  .navbar-nav {
+    gap: 0.25rem;
+  }
 
-    .modern-nav-link.active i {
-      animation: pulse 2s infinite;
-    }
+  .modern-nav-link {
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+  }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
+  .modern-nav-link:hover {
+    background: var(--bg-body);
+    color: var(--text-primary) !important;
+  }
 
-    /* Clock Widget */
-    .clock-widget {
-      background: rgba(102, 126, 234, 0.1);
-      padding: 0.5rem 1.25rem;
-      border-radius: 12px;
-      font-family: 'Courier New', monospace;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #667eea;
-      min-width: 200px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-      border: 2px solid rgba(102, 126, 234, 0.2);
-    }
+  .modern-nav-link.active {
+    background: var(--text-primary);
+    color: var(--surface) !important;
+    box-shadow: var(--shadow-sm);
+  }
 
-    [data-bs-theme="dark"] .clock-widget {
-      background: rgba(102, 126, 234, 0.2);
-      color: #a5b4fc;
-      border-color: rgba(102, 126, 234, 0.3);
-    }
+  .modern-nav-link.active i {
+    color: var(--surface);
+  }
 
-    .clock-icon {
-      animation: rotate 4s linear infinite;
-    }
+  /* Clock Widget */
+  .clock-widget {
+    background: var(--bg-body);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+    font-family: 'Inter', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+  /* Theme Toggle */
+  .theme-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--bg-body);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+  }
 
-    /* Theme Toggle */
-    .theme-toggle-container {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.5rem 1rem;
-      background: rgba(102, 126, 234, 0.1);
-      border-radius: 12px;
-      border: 2px solid rgba(102, 126, 234, 0.2);
-    }
+  .theme-toggle {
+    width: 40px;
+    height: 22px;
+    appearance: none;
+    background: #cbd5e1;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.3s;
+  }
 
-    [data-bs-theme="dark"] .theme-toggle-container {
-      background: rgba(102, 126, 234, 0.2);
-      border-color: rgba(102, 126, 234, 0.3);
-    }
+  .theme-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
 
-    .theme-toggle {
-      position: relative;
-      width: 60px;
-      height: 30px;
-      background: #cbd5e0;
-      border-radius: 15px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: none;
-      padding: 0;
-    }
+  .theme-toggle:checked {
+    background: var(--text-primary);
+  }
 
-    .theme-toggle:checked {
-      background: var(--primary-gradient);
-    }
+  .theme-toggle:checked::after {
+    transform: translateX(18px);
+  }
 
-    .theme-toggle::before {
-      content: '';
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: white;
-      top: 3px;
-      left: 3px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
+  .theme-icon {
+    font-size: 1rem;
+    color: var(--text-secondary);
+  }
 
-    .theme-toggle:checked::before {
-      transform: translateX(30px);
-    }
+  /* Toggler Icon Override */
+  .navbar-toggler {
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-md);
+  }
+  
+  .navbar-toggler:focus {
+    box-shadow: none;
+    border-color: var(--text-primary);
+  }
 
-    .theme-icon {
-      font-size: 1.25rem;
-      transition: all 0.3s ease;
-      color: #667eea;
-    }
+  .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(17, 24, 39, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  }
+  
+  [data-bs-theme="dark"] .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(249, 250, 251, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  }
 
-    [data-bs-theme="dark"] .theme-icon {
-      color: #a5b4fc;
-    }
+  /* Toasts */
+  .modern-toast {
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    min-width: 300px;
+  }
 
-    .theme-toggle:checked ~ .theme-icon {
-      transform: rotate(180deg);
-    }
+  .modern-toast.success { border-left: 4px solid var(--success-text); }
+  .modern-toast.error { border-left: 4px solid var(--danger-text); }
+  .modern-toast.warning { border-left: 4px solid var(--warning-text); }
+  .modern-toast.info { border-left: 4px solid var(--info-text); }
 
-    /* Main Content */
-    main {
-      min-height: calc(100vh - var(--nav-height) - 2rem);
-      padding-top: 1.5rem;
-      padding-bottom: 3rem;
-      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
+  .toast-icon {
+    font-size: 1.25rem;
+    margin-right: 0.75rem;
+  }
+  
+  .modern-toast.success .toast-icon { color: var(--success-text); }
+  .modern-toast.error .toast-icon { color: var(--danger-text); }
+  .modern-toast.warning .toast-icon { color: var(--warning-text); }
+  .modern-toast.info .toast-icon { color: var(--info-text); }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+  .toast-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+  .toast-message { font-size: 0.85rem; color: var(--text-secondary); }
 
-    /* Enhanced Toast System */
-    .modern-toast {
-      min-width: 320px;
-      border-radius: 12px;
-      border: none;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-      backdrop-filter: blur(10px);
-      overflow: hidden;
-    }
+  /* Main Content */
+  main {
+    flex: 1;
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
 
-    .modern-toast::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: currentColor;
-    }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-    .modern-toast.success {
-      background: linear-gradient(135deg, rgba(17, 153, 142, 0.95) 0%, rgba(56, 239, 125, 0.95) 100%);
-      color: white;
-    }
-
-    .modern-toast.error {
-      background: linear-gradient(135deg, rgba(235, 51, 73, 0.95) 0%, rgba(244, 92, 67, 0.95) 100%);
-      color: white;
-    }
-
-    .modern-toast.warning {
-      background: linear-gradient(135deg, rgba(240, 147, 251, 0.95) 0%, rgba(245, 87, 108, 0.95) 100%);
-      color: white;
-    }
-
-    .modern-toast.info {
-      background: linear-gradient(135deg, rgba(79, 172, 254, 0.95) 0%, rgba(0, 242, 254, 0.95) 100%);
-      color: white;
-    }
-
-    .toast-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.2);
-      font-size: 1.25rem;
-    }
-
-    .toast-content {
-      flex: 1;
-      padding: 0 1rem;
-    }
-
-    .toast-title {
-      font-weight: 700;
-      font-size: 0.95rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .toast-message {
-      font-size: 0.85rem;
-      opacity: 0.95;
-    }
-
-    /* Navbar Toggler */
-    .navbar-toggler {
-      border: none;
-      padding: 0.5rem;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .navbar-toggler:hover {
-      background: rgba(102, 126, 234, 0.1);
-    }
-
-    .navbar-toggler:focus {
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-    }
-
-    .navbar-toggler-icon {
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23667eea' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-    }
-
-    /* Loading State */
-    .page-loading {
-      opacity: 0.6;
-      pointer-events: none;
-      filter: blur(2px);
-    }
-
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--primary-gradient);
-      border-radius: 5px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-    }
-
-    [data-bs-theme="dark"] ::-webkit-scrollbar-track {
-      background: #1a1a2e;
-    }
-
-    /* Mobile Optimizations */
-    @media (max-width: 991.98px) {
-      .modern-navbar {
-        padding: 0.75rem 0;
-      }
-
-      .modern-nav-link {
-        margin: 0.25rem 0;
-      }
-
-      .clock-widget,
-      .theme-toggle-container {
-        margin-top: 1rem;
-        justify-content: center;
-      }
-
-      .navbar-nav {
-        padding-top: 1rem;
-        gap: 0.25rem;
-      }
-
-      main {
-        padding-top: 1rem;
-      }
-    }
-
-    /* Accessibility */
-    .visually-hidden-focusable:not(:focus):not(:focus-within) {
-      position: absolute !important;
-      width: 1px !important;
-      height: 1px !important;
-      padding: 0 !important;
-      margin: -1px !important;
-      overflow: hidden !important;
-      clip: rect(0, 0, 0, 0) !important;
-      white-space: nowrap !important;
-      border: 0 !important;
-    }
-
-    /* Reduced Motion */
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-  </style>
+  /* Mobile */
+  @media (max-width: 991.98px) {
+    .navbar-nav { padding-top: 1rem; }
+    .modern-nav-link { width: 100%; margin-bottom: 0.25rem; }
+    .clock-widget, .theme-toggle-container { margin-top: 1rem; width: 100%; justify-content: center; }
+  }
+</style>
 
   {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <!-- Skip to main content for accessibility -->
+  <!-- Skip to main content -->
   <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
 
-  <!-- Modern Navigation -->
-  <nav class="navbar navbar-expand-lg modern-navbar" role="navigation" aria-label="Main navigation">
-    <div class="container-fluid px-3 px-lg-4">
-      <a class="navbar-brand" href="{% url 'home' %}" aria-label="Baanpaw Home">
-        <i class="bi bi-shop"></i> Baanpaw
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg modern-navbar">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand" href="{% url 'home' %}">
+        <i class="bi bi-box-seam-fill"></i> Baanpaw
       </a>
 
-      <button class="navbar-toggler" 
-              type="button" 
-              data-bs-toggle="collapse" 
-              data-bs-target="#navbarMain" 
-              aria-controls="navbarMain" 
-              aria-expanded="false" 
-              aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div id="navbarMain" class="collapse navbar-collapse">
+      <div class="collapse navbar-collapse" id="navbarMain">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
-               href="{% url 'home' %}"
-               aria-current="{% if request.resolver_match.url_name == 'home' %}page{% endif %}">
-              <i class="bi bi-house-door-fill"></i> Dashboard
+            <a class="modern-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+              <i class="bi bi-grid"></i> Dashboard
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" 
-               href="{% url 'product_list' %}"
-               aria-current="{% if request.resolver_match.url_name == 'product_list' %}page{% endif %}">
-              <i class="bi bi-grid-3x3-gap-fill"></i> Products
+            <a class="modern-nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'product_list' %}">
+              <i class="bi bi-box"></i> Products
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'product_create' %}active{% endif %}" 
-               href="{% url 'product_create' %}"
-               aria-current="{% if request.resolver_match.url_name == 'product_create' %}page{% endif %}">
-              <i class="bi bi-plus-circle-fill"></i> Add Product
+            <a class="modern-nav-link {% if request.resolver_match.url_name == 'product_create' %}active{% endif %}" href="{% url 'product_create' %}">
+              <i class="bi bi-plus-circle"></i> Add
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}" 
-               href="{% url 'sale_create' %}"
-               aria-current="{% if request.resolver_match.url_name == 'sale_create' %}page{% endif %}">
-              <i class="bi bi-cart-plus-fill"></i> New Sale
+            <a class="modern-nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}" href="{% url 'sale_create' %}">
+              <i class="bi bi-cart"></i> Sale
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'sales_history' %}active{% endif %}" 
-               href="{% url 'sales_history' %}"
-               aria-current="{% if request.resolver_match.url_name == 'sales_history' %}page{% endif %}">
+            <a class="modern-nav-link {% if request.resolver_match.url_name == 'sales_history' %}active{% endif %}" href="{% url 'sales_history' %}">
               <i class="bi bi-clock-history"></i> History
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link modern-nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}" 
-               href="{% url 'sales_report' %}"
-               aria-current="{% if request.resolver_match.url_name == 'sales_report' %}page{% endif %}">
-              <i class="bi bi-graph-up-arrow"></i> Reports
+            <a class="modern-nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}" href="{% url 'sales_report' %}">
+              <i class="bi bi-graph-up"></i> Reports
             </a>
           </li>
         </ul>
 
-        <!-- Clock Widget -->
-        <div class="clock-widget me-3" role="status" aria-live="off" aria-atomic="true">
-          <i class="bi bi-clock clock-icon"></i>
-          <span id="clock">{% now "d/m/Y H:i:s" %} น.</span>
-        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <!-- Clock -->
+          <div class="clock-widget">
+            <i class="bi bi-clock"></i>
+            <span id="clock">--:--</span>
+          </div>
 
-        <!-- Theme Toggle -->
-        <div class="theme-toggle-container">
-          <i class="bi bi-sun-fill theme-icon" id="themeIcon"></i>
-          <input type="checkbox" 
-                 class="theme-toggle" 
-                 id="themeToggler"
-                 role="switch"
-                 aria-label="Toggle dark mode"
-                 aria-checked="false">
+          <!-- Theme Toggle -->
+          <div class="theme-toggle-container">
+            <i class="bi bi-sun-fill theme-icon"></i>
+            <input type="checkbox" class="theme-toggle" id="themeToggler" aria-label="Toggle dark mode">
+            <i class="bi bi-moon-fill theme-icon"></i>
+          </div>
         </div>
       </div>
     </div>
   </nav>
 
   <!-- Main Content -->
-  <main class="container-fluid px-3 px-lg-4" id="main-content" role="main">
+  <main class="container-fluid px-4" id="main-content">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Toast Notification Container -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090" aria-live="polite" aria-atomic="true">
-    <div id="toast" class="toast modern-toast" role="alert">
-      <div class="d-flex align-items-center p-3">
-        <div class="toast-icon" id="toastIcon">
-          <i class="bi bi-check-circle-fill"></i>
-        </div>
-        <div class="toast-content">
-          <div class="toast-title" id="toastTitle">Success</div>
+  <!-- Toast Notification -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast modern-toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex p-3 align-items-start">
+        <div class="toast-icon" id="toastIcon"></div>
+        <div class="w-100">
+          <div class="d-flex justify-content-between">
+            <div class="toast-title" id="toastTitle">Notification</div>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
           <div class="toast-message" id="toastMessage"></div>
         </div>
-        <button type="button" 
-                class="btn-close btn-close-white ms-2" 
-                data-bs-dismiss="toast" 
-                aria-label="Close"></button>
       </div>
     </div>
   </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+          xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
           crossorigin="anonymous"></script>
 
   <script>
     'use strict';
 
-    // Constants
+    // Theme Management
     const THEME_KEY = 'baanpaw-theme';
-    const TOAST_DURATION = 4000;
+    const toggler = document.getElementById('themeToggler');
+    
+    function initTheme() {
+      const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+      const isDark = savedTheme === 'dark';
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      if (toggler) toggler.checked = isDark;
+    }
 
-    // Enhanced Toast System
+    if (toggler) {
+      toggler.addEventListener('change', function() {
+        const theme = this.checked ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem(THEME_KEY, theme);
+      });
+    }
+    initTheme();
+
+    // Clock
+    function updateClock() {
+      const el = document.getElementById('clock');
+      if (el) {
+        const now = new Date();
+        el.textContent = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Toast System
     window.notify = function(message, type = 'success', title = null) {
-      if (!message) return;
-      
       const toastEl = document.getElementById('toast');
       const toastIcon = document.getElementById('toastIcon');
       const toastTitle = document.getElementById('toastTitle');
@@ -544,232 +434,32 @@
       
       if (!toastEl) return;
 
-      // Configuration for different types
-      const config = {
-        success: {
-          title: title || 'Success',
-          icon: 'bi-check-circle-fill',
-          class: 'success'
-        },
-        error: {
-          title: title || 'Error',
-          icon: 'bi-x-circle-fill',
-          class: 'error'
-        },
-        warning: {
-          title: title || 'Warning',
-          icon: 'bi-exclamation-triangle-fill',
-          class: 'warning'
-        },
-        info: {
-          title: title || 'Info',
-          icon: 'bi-info-circle-fill',
-          class: 'info'
-        }
+      // Reset classes
+      toastEl.className = `toast modern-toast ${type}`;
+      
+      // Icons
+      const icons = {
+        success: '<i class="bi bi-check-circle-fill"></i>',
+        error: '<i class="bi bi-x-circle-fill"></i>',
+        warning: '<i class="bi bi-exclamation-triangle-fill"></i>',
+        info: '<i class="bi bi-info-circle-fill"></i>'
+      };
+      
+      // Defaults
+      const titles = {
+        success: 'Success',
+        error: 'Error',
+        warning: 'Warning',
+        info: 'Information'
       };
 
-      const settings = config[type] || config.success;
-
-      // Update toast
-      toastEl.className = `toast modern-toast ${settings.class}`;
-      toastIcon.innerHTML = `<i class="bi ${settings.icon}"></i>`;
-      toastTitle.textContent = settings.title;
+      toastIcon.innerHTML = icons[type] || icons.success;
+      toastTitle.textContent = title || titles[type];
       toastMessage.textContent = message;
 
-      // Show toast
-      const toast = new bootstrap.Toast(toastEl, {
-        autohide: true,
-        delay: TOAST_DURATION
-      });
+      const toast = new bootstrap.Toast(toastEl);
       toast.show();
-
-      // Add entrance animation
-      toastEl.style.animation = 'slideInRight 0.3s ease';
     };
-
-    // Theme Management
-    (function initTheme() {
-      const toggler = document.getElementById('themeToggler');
-      const themeIcon = document.getElementById('themeIcon');
-      
-      if (!toggler || !themeIcon) return;
-
-      // Load saved theme
-      try {
-        const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
-        const isDark = savedTheme === 'dark';
-        toggler.checked = isDark;
-        toggler.setAttribute('aria-checked', isDark);
-        updateTheme(isDark);
-      } catch (error) {
-        console.warn('Theme preference not available:', error);
-      }
-
-      // Handle theme changes
-      toggler.addEventListener('change', function() {
-        const isDark = this.checked;
-        this.setAttribute('aria-checked', isDark);
-        updateTheme(isDark);
-        
-        // Save preference
-        try {
-          localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
-        } catch (error) {
-          console.warn('Could not save theme preference:', error);
-        }
-
-        // Show notification
-        notify(`Switched to ${isDark ? 'dark' : 'light'} mode`, 'info', 'Theme Changed');
-      });
-
-      function updateTheme(isDark) {
-        const theme = isDark ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-bs-theme', theme);
-        themeIcon.className = isDark ? 'bi bi-moon-stars-fill theme-icon' : 'bi bi-sun-fill theme-icon';
-      }
-    })();
-
-    // Real-time Clock
-    (function initClock() {
-      const clockEl = document.getElementById('clock');
-      if (!clockEl) return;
-
-      let clockInterval;
-      let isPageVisible = true;
-
-      function updateClock() {
-        try {
-          const formatter = new Intl.DateTimeFormat('th-TH', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false,
-            timeZone: 'Asia/Bangkok'
-          });
-          
-          clockEl.textContent = formatter.format(new Date()) + ' น.';
-        } catch (error) {
-          // Fallback
-          const now = new Date();
-          const pad = n => String(n).padStart(2, '0');
-          clockEl.textContent = 
-            `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ` +
-            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} น.`;
-        }
-      }
-
-      // Start clock
-      function startClock() {
-        updateClock();
-        clockInterval = setInterval(updateClock, 1000);
-      }
-
-      // Stop clock
-      function stopClock() {
-        if (clockInterval) {
-          clearInterval(clockInterval);
-          clockInterval = null;
-        }
-      }
-
-      // Initial start
-      startClock();
-
-      // Pause when page hidden (performance optimization)
-      document.addEventListener('visibilitychange', () => {
-        isPageVisible = !document.hidden;
-        if (isPageVisible) {
-          startClock();
-        } else {
-          stopClock();
-        }
-      });
-
-      // Cleanup
-      window.addEventListener('beforeunload', stopClock);
-    })();
-
-    // Enhanced Form Handling
-    document.addEventListener('submit', function(e) {
-      const form = e.target;
-      
-      // Confirmation
-      if (form.hasAttribute('data-confirm')) {
-        const message = form.getAttribute('data-confirm');
-        if (!confirm(message)) {
-          e.preventDefault();
-          return;
-        }
-      }
-
-      // Loading state
-      const submitBtn = form.querySelector('button[type="submit"]');
-      if (submitBtn && !form.hasAttribute('data-no-loading')) {
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
-        submitBtn.disabled = true;
-
-        // Restore if form validation fails
-        setTimeout(() => {
-          if (form.checkValidity && !form.checkValidity()) {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-          }
-        }, 100);
-      }
-    });
-
-    // Page transition effects
-    window.addEventListener('beforeunload', function() {
-      document.querySelector('main')?.classList.add('page-loading');
-    });
-
-    // Announce page changes for accessibility
-    (function announcePageChange() {
-      const pageTitle = document.title;
-      const announcement = document.createElement('div');
-      announcement.setAttribute('role', 'status');
-      announcement.setAttribute('aria-live', 'polite');
-      announcement.className = 'visually-hidden';
-      announcement.textContent = `Page loaded: ${pageTitle}`;
-      document.body.appendChild(announcement);
-      
-      setTimeout(() => announcement.remove(), 2000);
-    })();
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-      // Alt + T: Toggle theme
-      if (e.altKey && e.key === 't') {
-        e.preventDefault();
-        document.getElementById('themeToggler')?.click();
-      }
-      
-      // Alt + H: Go home
-      if (e.altKey && e.key === 'h') {
-        e.preventDefault();
-        window.location.href = "{% url 'home' %}";
-      }
-    });
-
-    // Add animation styles
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideInRight {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-    `;
-    document.head.appendChild(style);
   </script>
 
   {% block extra_scripts %}{% endblock %}

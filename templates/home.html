@@ -1,60 +1,180 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Home - Baanpaw Shop{% endblock %}
 
 {% block content %}
-<div class="container py-5 text-center">
-    <h1 class="display-4 fw-bold mb-4">Welcome to Baanpaw 🐶🐱</h1>
-    <p class="lead text-secondary mb-4">
-        Manage your products, sales, reports, and more — all in one place.
-    </p>
-
-    <div class="row g-4 mt-4">
-        <div class="col-md-4">
-            <a href="{% url 'product_list' %}" class="text-decoration-none" aria-label="Go to Products">
-                <div class="card shadow-sm p-4 h-100 border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <h4 class="text-white">📦 Products</h4>
-                    <p class="text-white opacity-75">Add & manage your products</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-4">
-            <a href="{% url 'sales_history' %}" class="text-decoration-none" aria-label="Go to Sales History">
-                <div class="card shadow-sm p-4 h-100 border-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <h4 class="text-white">🧾 Sales History</h4>
-                    <p class="text-white opacity-75">View all transaction records</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-4">
-            <a href="{% url 'sales_report' %}" class="text-decoration-none" aria-label="Go to Reports">
-                <div class="card shadow-sm p-4 h-100 border-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                    <h4 class="text-white">📊 Reports</h4>
-                    <p class="text-white opacity-75">Analytics & performance dashboard</p>
-                </div>
-            </a>
-        </div>
-    </div>
-</div>
 
 <style>
-.card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2) !important;
-}
-.feature-card {
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-}
-.feature-card:hover {
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    /* Luxury Palette */
+    --bg-body: #f9fafb;
+    --surface: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    
+    --primary-color: #0f172a; /* Slate 900 */
+    
+    --border-color: #e5e7eb;
+    --radius-lg: 16px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  }
+
+  body {
+    background-color: var(--bg-body) !important;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+  }
+
+  /* Hero Section */
+  .hero-section {
+    text-align: center;
+    padding: 4rem 1rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Menu Cards */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 0 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .menu-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .menu-card:hover {
     transform: translateY(-5px);
-    border-color: #667eea;
-    box-shadow: 0 0.5rem 1.5rem rgba(102, 126, 234, 0.15) !important;
-}
+    box-shadow: var(--shadow-lg);
+    border-color: #d1d5db;
+  }
+
+  /* Icons with soft background */
+  .icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .menu-card:hover .icon-wrapper {
+    transform: scale(1.1) rotate(3deg);
+  }
+
+  /* Card Content */
+  .card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Specific Colors (Subtle Pastels) */
+  .card-products .icon-wrapper { background-color: #eff6ff; color: #3b82f6; } /* Blue */
+  .card-sales .icon-wrapper { background-color: #fdf2f8; color: #ec4899; }    /* Pink */
+  .card-reports .icon-wrapper { background-color: #f0f9ff; color: #0ea5e9; }  /* Cyan */
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero-title { font-size: 2rem; }
+    .menu-grid { grid-template-columns: 1fr; }
+    .menu-card { padding: 2rem 1.5rem; }
+  }
 </style>
+
+<div class="container py-5">
+  <div class="hero-section">
+    <h1 class="hero-title">Welcome to Baanpaw</h1>
+    <p class="hero-subtitle">
+      Streamline your shop management. Track products, record sales, and analyze performance in one elegant dashboard.
+    </p>
+  </div>
+
+  <div class="menu-grid">
+    <!-- Products Card -->
+    <a href="{% url 'product_list' %}" class="menu-card card-products">
+      <div class="icon-wrapper">
+        <i class="bi bi-box-seam"></i>
+      </div>
+      <h3 class="card-title">Products</h3>
+      <p class="card-desc">Manage inventory, update stock levels, and organize your catalog.</p>
+    </a>
+
+    <!-- Sales History Card -->
+    <a href="{% url 'sales_history' %}" class="menu-card card-sales">
+      <div class="icon-wrapper">
+        <i class="bi bi-receipt"></i>
+      </div>
+      <h3 class="card-title">Sales History</h3>
+      <p class="card-desc">View transaction logs, track daily sales, and monitor revenue.</p>
+    </a>
+
+    <!-- Reports Card -->
+    <a href="{% url 'sales_report' %}" class="menu-card card-reports">
+      <div class="icon-wrapper">
+        <i class="bi bi-graph-up-arrow"></i>
+      </div>
+      <h3 class="card-title">Reports</h3>
+      <p class="card-desc">Analyze business performance with visual charts and statistics.</p>
+    </a>
+  </div>
+</div>
+
 {% endblock %}

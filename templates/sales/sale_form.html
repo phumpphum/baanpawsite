@@ -4,583 +4,470 @@
 {% block content %}
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
   :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    --bg-pattern: #f8f9fa;
-    --card-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-    --card-hover-shadow: 0 30px 80px rgba(0, 0, 0, 0.12);
+    /* Luxury Palette (Consistent with Product Form) */
+    --bg-body: #f9fafb;
+    --surface: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    
+    --primary-color: #0f172a; /* Slate 900 */
+    --primary-hover: #1e293b;
+    
+    --border-color: #e5e7eb;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    
+    --success-text: #059669;
+    --success-bg: #ecfdf5;
+    --warning-text: #d97706;
+    --warning-bg: #fffbeb;
+    --danger-text: #dc2626;
+    --danger-bg: #fef2f2;
   }
 
   body {
-    background: var(--bg-pattern);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-
-  /* Animated Background */
-  .page-wrapper {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .page-wrapper::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(102, 126, 234, 0.03) 0%, transparent 70%);
-    animation: rotate 30s linear infinite;
-    pointer-events: none;
-  }
-
-  @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    background-color: var(--bg-body) !important;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
   }
 
   /* Header */
   .page-header {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    position: relative;
-    overflow: hidden;
+    background: transparent;
+    padding: 1.5rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
   }
 
-  .page-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 5px;
-    height: 100%;
-    background: var(--primary-gradient);
+  .page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    margin: 0;
   }
 
-  .page-title {
-    font-size: 2rem;
-    font-weight: 800;
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 0.5rem;
+  .page-header .subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
   }
 
   /* Cards */
-  .modern-card {
-    background: white;
-    border-radius: 24px;
-    box-shadow: var(--card-shadow);
-    border: none;
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  .luxury-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
   }
 
-  .modern-card:hover {
-    box-shadow: var(--card-hover-shadow);
-    transform: translateY(-4px);
-  }
-
-  .card-header-custom {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    padding: 1.5rem;
-    border-bottom: 2px solid #e9ecef;
-  }
-
-  .card-header-custom h5 {
-    margin: 0;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .card-header-custom h5 i {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--primary-gradient);
-    color: white;
-    border-radius: 12px;
-    font-size: 1.1rem;
-  }
-
-  /* Image Preview */
-  .image-preview-container {
-    background: linear-gradient(145deg, #f8f9fa, #ffffff);
-    border-radius: 20px;
-    border: 3px dashed #dee2e6;
-    height: 280px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.4s ease;
-  }
-
-  .image-preview-container:hover {
-    border-color: #667eea;
-    background: linear-gradient(145deg, #ffffff, #f0f4ff);
-    transform: scale(1.02);
-  }
-
-  .image-preview-container img {
-    max-height: 100%;
-    max-width: 100%;
-    object-fit: contain;
-    transition: transform 0.4s ease;
-    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.1));
-  }
-
-  .image-preview-container:hover img {
-    transform: scale(1.08);
-  }
-
-  .no-image-icon {
-    font-size: 4rem;
-    color: #cbd5e1;
-    opacity: 0.4;
-  }
-
-  /* Form Elements */
-  .form-label {
+  .card-section-title {
+    font-size: 1rem;
     font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Forms */
+  .form-label {
     font-size: 0.875rem;
-    color: #495057;
-    margin-bottom: 0.625rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
   }
 
-  .form-control, .form-select {
-    border-radius: 12px;
-    border: 2px solid #e9ecef;
-    padding: 0.75rem 1rem;
-    transition: all 0.3s ease;
+  .form-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.35rem;
+  }
+
+  .luxury-input, .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
     font-size: 0.95rem;
+    color: var(--text-primary);
+    background-color: var(--surface);
+    transition: all 0.2s;
+    width: 100%;
   }
 
-  .form-control:focus, .form-select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  .luxury-input:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
     outline: none;
   }
 
-  .input-group {
-    border-radius: 12px;
+  /* Input Groups */
+  .luxury-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     overflow: hidden;
+    transition: all 0.2s;
+    background: var(--surface);
   }
 
-  .input-group-text {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 2px solid #e9ecef;
-    border-right: none;
-    color: #6c757d;
-    font-weight: 600;
+  .luxury-input-group:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
   }
 
-  .input-group .form-control {
-    border-left: none;
+  .luxury-input-group .input-group-text {
+    background: #f9fafb;
+    border: none;
+    border-right: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9rem;
+    font-weight: 500;
   }
 
-  /* Stock Badge */
-  .stock-badge {
-    font-size: 0.8rem;
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-weight: 700;
+  .luxury-input-group input {
+    border: none;
+    box-shadow: none;
+    padding: 0.625rem 1rem;
+    width: 100%;
+    outline: none;
+    color: var(--text-primary);
+  }
+
+  /* Buttons */
+  .btn-luxury {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    animation: fadeIn 0.4s ease;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+    width: 100%;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
+  .btn-primary-luxury {
+    background-color: var(--primary-color);
+    color: white;
   }
 
-  .badge-success-soft { 
-    background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-    color: #155724;
-    box-shadow: 0 4px 15px rgba(150, 230, 161, 0.3);
+  .btn-primary-luxury:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    color: white;
   }
 
-  .badge-warning-soft { 
-    background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
-    color: #856404;
-    box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3);
+  .btn-secondary-luxury {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
   }
 
-  .badge-danger-soft { 
-    background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%);
-    color: #721c24;
-    box-shadow: 0 4px 15px rgba(255, 118, 117, 0.3);
+  .btn-secondary-luxury:hover {
+    background-color: #f9fafb;
+    border-color: #d1d5db;
+    color: var(--text-primary);
   }
 
-  /* Summary Card */
-  .summary-card {
-    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-    position: sticky;
-    top: 20px;
+  .btn-reset {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .btn-reset:hover { color: var(--primary-color); }
+
+  /* Product Meta */
+  .product-meta {
+    background: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
+  .stock-badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .stock-in { background: var(--success-bg); color: var(--success-text); }
+  .stock-low { background: var(--warning-bg); color: var(--warning-text); }
+  .stock-out { background: var(--danger-bg); color: var(--danger-text); }
+
+  /* Image Preview */
+  .preview-box {
+    background: #f9fafb;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .preview-box img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  .no-image-placeholder {
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+
+  /* Summary Section */
   .summary-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid #f1f3f5;
-    font-size: 0.95rem;
-    color: #6c757d;
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-secondary);
   }
 
-  .summary-row:last-child {
-    border-bottom: none;
-  }
+  .summary-row:last-of-type { border-bottom: none; }
 
   .summary-value {
-    font-weight: 700;
-    color: #212529;
-    font-family: 'Courier New', monospace;
-    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'Inter', monospace;
   }
 
-  /* Total Section */
   .total-section {
-    background: var(--primary-gradient);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-top: 1.5rem;
+    background: var(--primary-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    color: white;
     text-align: center;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-  }
-
-  .total-section::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    animation: shimmer 3s linear infinite;
-  }
-
-  @keyframes shimmer {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    margin-top: 1.5rem;
   }
 
   .total-label {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-    position: relative;
-    z-index: 1;
+    opacity: 0.8;
+    letter-spacing: 0.05em;
+    font-weight: 500;
   }
 
   .total-amount {
-    font-size: 2.75rem;
-    font-weight: 900;
-    color: white;
-    line-height: 1;
-    margin: 0.75rem 0;
-    position: relative;
-    z-index: 1;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  }
-
-  /* Buttons */
-  .btn-primary-custom {
-    background: var(--primary-gradient);
-    border: none;
-    color: white;
-    padding: 1rem 2rem;
-    font-weight: 700;
-    border-radius: 14px;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-  }
-
-  .btn-primary-custom:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  }
-
-  .btn-secondary-custom {
-    background: white;
-    border: 2px solid #e9ecef;
-    color: #6c757d;
-    padding: 1rem 2rem;
+    font-size: 2rem;
     font-weight: 600;
-    border-radius: 14px;
-    transition: all 0.3s ease;
+    margin: 0.5rem 0;
+    letter-spacing: -0.025em;
   }
 
-  .btn-secondary-custom:hover {
-    background: #f8f9fa;
-    border-color: #dee2e6;
-    transform: translateY(-2px);
-  }
-
-  .quick-action-btn {
-    font-size: 0.8rem;
-    color: #667eea;
-    text-decoration: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s ease;
-  }
-
-  .quick-action-btn:hover {
-    color: #764ba2;
-    text-decoration: none;
-  }
-
-  /* Product Meta Info */
-  .product-meta-info {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 12px;
-    padding: 1rem;
-    margin-top: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  #prod-price-badge {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #667eea;
-    font-family: 'Courier New', monospace;
-  }
-
-  /* Discount Info */
-  #discount-amount {
-    background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    font-weight: 700;
-    color: #155724;
-    font-size: 0.9rem;
-    display: inline-block;
-    margin-top: 0.5rem;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  #discount-amount:empty {
-    display: none;
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-  }
-
-  .small.text-muted {
-    color: rgba(255, 255, 255, 0.8) !important;
-    position: relative;
-    z-index: 1;
-  }
-
-  #calc-received {
-    font-weight: 700;
-    color: white;
-    font-size: 1.1rem;
+  .received-display {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
   }
 
   /* Responsive */
   @media (max-width: 992px) {
-    .summary-card {
-      position: static;
-      margin-top: 2rem;
-    }
-
-    .page-title {
-      font-size: 1.5rem;
-    }
-
-    .total-amount {
-      font-size: 2rem;
-    }
-
-    .modern-card:hover {
-      transform: none;
-    }
+    .page-header h1 { font-size: 1.5rem; }
   }
 </style>
 
-    {% if form.errors %}
-    <div class="alert alert-danger shadow-sm border-0 border-start border-4 border-danger rounded-3 mb-4">
-      <h6 class="alert-heading fw-bold"><i class="bi bi-exclamation-circle-fill"></i> Please check the form</h6>
-      <ul class="mb-0 small">
-        {% for field, errors in form.errors.items %}
-          <li><strong>{{ field|capfirst }}:</strong> {{ errors|striptags }}</li>
-        {% endfor %}
-        {% for e in form.non_field_errors %}
-          <li>{{ e }}</li>
-        {% endfor %}
-      </ul>
+<div class="container py-4">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h1>Record New Sale</h1>
+        <p class="subtitle mb-0">Create a new transaction record</p>
+      </div>
+      <a href="{% url 'sales_history' %}" class="btn-luxury btn-secondary-luxury" style="width: auto;">
+        <i class="bi bi-arrow-left"></i> History
+      </a>
     </div>
-    {% endif %}
+  </div>
 
-    <form method="post" id="saleForm" novalidate>
-      {% csrf_token %}
-      
-      <div class="row g-4">
-        <div class="col-lg-8">
-          <div class="modern-card">
-            <div class="card-header-custom">
-              <h5><i class="bi bi-bag-plus"></i> Product Details</h5>
+  <form method="post" id="saleForm" novalidate>
+    {% csrf_token %}
+    
+    <div class="row g-4">
+      <!-- Main Form Column -->
+      <div class="col-lg-8">
+        <div class="luxury-card">
+          <div class="card-section-title">
+            <i class="bi bi-cart"></i> Product Details
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Select Product <span class="text-danger">*</span></label>
+            {{ form.product }}
+            <!-- Meta Info Display -->
+            <div class="product-meta" id="product-meta-info">
+              <div class="small text-secondary">
+                Standard Price: <span id="prod-price-badge" class="fw-semibold text-primary ms-1">-</span>
+              </div>
+              <div id="stock-display"></div>
             </div>
-            <div class="p-4">
-              
-              <div class="mb-4">
-                <label class="form-label">Select Product <span class="text-danger">*</span></label>
-                {{ form.product }}
-                <div class="product-meta-info" id="product-meta-info">
-                  <small class="text-muted">Standard Price: <span id="prod-price-badge">-</span></small>
-                  <div id="stock-display"></div>
-                </div>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Quantity <span class="text-danger">*</span></label>
+              <div class="luxury-input-group">
+                <span class="input-group-text"><i class="bi bi-x"></i></span>
+                {{ form.quantity }}
               </div>
+            </div>
 
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-hash"></i></span>
-                    {{ form.quantity }}
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label d-flex justify-content-between">
-                    <span>Sale Price (Unit) <span class="text-danger">*</span></span>
-                    <span class="quick-action-btn" id="use-original-price">
-                      <i class="bi bi-arrow-clockwise"></i> Reset to Standard
-                    </span>
-                  </label>
-                  <div class="input-group">
-                    <span class="input-group-text">฿</span>
-                    {{ form.price_at_sale }}
-                  </div>
-                </div>
+            <div class="col-md-6">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Sale Price (Unit)</label>
+                <button type="button" class="btn-reset" id="use-original-price">
+                  Reset to Standard
+                </button>
               </div>
-
-              <hr class="my-4 text-muted opacity-25">
-
-              <div class="card-header-custom mb-4" style="margin: 0 -2rem; padding: 1.5rem 2rem;">
-                <h5><i class="bi bi-wallet2"></i> Payment Details</h5>
-              </div>
-
-              <div class="row g-3">
-                <div class="col-md-4">
-                  <label class="form-label">Discount (%)</label>
-                  <div class="input-group">
-                    {{ form.discount_percent }}
-                    <span class="input-group-text">%</span>
-                  </div>
-                  <div class="form-text text-success fw-medium small" id="discount-amount"></div>
-                </div>
-
-                <div class="col-md-4">
-                  <label class="form-label">Net Received <span class="text-danger">*</span></label>
-                  <div class="input-group">
-                    <span class="input-group-text">฿</span>
-                    {{ form.actual_received }}
-                  </div>
-                  <div class="form-text small">Total after fees deduction</div>
-                </div>
-
-                <div class="col-md-4">
-                  <label class="form-label">Transaction Date</label>
-                  {{ form.sold_at }}
-                </div>
-              </div>
-
-              <div class="mt-4">
-                <label class="form-label">Note (Optional)</label>
-                {{ form.note }}
+              <div class="luxury-input-group">
+                <span class="input-group-text">฿</span>
+                {{ form.price_at_sale }}
               </div>
             </div>
           </div>
+          
+          <div class="card-section-title mt-5">
+            <i class="bi bi-credit-card"></i> Payment
+          </div>
+
+          <div class="row g-4">
+            <div class="col-md-4">
+              <label class="form-label">Discount</label>
+              <div class="luxury-input-group">
+                {{ form.discount_percent }}
+                <span class="input-group-text">%</span>
+              </div>
+              <div class="form-text text-success fw-medium small" id="discount-amount"></div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Net Received <span class="text-danger">*</span></label>
+              <div class="luxury-input-group">
+                <span class="input-group-text">฿</span>
+                {{ form.actual_received }}
+              </div>
+              <div class="form-text">Actual amount collected</div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Date</label>
+              {{ form.sold_at }}
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="form-label">Note (Optional)</label>
+            {{ form.note }}
+          </div>
         </div>
+      </div>
 
-        <div class="col-lg-4 summary-column">
-          <div class="modern-card summary-card">
-            <div class="p-4">
-              
-              <div class="mb-4">
-                <label class="form-label">Product Preview</label>
-                <div class="image-preview-container" id="image-preview">
-                  <img id="prod-image" src="" alt="Product" class="d-none">
-                  <div id="no-image" class="text-center">
-                    <i class="bi bi-image no-image-icon"></i>
-                    <p class="small text-muted mt-2 mb-0">No product selected</p>
-                  </div>
+      <!-- Summary Column -->
+      <div class="col-lg-4">
+        <div class="d-flex flex-column gap-4">
+          
+          <!-- Image Preview -->
+          <div class="luxury-card pb-0">
+             <div class="card-section-title border-0 mb-3 p-0">
+               <i class="bi bi-image"></i> Preview
+             </div>
+             <div class="preview-box">
+                <img id="prod-image" src="" alt="Product" class="d-none">
+                <div id="no-image" class="no-image-placeholder">
+                  <i class="bi bi-bag" style="font-size: 2rem; opacity: 0.5;"></i>
+                  <p class="small mt-2 mb-0">Select a product</p>
                 </div>
-              </div>
+             </div>
+             <div class="p-3 text-center small text-secondary">
+               Inventory Item
+             </div>
+          </div>
 
-              <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
-                <i class="bi bi-receipt me-2"></i> Order Summary
-              </h6>
-              
-              <div class="summary-row">
-                <span>Standard Price</span>
-                <span class="summary-value" id="calc-original">฿0.00</span>
-              </div>
-              <div class="summary-row">
-                <span>Sale Price/Unit</span>
-                <span class="summary-value" id="calc-sale">฿0.00</span>
-              </div>
-              <div class="summary-row">
-                <span>Quantity</span>
-                <span class="summary-value" id="calc-qty">0</span>
-              </div>
-              <div class="summary-row">
-                <span>Total Discount</span>
-                <span class="summary-value text-success" id="calc-discount">฿0.00</span>
-              </div>
-              
-              <div class="total-section">
-                <div class="total-label">Total Revenue</div>
-                <div class="total-amount" id="calc-total">฿0.00</div>
-                <div class="small text-muted mt-1">
-                  Net Received: <span id="calc-received">฿0.00</span>
-                </div>
-              </div>
+          <!-- Summary Card -->
+          <div class="luxury-card">
+            <div class="card-section-title border-0 mb-3 p-0">
+              <i class="bi bi-receipt"></i> Order Summary
+            </div>
+            
+            <div class="summary-row">
+              <span>Standard Price</span>
+              <span class="summary-value" id="calc-original">฿0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Sale Price</span>
+              <span class="summary-value" id="calc-sale">฿0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Quantity</span>
+              <span class="summary-value" id="calc-qty">0</span>
+            </div>
+            <div class="summary-row">
+              <span>Discount</span>
+              <span class="summary-value text-success" id="calc-discount">฿0.00</span>
+            </div>
 
-              <div class="d-grid gap-3 mt-4">
-                <button type="submit" class="btn btn-primary-custom">
-                  <i class="bi bi-check-lg me-2"></i>Confirm Sale
-                </button>
-                <a href="{% url 'sales_history' %}" class="btn btn-secondary-custom">Cancel</a>
+            <div class="total-section">
+              <div class="total-label">Total Revenue</div>
+              <div class="total-amount" id="calc-total">฿0.00</div>
+              <div class="received-display">
+                Net Received: <span class="fw-bold" id="calc-received">฿0.00</span>
               </div>
+            </div>
 
+            <div class="mt-4 d-grid gap-2">
+              <button type="submit" class="btn-luxury btn-primary-luxury">
+                Confirm Sale
+              </button>
+              <a href="{% url 'sales_history' %}" class="btn-luxury btn-secondary-luxury text-center">
+                Cancel
+              </a>
             </div>
           </div>
         </div>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>
 
 <script>
@@ -614,11 +501,16 @@
   let currentPrice = 0;
   let currentStock = 0;
 
-  // Initialize select/inputs styles
-  const formControls = document.querySelectorAll('.form-control, .form-select, .form-control-plaintext');
+  // Apply luxury styles to form inputs
+  const formControls = document.querySelectorAll('.form-control, .form-select, input[type="text"], input[type="number"], input[type="date"], textarea');
   formControls.forEach(el => {
-      if(!el.classList.contains('form-control') && !el.classList.contains('form-select')) {
-          el.classList.add('form-control');
+      // Don't double apply if already handled by luxury-input-group children
+      if (!el.parentElement.classList.contains('luxury-input-group')) {
+        if(el.tagName === 'SELECT') {
+           el.classList.add('form-select');
+        } else {
+           el.classList.add('luxury-input');
+        }
       }
   });
 
@@ -641,14 +533,14 @@
 
     prodPriceBadge.textContent = "฿" + currentPrice.toFixed(2);
 
-    let badgeClass = "badge-success-soft";
-    let icon = "check-circle";
+    let badgeClass = "stock-in";
+    let icon = "check";
     if (currentStock === 0) {
-      badgeClass = "badge-danger-soft";
-      icon = "x-circle";
+      badgeClass = "stock-out";
+      icon = "x";
     } else if (currentStock <= 5) {
-      badgeClass = "badge-warning-soft";
-      icon = "exclamation-circle";
+      badgeClass = "stock-low";
+      icon = "exclamation";
     }
     
     stockDisplay.innerHTML = 

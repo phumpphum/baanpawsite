@@ -16,7 +16,7 @@ from django.db.models.deletion import ProtectedError
 from django.db import transaction
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
-
+from PIL import Image
 
 # ============================================================================
 # HELPER FUNCTIONS
@@ -128,11 +128,20 @@ def product_list(request):
     """Display paginated list of products with search functionality."""
     q = request.GET.get('q', '').strip()
     show_all = request.GET.get('all', '').lower() == 'true'
+    sort_by = request.GET.get('sort', '')  # รับค่า sort จาก URL
     
     # Optimize query with only needed fields
     products = Product.objects.only(
         'id', 'name', 'sku', 'price', 'cost', 'stock', 'colors', 'image'
-    ).order_by('-id')
+    )
+    
+    # Apply sorting logic (แก้ไขส่วนนี้)
+    if sort_by == 'name':
+        products = products.order_by('name')  # เรียงตามชื่อ A-Z
+    elif sort_by == 'stock_asc':
+        products = products.order_by('stock')  # เรียงตาม Stock น้อยไปมาก
+    else:
+        products = products.order_by('-id')   # Default: สินค้าใหม่สุดขึ้นก่อน
     
     # Apply search filter
     if q:
@@ -161,8 +170,38 @@ def product_list(request):
         'page_obj': page_obj,
         'q': q,
         'show_all': show_all,
+        'sort': sort_by, # ส่งค่า sort กลับไปที่ Template
     })
 
+def compress_image(image):
+    """ฟังก์ชันช่วยย่อขนาดรูปภาพและลดคุณภาพลงเล็กน้อยเพื่อความเร็ว"""
+    if not image:
+        return None
+        
+    try:
+        img = Image.open(image)
+        # ตรวจสอบว่าเป็นรูปภาพที่ใหญ่เกินไปหรือไม่ (เช่น กว้างเกิน 800px)
+        if img.width > 800:
+            # แปลงเป็น RGB ถ้าจำเป็น (เช่นไฟล์ PNG)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            # คำนวณสัดส่วนความสูงใหม่
+            output_size = (800, int((800 / img.width) * img.height))
+            img.thumbnail(output_size)
+            
+            # บันทึกลงหน่วยความจำ (Buffer)
+            buffer = io.BytesIO()
+            # ลดคุณภาพเหลือ 70% และแปลงเป็น JPEG
+            img.save(buffer, format='JPEG', quality=70, optimize=True)
+            
+            # สร้างชื่อไฟล์ใหม่
+            new_filename = image.name.split('.')[0] + '.jpg'
+            return ContentFile(buffer.getvalue(), name=new_filename)
+    except Exception as e:
+        print(f"Image compression error: {e}")
+    
+    return image
 
 @require_http_methods(["GET", "POST"])
 def product_create(request):
@@ -170,7 +209,15 @@ def product_create(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            product = form.save(commit=False)
+            
+            # ตรวจสอบและย่อรูปภาพถ้ามีการอัปโหลด
+            if 'image' in request.FILES:
+                compressed = compress_image(request.FILES['image'])
+                if compressed:
+                    product.image = compressed
+            
+            product.save()
             messages.success(request, 'เพิ่มสินค้าเรียบร้อยแล้ว')
             return redirect('product_list')
     else:
@@ -190,7 +237,15 @@ def product_edit(request, pk):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
-            form.save()
+            product = form.save(commit=False)
+            
+            # ตรวจสอบและย่อรูปภาพถ้ามีการอัปโหลดใหม่
+            if 'image' in request.FILES:
+                compressed = compress_image(request.FILES['image'])
+                if compressed:
+                    product.image = compressed
+            
+            product.save()
             messages.success(request, 'อัปเดตสินค้าเรียบร้อยแล้ว')
             return redirect('product_list')
     else:

@@ -3,638 +3,435 @@
 {% block content %}
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  /* Import monospace font for clear numeric data */
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
+
   :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+    /* Luxury Palette */
+    --bg-body: #f9fafb;
+    --surface: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+    
+    --primary-color: #0f172a; /* Slate 900 */
+    --primary-hover: #1e293b;
+    
+    --success-bg: #ecfdf5;
+    --success-text: #059669;
+    --success-border: #a7f3d0;
+    
+    --danger-bg: #fef2f2;
+    --danger-text: #dc2626;
+    --danger-border: #fecaca;
+    
+    --warning-bg: #fffbeb;
+    --warning-text: #d97706;
+    --warning-border: #fde68a;
+    
+    --border-color: #e5e7eb;
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
-  /* Modern Card Styles */
-  .modern-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
-    overflow: hidden;
+  body {
+    background-color: var(--bg-body);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+  }
+
+  /* Typography for Numbers */
+  .num-font {
+    font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+  }
+
+  /* General Card */
+  .luxury-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 1.5rem;
-  }
-
-  .modern-card:hover {
-    box-shadow: var(--card-shadow-hover);
-    transform: translateY(-2px);
   }
 
   /* Header Section */
   .page-header {
-    background: var(--primary-gradient);
-    color: white;
-    padding: 2rem;
-    border-radius: 16px;
-    margin-bottom: 2rem;
-    box-shadow: var(--card-shadow);
+    padding: 1.5rem 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .page-header h1 {
-    font-size: 1.75rem;
+    font-size: 1.875rem;
     font-weight: 700;
+    color: var(--text-primary);
     margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
   }
 
-  .page-header .subtitle {
-    font-size: 0.95rem;
-    opacity: 0.9;
-    margin-top: 0.5rem;
-  }
-
-  /* Filter Card */
-  .filter-card {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 1.5rem;
-    border-radius: 16px;
-    margin-bottom: 1.5rem;
-  }
-
-  .filter-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .filter-toggle-icon {
-    transition: transform 0.3s ease;
-    border: none;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Rotate icon when not collapsed */
-  .filter-toggle-icon:not(.collapsed) {
-    transform: rotate(180deg);
-  }
-
-  .filter-card .form-label {
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: #4a5568;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-  }
-
-  .modern-input {
-    border-radius: 10px;
-    border: 2px solid #e2e8f0;
-    padding: 0.625rem 1rem;
-    transition: all 0.2s ease;
-    background: white;
-    width: 100%;
-  }
-
-  .modern-input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    outline: none;
-  }
-
-  /* Modern Buttons */
-  .btn-modern {
-    padding: 0.625rem 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .btn-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  .btn-modern:active {
-    transform: translateY(0);
-  }
-
-  .btn-primary-modern {
-    background: var(--primary-gradient);
-    color: white;
-  }
-
-  .btn-secondary-modern {
-    background: white;
-    color: #4a5568;
-    border: 2px solid #e2e8f0;
-  }
-
-  .btn-danger-modern {
-    background: var(--danger-gradient);
-    color: white;
-  }
-
-  /* Statistics Cards */
+  /* Stats Grid */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .stat-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+    background: var(--surface);
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
   }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--gradient);
-  }
-
-  .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--card-shadow-hover);
-  }
-
-  .stat-card.revenue::before { background: var(--info-gradient); }
-  .stat-card.received::before { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-  .stat-card.profit::before { background: var(--success-gradient); }
-  .stat-card.commission::before { background: var(--warning-gradient); }
-  .stat-card.quantity::before { background: var(--primary-gradient); }
 
   .stat-label {
     font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #718096;
+    color: var(--text-secondary);
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin-bottom: 0.5rem;
+    display: block;
   }
 
   .stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #2d3748;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .stat-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .stat-card.revenue .stat-icon { background: rgba(79, 172, 254, 0.1); color: #4facfe; }
-  .stat-card.received .stat-icon { background: rgba(0, 242, 254, 0.1); color: #00f2fe; }
-  .stat-card.profit .stat-icon { background: rgba(17, 153, 142, 0.1); color: #11998e; }
-  .stat-card.commission .stat-icon { background: rgba(245, 87, 108, 0.1); color: #f5576c; }
-  .stat-card.quantity .stat-icon { background: rgba(102, 126, 234, 0.1); color: #667eea; }
-
-  /* Modern Table */
-  .modern-table-wrapper {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--card-shadow);
-  }
-
-  .modern-table {
-    width: 100%;
-    margin: 0;
-  }
-
-  .modern-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-  }
-
-  .modern-table thead th {
-    padding: 1rem 0.875rem;
-    font-weight: 600;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: none;
-    white-space: nowrap;
-  }
-
-  .modern-table tbody tr {
-    transition: all 0.2s ease;
-    border-bottom: 1px solid #f7fafc;
-  }
-
-  .modern-table tbody tr:hover {
-    background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
-  }
-
-  .modern-table tbody td {
-    padding: 1rem 0.875rem;
-    vertical-align: middle;
-    border: none;
-  }
-
-  /* Product Image */
-  .product-image-wrapper {
-    position: relative;
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .product-image-wrapper:hover {
-    transform: scale(1.1) rotate(2deg);
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-  }
-
-  .product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .no-image {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    color: #718096;
     font-size: 1.5rem;
-  }
-
-  /* Modern Badges */
-  .modern-badge {
-    padding: 0.375rem 0.75rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.75rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .badge-quantity {
-    background: rgba(102, 126, 234, 0.1);
-    color: #667eea;
-  }
-
-  .badge-discount {
-    background: rgba(79, 172, 254, 0.1);
-    color: #4facfe;
-    border: 1px solid rgba(79, 172, 254, 0.3);
-  }
-
-  .badge-commission {
-    background: rgba(245, 87, 108, 0.1);
-    color: #f5576c;
-    border: 1px solid rgba(245, 87, 108, 0.3);
-  }
-
-  /* Profit Display */
-  .profit-box {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
-  }
-
-  .profit-amount {
     font-weight: 700;
-    font-size: 1rem;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .stat-card.profit .stat-value { color: var(--success-text); }
+
+  /* Filters Redesigned */
+  .filter-section {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
   }
 
-  .profit-percentage {
-    font-size: 0.7rem;
-    padding: 0.125rem 0.5rem;
-    border-radius: 6px;
-    font-weight: 600;
+  .filter-section:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border-color: #d1d5db;
   }
 
-  .profit-positive .profit-amount { color: #11998e; }
-  .profit-positive .profit-percentage { 
-    background: rgba(17, 153, 142, 0.1); 
-    color: #11998e; 
+  .filter-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .filter-header[aria-expanded="true"] {
+    border-bottom-color: var(--border-color);
+    background-color: #fcfcfc;
   }
 
-  .profit-negative .profit-amount { color: #eb3349; }
-  .profit-negative .profit-percentage { 
-    background: rgba(235, 51, 73, 0.1); 
-    color: #eb3349; 
+  .filter-body {
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   }
 
-  /* Action Buttons */
-  .action-btn {
+  .icon-box-soft {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-
-  .action-btn-edit {
-    background: rgba(79, 172, 254, 0.1);
-    color: #4facfe;
-  }
-
-  .action-btn-edit:hover {
-    background: #4facfe;
-    color: white;
-    transform: scale(1.1);
-  }
-
-  .action-btn-delete {
-    background: rgba(235, 51, 73, 0.1);
-    color: #eb3349;
-  }
-
-  .action-btn-delete:hover {
-    background: #eb3349;
-    color: white;
-    transform: scale(1.1);
-  }
-
-  /* Empty State */
-  .empty-state {
-    padding: 4rem 2rem;
-    text-align: center;
-  }
-
-  .empty-state-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 1.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
+    background-color: #f3f4f6;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
-    animation: float 3s ease-in-out infinite;
+    font-size: 1rem;
   }
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+  .luxury-input {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 1rem;
+    background-color: var(--surface);
+    width: 100%;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    transition: all 0.2s;
+  }
+  
+  .luxury-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
+    outline: none;
   }
 
-  .empty-state h5 {
+  .input-icon-wrapper {
+    position: relative;
+  }
+
+  .input-icon-wrapper i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    pointer-events: none;
+    font-size: 0.9rem;
+  }
+
+  .luxury-input-with-icon {
+    padding-left: 2.5rem !important;
+  }
+
+  .transition-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .filter-header[aria-expanded="true"] .transition-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Buttons */
+  .btn-luxury {
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .btn-primary-luxury { background-color: var(--primary-color); color: white; }
+  .btn-primary-luxury:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+  
+  .btn-secondary-luxury { background-color: white; border-color: var(--border-color); color: var(--text-primary); }
+  .btn-secondary-luxury:hover { background-color: #f9fafb; border-color: #d1d5db; }
+
+  .btn-danger-luxury { background-color: white; border-color: #fee2e2; color: var(--danger-text); }
+  .btn-danger-luxury:hover { background-color: #fef2f2; border-color: #fca5a5; }
+
+  /* Table Styles */
+  .table-container {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .luxury-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .luxury-table thead {
+    background-color: #f8fafc;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .luxury-table th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.75rem;
     font-weight: 700;
-    color: #2d3748;
-    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
   }
 
-  .empty-state p {
-    color: #718096;
+  .luxury-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f3f4f6;
+    color: var(--text-primary);
+    font-size: 0.9rem;
   }
 
-  /* Modal Improvements */
-  .image-modal .modal-content {
-    background: rgba(0, 0, 0, 0.95);
-    border: none;
-    border-radius: 16px;
-  }
+  .luxury-table tr:last-child td { border-bottom: none; }
+  .luxury-table tr:hover { background-color: #fafafa; }
 
-  .image-modal .modal-body {
-    padding: 2rem;
+  /* Images */
+  .product-img-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    background: #f9fafb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+  
+  .product-img-box img { width: 100%; height: 100%; object-fit: cover; }
+  .product-img-box.no-img { color: var(--text-tertiary); font-size: 1.25rem; }
 
-  .image-modal img {
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  }
-
-  .image-modal .btn-close {
-    background: white;
-    opacity: 1;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-  }
-
-  /* Records Badge */
-  .records-badge {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.375rem 0.875rem;
-    border-radius: 20px;
+  /* Enhanced Number Badges & Tags */
+  .badge-frame {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
     font-weight: 600;
-    font-size: 0.85rem;
-    backdrop-filter: blur(10px);
+    border: 1px solid transparent;
+    font-family: 'Inter', sans-serif;
+    min-width: 45px;
   }
 
-  /* Responsive & Animation */
-  @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
+  .badge-frame.success { background-color: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
+  .badge-frame.danger { background-color: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+  .badge-frame.neutral { background-color: #f3f4f6; color: var(--text-secondary); border-color: var(--border-color); }
+  .badge-frame.warning { background-color: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
+
+  /* Stock Display */
+  .stock-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid;
+    margin-top: 4px;
+  }
+  
+  .stock-ok { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+  .stock-low { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+  .stock-out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+
+  /* Profit Column */
+  .profit-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
   }
 
-  .loading {
-    animation: shimmer 2s infinite;
-    background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
-    background-size: 1000px 100%;
+  /* Icon Buttons */
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s;
   }
-
-  .table-responsive::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  .table-responsive::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-  }
-
-  .table-responsive::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-  }
-
-  .table-responsive::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  }
+  .icon-btn:hover { background: #f3f4f6; color: var(--text-primary); }
+  .icon-btn.delete:hover { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
 
   @media (max-width: 768px) {
-    .page-header {
-      padding: 1.5rem;
-    }
-
-    .page-header h1 {
-      font-size: 1.5rem;
-    }
-
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .stat-value {
-      font-size: 1.5rem;
-    }
-
-    .modern-table {
-      font-size: 0.85rem;
-    }
-
-    .modern-table thead th,
-    .modern-table tbody td {
-      padding: 0.75rem 0.5rem;
-    }
-
-    .product-image-wrapper {
-      width: 50px;
-      height: 50px;
-    }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .luxury-table th, .luxury-table td { padding: 0.75rem 0.5rem; }
   }
 </style>
 
 <div class="page-header">
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
     <div>
-      <h1>
-        <i class="bi bi-graph-up-arrow"></i>
-        Sales History
-      </h1>
-      <p class="subtitle mb-0">Track and analyze your sales performance</p>
+      <p class="subtitle mb-1">Overview</p>
+      <h1>Sales History</h1>
     </div>
-    <span class="records-badge">
-      <i class="bi bi-journal-check"></i> {{ sales|length }} record{{ sales|length|pluralize }}
-    </span>
+    <div class="badge-frame neutral px-3 py-2" style="font-size: 0.85rem; width: auto;">
+      Total {{ sales|length }} record{{ sales|length|pluralize }}
+    </div>
   </div>
 </div>
 
 <div class="stats-grid">
-  <div class="stat-card quantity">
-    <div class="stat-icon">
-      <i class="bi bi-box-seam"></i>
-    </div>
-    <div class="stat-label">Total Quantity</div>
-    <div class="stat-value">{{ summary.total_qty|floatformat:0|default:0 }}</div>
+  <div class="stat-card">
+    <span class="stat-label">Sold Items</span>
+    <div class="stat-value num-font">{{ summary.total_qty|floatformat:0|default:0 }}</div>
   </div>
-
-  <div class="stat-card revenue">
-    <div class="stat-icon">
-      <i class="bi bi-currency-dollar"></i>
-    </div>
-    <div class="stat-label">Total Revenue</div>
-    <div class="stat-value">฿{{ summary.total_revenue|floatformat:2|default:"0.00" }}</div>
+  <div class="stat-card">
+    <span class="stat-label">Revenue</span>
+    <div class="stat-value num-font">฿{{ summary.total_revenue|floatformat:2|default:"0.00" }}</div>
   </div>
-
-  <div class="stat-card received">
-    <div class="stat-icon">
-      <i class="bi bi-cash-coin"></i>
-    </div>
-    <div class="stat-label">Total Received</div>
-    <div class="stat-value">฿{{ summary.total_received|floatformat:2|default:"0.00" }}</div>
+  <div class="stat-card">
+    <span class="stat-label">Received</span>
+    <div class="stat-value num-font text-primary">฿{{ summary.total_received|floatformat:2|default:"0.00" }}</div>
   </div>
-
-  <div class="stat-card commission">
-    <div class="stat-icon">
-      <i class="bi bi-percent"></i>
-    </div>
-    <div class="stat-label">Commission</div>
-    <div class="stat-value">฿{{ summary.total_commission|floatformat:2|default:"0.00" }}</div>
+  <div class="stat-card">
+    <span class="stat-label">Commission</span>
+    <div class="stat-value num-font text-secondary">฿{{ summary.total_commission|floatformat:2|default:"0.00" }}</div>
   </div>
-
   <div class="stat-card profit">
-    <div class="stat-icon">
-      <i class="bi bi-graph-up"></i>
-    </div>
-    <div class="stat-label">Net Profit</div>
-    <div class="stat-value">฿{{ summary.total_profit|floatformat:2|default:"0.00" }}</div>
+    <span class="stat-label">Net Profit</span>
+    <div class="stat-value num-font">฿{{ summary.total_profit|floatformat:2|default:"0.00" }}</div>
   </div>
 </div>
 
-<div class="filter-card">
-  <div class="filter-card-header" 
+<!-- Filter Section Redesigned -->
+<div class="filter-section">
+  <div class="filter-header" 
        data-bs-toggle="collapse" 
        data-bs-target="#filterCollapse" 
-       aria-expanded="{% if start or end or note %}true{% else %}false{% endif %}" 
-       aria-controls="filterCollapse">
-    <h5 class="mb-0 text-dark d-flex align-items-center">
-      <i class="bi bi-funnel me-2" style="color: #667eea;"></i> Sales Filters
-    </h5>
-    <button class="filter-toggle-icon {% if not start and not end and not note %}collapsed{% endif %}">
-      <i class="bi bi-chevron-down text-secondary"></i>
-    </button>
+       aria-expanded="{% if start or end or note %}true{% else %}false{% endif %}">
+    <div class="d-flex align-items-center gap-3">
+      <div class="icon-box-soft">
+        <i class="bi bi-sliders2"></i>
+      </div>
+      <div>
+        <h5 class="mb-0 text-primary fw-bold" style="font-size: 0.95rem;">Filter Options</h5>
+        <span class="text-secondary small" style="font-size: 0.75rem;">Refine sales data by date or keyword</span>
+      </div>
+    </div>
+    <i class="bi bi-chevron-down text-secondary transition-icon"></i>
   </div>
 
   <div class="collapse {% if start or end or note %}show{% endif %}" id="filterCollapse">
-    <div class="pt-3 border-top mt-3">
-      <form class="row g-3" method="get" id="filterForm">
+    <div class="filter-body">
+      <form class="row g-4" method="get">
         
-        <div class="col-lg-3 col-md-6 col-12">
-          <label class="form-label">
-            <i class="bi bi-calendar-event"></i> Start Date
-          </label>
-          <input type="date" name="start" value="{{ start|default:'' }}" class="form-control modern-input">
+        <!-- Date Range Group -->
+        <div class="col-lg-5 col-md-12">
+          <label class="form-label text-secondary small text-uppercase fw-bold mb-2">Date Range</label>
+          <div class="d-flex gap-2 align-items-center">
+             <div class="input-icon-wrapper w-100">
+               <i class="bi bi-calendar-event"></i>
+               <input type="date" name="start" value="{{ start|default:'' }}" class="luxury-input luxury-input-with-icon" placeholder="Start Date">
+             </div>
+             <span class="text-tertiary fw-medium">-</span>
+             <div class="input-icon-wrapper w-100">
+               <i class="bi bi-calendar-check"></i>
+               <input type="date" name="end" value="{{ end|default:'' }}" class="luxury-input luxury-input-with-icon" placeholder="End Date">
+             </div>
+          </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 col-12">
-          <label class="form-label">
-            <i class="bi bi-calendar-check"></i> End Date
-          </label>
-          <input type="date" name="end" value="{{ end|default:'' }}" class="form-control modern-input">
-        </div>
-
-        <div class="col-lg-3 col-md-6 col-12">
-          <label class="form-label">
-            <i class="bi bi-search"></i> Search Note
-          </label>
-          <input
-            type="text"
-            name="note"
-            value="{{ note|default:'' }}"
-            class="form-control modern-input"
-            placeholder="ค้นหาจาก note..."
-          >
+        <!-- Search Input -->
+        <div class="col-lg-4 col-md-8">
+          <label class="form-label text-secondary small text-uppercase fw-bold mb-2">Search</label>
+          <div class="input-icon-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" name="note" value="{{ note|default:'' }}" class="luxury-input luxury-input-with-icon" placeholder="Search note or description...">
+          </div>
         </div>
       
-        <div class="col-lg-3 col-md-6 col-12 d-flex align-items-end gap-2">
-          <button type="submit" class="btn btn-modern btn-primary-modern flex-grow-1">
-            <i class="bi bi-funnel-fill"></i> Apply
+        <!-- Action Buttons -->
+        <div class="col-lg-3 col-md-4 d-flex align-items-end gap-2">
+          <button type="submit" class="btn-luxury btn-primary-luxury flex-grow-1 shadow-sm">
+            Apply Filters
           </button>
-          <a class="btn btn-modern btn-secondary-modern" href="{% url 'sales_history' %}" title="Clear">
-            <i class="bi bi-arrow-clockwise"></i>
+          <a href="{% url 'sales_history' %}" class="btn-luxury btn-secondary-luxury" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
           </a>
         </div>
 
@@ -643,21 +440,20 @@
   </div>
 </div>
 
-<div class="modern-table-wrapper">
+<!-- Table -->
+<div class="table-container">
   <div class="table-responsive">
-    <table class="modern-table">
+    <table class="luxury-table">
       <thead>
         <tr>
-          <th>Date & Time</th>
-          <th>Image</th>
-          <th>Product</th>
+          <th>Date</th>
+          <th style="width: 70px;">Image</th>
+          <th>Product / Stock</th>
           <th class="text-center">Qty</th>
-          <th class="text-end">Original</th>
+          <th class="text-end">Price</th>
           <th class="text-end">Discount</th>
-          <th class="text-end">Sale Price</th>
+          <th class="text-end">Final</th>
           <th class="text-end">Received</th>
-          <th class="text-end">Cost</th>
-          <th class="text-end">Commission</th>
           <th class="text-end">Profit</th>
           <th class="text-center">Actions</th>
         </tr>
@@ -665,132 +461,114 @@
       <tbody>
         {% for s in sales %}
         <tr>
+          <!-- Date -->
           <td>
-            <div class="fw-semibold text-dark">{{ s.sold_at|date:"M d, Y" }}</div>
-            <div class="text-muted small">{{ s.sold_at|date:"H:i" }}</div>
+            <div class="fw-semibold text-dark">{{ s.sold_at|date:"d M" }}</div>
+            <div class="text-secondary small">{{ s.sold_at|date:"Y H:i" }}</div>
           </td>
+          
+          <!-- Image -->
           <td>
             {% if s.product.image %}
-              <div class="product-image-wrapper" 
-                   data-bs-toggle="modal" 
-                   data-bs-target="#imageModal"
-                   data-img-url="{{ s.product.image.url }}">
-                <img src="{{ s.product.image.url }}" 
-                     alt="{{ s.product.name }}"
-                     class="product-image"
-                     loading="lazy">
+              <div class="product-img-box" data-bs-toggle="modal" data-bs-target="#imageModal" data-img-url="{{ s.product.image.url }}" style="cursor:pointer">
+                <img src="{{ s.product.image.url }}" alt="img">
               </div>
             {% else %}
-              <div class="product-image-wrapper">
-                <div class="no-image">
-                  <i class="bi bi-image"></i>
-                </div>
-              </div>
+              <div class="product-img-box no-img"><i class="bi bi-image"></i></div>
             {% endif %}
           </td>
+
+          <!-- Product & Stock -->
           <td>
-            <div class="fw-semibold text-dark">{{ s.product.name }}</div>
+            <div class="fw-semibold text-dark mb-1">{{ s.product.name }}</div>
+            
+            {% with stock=s.product.stock %}
+            <div class="stock-indicator {% if stock == 0 %}stock-out{% elif stock <= 5 %}stock-low{% else %}stock-ok{% endif %}">
+              <i class="bi bi-box-seam"></i> Stock: {{ stock }}
+            </div>
+            {% endwith %}
+
             {% if s.note %}
-              <div class="text-muted small mt-1">
-                <i class="bi bi-sticky"></i> {{ s.note|truncatewords:5 }}
-              </div>
+              <div class="text-secondary small mt-1"><i class="bi bi-pen"></i> {{ s.note|truncatechars:20 }}</div>
             {% endif %}
           </td>
+
+          <!-- Qty -->
           <td class="text-center">
-            <span class="modern-badge badge-quantity">
-              <i class="bi bi-box"></i> {{ s.quantity }}
-            </span>
+            <span class="badge-frame neutral num-font" style="min-width: auto;">x{{ s.quantity }}</span>
           </td>
-          <td class="text-end text-muted">฿{{ s.product.price|floatformat:2 }}</td>
+
+          <!-- Price -->
+          <td class="text-end text-secondary num-font">{{ s.product.price|floatformat:2 }}</td>
+
+          <!-- Discount -->
           <td class="text-end">
-            {% if s.discount_amount and s.discount_amount > 0 %}
-              <div class="fw-semibold text-primary">฿{{ s.discount_amount|floatformat:2 }}</div>
-              <span class="modern-badge badge-discount">{{ s.discount_percent|floatformat:1 }}%</span>
+            {% if s.discount_amount > 0 %}
+              <div class="text-danger num-font small">-{{ s.discount_amount|floatformat:0 }}</div>
+              <span class="badge-frame neutral">{{ s.discount_percent|floatformat:0 }}%</span>
             {% else %}
-              <span class="text-muted">—</span>
+              <span class="text-tertiary">-</span>
             {% endif %}
           </td>
-          <td class="text-end">
-            <span class="fw-bold text-dark">฿{{ s.price_at_sale|floatformat:2 }}</span>
+
+          <!-- Final Price -->
+          <td class="text-end fw-medium num-font">{{ s.price_at_sale|floatformat:2 }}</td>
+
+          <!-- Received -->
+          <td class="text-end fw-bold text-dark num-font" style="font-size: 1rem;">
+            {{ s.actual_received|floatformat:2 }}
           </td>
+
+          <!-- Profit & Margin -->
           <td class="text-end">
-            <span class="fw-semibold" style="color: #4facfe;">฿{{ s.actual_received|floatformat:2 }}</span>
-          </td>
-          <td class="text-end text-muted">฿{{ s.product.cost|floatformat:2 }}</td>
-          <td class="text-end">
-            <div class="fw-semibold" style="color: #f5576c;">฿{{ s.commission|floatformat:2 }}</div>
-            <span class="modern-badge badge-commission">{{ s.commission_pct|floatformat:1 }}%</span>
-          </td>
-          <td class="text-end">
-            <div class="profit-box {% if s.profit >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
-              <span class="profit-amount">฿{{ s.profit|floatformat:2 }}</span>
-              <span class="profit-percentage">{{ s.profit_pct|floatformat:1 }}%</span>
+            <div class="profit-wrapper">
+              <span class="num-font fw-bold {% if s.profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                {{ s.profit|floatformat:2 }}
+              </span>
+              <span class="badge-frame {% if s.profit >= 0 %}success{% else %}danger{% endif %}">
+                {{ s.profit_pct|floatformat:1 }}%
+              </span>
             </div>
           </td>
-          <td>
-            <div class="d-flex justify-content-center gap-2">
-              <a href="{% url 'sale_edit' s.id %}" 
-                 class="action-btn action-btn-edit" 
-                 title="Edit sale">
-                <i class="bi bi-pencil"></i>
-              </a>
-              <form method="post" action="{% url 'sale_delete' s.id %}" 
-                    onsubmit="return confirmDelete();" 
-                    style="display: inline;">
+
+          <!-- Actions -->
+          <td class="text-center">
+            <div class="d-flex justify-content-center gap-1">
+              <a href="{% url 'sale_edit' s.id %}" class="icon-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="{% url 'sale_delete' s.id %}" onsubmit="return confirm('Delete this record?');" class="d-inline">
                 {% csrf_token %}
-                <button type="submit" class="action-btn action-btn-delete" title="Delete sale">
-                  <i class="bi bi-trash"></i>
-                </button>
+                <button type="submit" class="icon-btn delete" title="Delete"><i class="bi bi-trash"></i></button>
               </form>
             </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="12">
-            <div class="empty-state">
-              <div class="empty-state-icon">
-                📊
-              </div>
-              <h5>No Sales Records Found</h5>
-              <p class="text-muted mb-3">
-                {% if start or end %}
-                  No sales found for the selected date range. Try adjusting your filters.
-                {% else %}
-                  Start recording your first sale to see it here!
-                {% endif %}
-              </p>
-              <a href="{% url 'sale_create' %}" class="btn btn-modern btn-primary-modern">
-                <i class="bi bi-plus-circle"></i> Add New Sale
-              </a>
-            </div>
+          <td colspan="10" class="text-center py-5 text-secondary">
+            <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
+            No sales records found.
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-
   {% if sales %}
-  <div class="p-3 d-flex justify-content-between align-items-center border-top">
-    <div class="text-muted small">
-      <i class="bi bi-info-circle"></i> Showing {{ sales|length }} record{{ sales|length|pluralize }}
-    </div>
-    <a href="{% url 'sales_deleted' %}" class="btn btn-modern btn-danger-modern btn-sm">
-      <i class="bi bi-trash"></i> View Deleted History
+  <div class="p-3 bg-light d-flex justify-content-end border-top">
+    <a href="{% url 'sales_deleted' %}" class="btn-luxury btn-danger-luxury" style="font-size: 0.8rem;">
+      <i class="bi bi-trash me-1"></i> Deleted History
     </a>
   </div>
   {% endif %}
 </div>
 
-<div class="modal fade image-modal" id="imageModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-xl">
-    <div class="modal-content">
-      <div class="modal-body position-relative">
-        <button type="button" class="btn-close position-absolute top-0 end-0 m-3" 
-                data-bs-dismiss="modal" aria-label="Close" style="z-index: 1;"></button>
-        <img id="modalImage" src="" class="img-fluid" 
-             style="max-height: 80vh; width: 100%; object-fit: contain;">
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg bg-dark">
+      <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="min-height: 200px;">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+        <img id="modalImage" src="" class="img-fluid" style="max-height: 85vh; border-radius: 4px;">
       </div>
     </div>
   </div>
@@ -801,65 +579,12 @@
   const imageModal = document.getElementById('imageModal');
   if (imageModal) {
     imageModal.addEventListener('show.bs.modal', e => {
-      const trigger = e.relatedTarget;
-      const imgUrl = trigger.getAttribute('data-img-url');
-      imageModal.querySelector('#modalImage').src = imgUrl;
+      const btn = e.relatedTarget;
+      const url = btn.getAttribute('data-img-url');
+      imageModal.querySelector('#modalImage').src = url;
     });
-
     imageModal.addEventListener('hidden.bs.modal', () => {
       imageModal.querySelector('#modalImage').src = '';
-    });
-  }
-
-  // Confirm delete with modern styling
-  function confirmDelete() {
-    const result = confirm(
-      "🗑️ Delete Sale Record\n\n" +
-      "This sale will be moved to deleted history and stock will be restored.\n" +
-      "You can restore it later if needed.\n\n" +
-      "Continue with deletion?"
-    );
-    return result;
-  }
-
-  // Optional: Auto-submit on date change
-  const dateInputs = document.querySelectorAll('input[type="date"]');
-  dateInputs.forEach(input => {
-    input.addEventListener('change', () => {
-      // Uncomment to enable auto-submit
-      // document.getElementById('filterForm').submit();
-    });
-  });
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    // ESC to close modal
-    if (e.key === 'Escape' && imageModal.classList.contains('show')) {
-      bootstrap.Modal.getInstance(imageModal)?.hide();
-    }
-  });
-
-  // Add loading state to form
-  const filterForm = document.getElementById('filterForm');
-  if (filterForm) {
-    filterForm.addEventListener('submit', () => {
-      const submitBtn = filterForm.querySelector('button[type="submit"]');
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
-      submitBtn.disabled = true;
-    });
-  }
-
-  // Filter Collapse Icon Rotation
-  const filterCollapse = document.getElementById('filterCollapse');
-  if (filterCollapse) {
-    const toggleIcon = document.querySelector('.filter-toggle-icon');
-    
-    filterCollapse.addEventListener('show.bs.collapse', () => {
-      toggleIcon.classList.remove('collapsed');
-    });
-    
-    filterCollapse.addEventListener('hide.bs.collapse', () => {
-      toggleIcon.classList.add('collapsed');
     });
   }
 </script>
