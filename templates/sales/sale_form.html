@@ -625,6 +625,15 @@
   discountInput.addEventListener("input",   recalcFromDiscount);
   receivedInput.addEventListener("input",   updateSummary);
 
+  // --- NEW: Check for URL parameter "product" and auto-select ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const preSelectedId = urlParams.get('product');
+  
+  if (preSelectedId && productSelect.querySelector(`option[value="${preSelectedId}"]`)) {
+    productSelect.value = preSelectedId;
+  }
+  // -------------------------------------------------------------
+
   updateProductInfo();
 
 })();

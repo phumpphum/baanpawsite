@@ -128,20 +128,13 @@ def product_list(request):
     """Display paginated list of products with search functionality."""
     q = request.GET.get('q', '').strip()
     show_all = request.GET.get('all', '').lower() == 'true'
-    sort_by = request.GET.get('sort', '')  # รับค่า sort จาก URL
+    sort_by = request.GET.get('sort', '')
+    grouping = request.GET.get('grouping', 'off')
     
     # Optimize query with only needed fields
     products = Product.objects.only(
         'id', 'name', 'sku', 'price', 'cost', 'stock', 'colors', 'image'
     )
-    
-    # Apply sorting logic (แก้ไขส่วนนี้)
-    if sort_by == 'name':
-        products = products.order_by('name')  # เรียงตามชื่อ A-Z
-    elif sort_by == 'stock_asc':
-        products = products.order_by('stock')  # เรียงตาม Stock น้อยไปมาก
-    else:
-        products = products.order_by('-id')   # Default: สินค้าใหม่สุดขึ้นก่อน
     
     # Apply search filter
     if q:
@@ -150,27 +143,64 @@ def product_list(request):
             Q(sku__icontains=q) | 
             Q(colors__icontains=q)
         )
-    
-    # Pagination
-    if not show_all:
-        paginator = Paginator(products, 8)
-        page_number = request.GET.get('page', 1)
-        
-        try:
-            page_obj = paginator.page(page_number)
-        except PageNotAnInteger:
-            page_obj = paginator.page(1)
-        except EmptyPage:
-            page_obj = paginator.page(paginator.num_pages)
+
+    # --- Sorting Logic ---
+    if sort_by == 'name':
+        products = products.order_by('name')
+    elif sort_by == 'stock_asc':
+        products = products.order_by('stock')
     else:
-        page_obj = products
-    
+        products = products.order_by('-id')
+
+    products_display = []
+    page_obj = None
+
+    # --- Pagination Logic ---
+    if show_all:
+        products_display = products
+        page_obj = None # ไม่มีการแบ่งหน้า
+    else:
+        if grouping == 'on':
+            # === Grouped Pagination (8 Groups per page) ===
+            # ดึงชื่อสินค้าที่ไม่ซ้ำกัน เรียงตามชื่อ (เพื่อให้ Group อยู่ติดกัน)
+            # ใช้ order_by('name') เสมอสำหรับการจัดกลุ่ม เพื่อให้ regoup ใน template ทำงานถูกต้อง
+            group_names = products.order_by('name').values_list('name', flat=True).distinct()
+            
+            paginator = Paginator(group_names, 8) # 8 ชื่อ (กลุ่ม) ต่อหน้า
+            page_number = request.GET.get('page', 1)
+            
+            try:
+                page_names = paginator.page(page_number)
+            except PageNotAnInteger:
+                page_names = paginator.page(1)
+            except EmptyPage:
+                page_names = paginator.page(paginator.num_pages)
+            
+            # ดึงสินค้าทั้งหมดที่มีชื่ออยู่ในหน้านี้
+            products_display = products.filter(name__in=list(page_names)).order_by('name')
+            page_obj = page_names # ใช้ object ของกลุ่มสำหรับการสร้างปุ่มเปลี่ยนหน้า
+            
+        else:
+            # === Standard Pagination (8 Items per page) ===
+            paginator = Paginator(products, 8) # 8 ชิ้นต่อหน้า
+            page_number = request.GET.get('page', 1)
+            
+            try:
+                page_obj = paginator.page(page_number)
+            except PageNotAnInteger:
+                page_obj = paginator.page(1)
+            except EmptyPage:
+                page_obj = paginator.page(paginator.num_pages)
+                
+            products_display = page_obj
+
     return render(request, 'sales/product_list.html', {
-        'products': page_obj,
+        'products': products_display,
         'page_obj': page_obj,
         'q': q,
         'show_all': show_all,
-        'sort': sort_by, # ส่งค่า sort กลับไปที่ Template
+        'sort': sort_by,
+        'grouping': grouping,
     })
 
 def compress_image(image):

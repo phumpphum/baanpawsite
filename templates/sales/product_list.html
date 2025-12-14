@@ -83,10 +83,11 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
-    overflow: hidden;
+    overflow: visible; 
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
   }
 
   .luxury-card:hover {
@@ -95,9 +96,48 @@
     border-color: #d1d5db;
   }
 
-  .luxury-card.no-hover:hover {
-    transform: none;
+  /* Group Indicator */
+  .group-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(15, 23, 42, 0.85);
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    z-index: 10;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Stacked Card Effect for Groups */
+  .luxury-card.is-group::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: -4px;
+    bottom: -4px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    z-index: -1;
     box-shadow: var(--shadow-sm);
+  }
+  .luxury-card.is-group::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: -8px;
+    bottom: -8px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    z-index: -2;
+    opacity: 0.5;
   }
 
   /* Toolbar */
@@ -119,7 +159,7 @@
   .luxury-input {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 0.625rem 1rem 0.625rem 2.5rem; /* Left padding for icon */
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
     font-size: 0.95rem;
     color: var(--text-primary);
     background-color: var(--surface);
@@ -175,35 +215,15 @@
     cursor: pointer;
   }
 
-  .btn-primary-luxury {
-    background-color: var(--primary-color);
-    color: white;
-  }
+  .btn-primary-luxury { background-color: var(--primary-color); color: white; }
+  .btn-primary-luxury:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); color: white; }
+  
+  .btn-secondary-luxury { background-color: white; border: 1px solid var(--border-color); color: var(--text-primary); }
+  .btn-secondary-luxury:hover { background-color: #f9fafb; border-color: #d1d5db; color: var(--text-primary); }
+  .btn-secondary-luxury.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
 
-  .btn-primary-luxury:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-    color: white;
-  }
-
-  .btn-secondary-luxury {
-    background-color: white;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-  }
-
-  .btn-secondary-luxury:hover {
-    background-color: #f9fafb;
-    border-color: #d1d5db;
-    color: var(--text-primary);
-  }
-
-  .btn-secondary-luxury.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-  }
+  .btn-danger-luxury { background-color: white; border: 1px solid #fee2e2; color: var(--danger-text); }
+  .btn-danger-luxury:hover { background-color: #fef2f2; border-color: #fca5a5; }
 
   .btn-group-luxury {
     display: flex;
@@ -220,280 +240,127 @@
     border-right: 1px solid var(--border-color);
     transition: all 0.2s;
   }
+  .btn-group-luxury .btn-view:last-child { border-right: none; }
+  .btn-group-luxury .btn-view:hover { background: #f9fafb; }
+  .btn-group-luxury .btn-view.active { background: #f3f4f6; color: var(--primary-color); }
 
-  .btn-group-luxury .btn-view:last-child {
-    border-right: none;
-  }
+  /* Dropdown */
+  .dropdown-menu { border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 0.5rem; }
+  .dropdown-item { border-radius: 4px; font-size: 0.9rem; padding: 0.5rem 1rem; color: var(--text-primary); }
+  .dropdown-item:hover { background-color: #f9fafb; color: var(--primary-color); }
+  .dropdown-item.active { background-color: var(--primary-color); color: white; }
 
-  .btn-group-luxury .btn-view:hover {
-    background: #f9fafb;
-  }
-
-  .btn-group-luxury .btn-view.active {
-    background: #f3f4f6;
-    color: var(--primary-color);
-  }
-
-  /* Dropdown Luxury Style */
-  .dropdown-menu {
+  /* Custom Variant Dropdown (Theme Consistent) */
+  .variant-dropdown-menu {
+    min-width: 340px;
+    max-height: 400px;
+    overflow-y: auto;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
     padding: 0.5rem;
-  }
-  
-  .dropdown-item {
-    border-radius: 4px;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-    color: var(--text-primary);
-  }
-  
-  .dropdown-item:hover {
-    background-color: #f9fafb;
-    color: var(--primary-color);
-  }
-  
-  .dropdown-item.active, .dropdown-item:active {
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--surface);
+    box-shadow: var(--shadow-md);
+    z-index: 1050;
   }
 
-  /* Grid View Styles */
+  .variant-item {
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    transition: background-color 0.2s, border-color 0.2s;
+    border: 1px solid transparent;
+    margin-bottom: 0.25rem;
+    list-style: none;
+  }
+
+  .variant-item:hover {
+    background-color: var(--bg-body);
+    border-color: var(--border-color);
+  }
+
+  /* Product Display */
   .product-img-wrapper {
     position: relative;
-    padding-top: 100%; /* 1:1 Aspect Ratio */
+    padding-top: 100%;
     background: #f9fafb;
     border-bottom: 1px solid var(--border-color);
     overflow: hidden;
+    border-top-left-radius: var(--radius-lg);
+    border-top-right-radius: var(--radius-lg);
   }
 
   .product-img {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 1rem;
+    top: 0; left: 0; width: 100%; height: 100%;
+    object-fit: contain; padding: 1rem;
     transition: transform 0.3s ease;
   }
 
-  .luxury-card:hover .product-img {
-    transform: scale(1.05);
-  }
+  .luxury-card:hover .product-img { transform: scale(1.05); }
 
-  .card-body {
-    padding: 1.25rem;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .product-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-    line-height: 1.4;
-  }
-
-  .product-sku {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-bottom: 0.75rem;
-    font-family: monospace;
-  }
-
-  .product-price {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .product-cost {
-    font-size: 0.8rem;
-    color: var(--text-tertiary);
-  }
-
-  /* Stock Badges */
-  .stock-badge {
-    padding: 0.25rem 0.625rem;
-    border-radius: 100px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+  .card-body { 
+    padding: 1.25rem; 
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
+    background: var(--surface);
+    border-bottom-left-radius: var(--radius-lg);
+    border-bottom-right-radius: var(--radius-lg);
   }
   
+  .product-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; line-height: 1.4; }
+  .product-sku { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-family: monospace; }
+  .product-price { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+  .product-cost { font-size: 0.8rem; color: var(--text-tertiary); }
+
+  /* Stock Badges */
+  .stock-badge { padding: 0.25rem 0.625rem; border-radius: 100px; font-size: 0.75rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem; }
   .stock-in { background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(5, 150, 105, 0.1); }
   .stock-low { background: var(--warning-bg); color: var(--warning-text); border: 1px solid rgba(217, 119, 6, 0.1); }
   .stock-out { background: var(--danger-bg); color: var(--danger-text); border: 1px solid rgba(220, 38, 38, 0.1); }
 
-  /* Action Buttons (Icon only style) */
-  .action-btn-group {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: auto;
-    padding-top: 1rem;
-  }
-
+  /* Action Buttons */
+  .action-btn-group { display: flex; gap: 0.5rem; margin-top: auto; padding-top: 1rem; }
   .btn-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    background: white;
-    transition: all 0.2s;
+    width: 32px; height: 32px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-color); color: var(--text-secondary);
+    background: white; transition: all 0.2s;
   }
+  .btn-icon:hover { background: #f9fafb; color: var(--primary-color); border-color: #d1d5db; }
+  .btn-icon.delete:hover { background: var(--danger-bg); color: var(--danger-text); border-color: #fca5a5; }
 
-  .btn-icon:hover {
-    background: #f9fafb;
-    color: var(--primary-color);
-    border-color: #d1d5db;
-  }
-  
-  .btn-icon.delete:hover {
-    background: var(--danger-bg);
-    color: var(--danger-text);
-    border-color: #fca5a5;
-  }
-
-  /* List View Styles (Table) */
-  .table-container {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-
-  .luxury-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .luxury-table thead {
-    background: #f9fafb;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .luxury-table th {
-    padding: 1rem 1.5rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    letter-spacing: 0.05em;
-  }
-
-  .luxury-table td {
-    padding: 1rem 1.5rem;
-    vertical-align: middle;
-    border-bottom: 1px solid #f3f4f6;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-  }
-  
-  .luxury-table tr:last-child td { border-bottom: none; }
+  /* List View */
+  .table-container { background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: visible; /* changed for dropdown */ }
+  .luxury-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .luxury-table thead { background: #f9fafb; }
+  .luxury-table th { padding: 1rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
+  .luxury-table td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f3f4f6; color: var(--text-primary); font-size: 0.9rem; }
   .luxury-table tr:hover { background-color: #fafafa; }
-
-  .list-img {
-    width: 48px;
-    height: 48px;
-    border-radius: 6px;
-    object-fit: cover;
-    border: 1px solid var(--border-color);
-    background: #f9fafb;
-  }
+  .list-img { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); background: #f9fafb; }
 
   /* Compact View */
-  .compact-card .product-img-wrapper {
-    padding-top: 75%;
-  }
-  .compact-card .card-body {
-    padding: 0.75rem;
-  }
-  .compact-card .product-title {
-    font-size: 0.85rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  .compact-card .product-img-wrapper { padding-top: 75%; }
+  .compact-card .card-body { padding: 0.75rem; }
+  .compact-card .product-title { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Pagination */
-  .pagination {
-    display: flex;
-    justify-content: center;
-    gap: 0.25rem;
-    margin-top: 2rem;
-  }
-
-  .page-link {
-    min-width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    background: white;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: all 0.2s;
-  }
-
-  .page-link:hover:not(.disabled) {
-    background: #f9fafb;
-    border-color: #d1d5db;
-  }
-
-  .page-link.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-  }
-  
-  .page-link.disabled {
-    opacity: 0.5;
-    cursor: default;
-    background: #f3f4f6;
-  }
+  .pagination { display: flex; justify-content: center; gap: 0.25rem; margin-top: 2rem; }
+  .page-link { min-width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: white; color: var(--text-primary); font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
+  .page-link:hover:not(.disabled) { background: #f9fafb; border-color: #d1d5db; }
+  .page-link.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+  .page-link.disabled { opacity: 0.5; cursor: default; background: #f3f4f6; }
 
   /* Empty State */
-  .empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: var(--text-secondary);
-  }
-  
-  .empty-icon {
-    font-size: 3rem;
-    color: var(--text-tertiary);
-    margin-bottom: 1rem;
-    opacity: 0.5;
-  }
+  .empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-secondary); }
+  .empty-icon { font-size: 3rem; color: var(--text-tertiary); margin-bottom: 1rem; opacity: 0.5; }
 
   @media (max-width: 768px) {
     .page-header h1 { font-size: 1.5rem; }
     .toolbar-container { flex-direction: column; align-items: stretch; }
     .search-box { max-width: 100%; }
     .luxury-table th, .luxury-table td { padding: 0.75rem 1rem; }
-    .product-sku, .product-cost { display: none; } /* Hide details on mobile list */
-    
-    .toolbar-actions {
-       flex-direction: column;
-       width: 100%;
-    }
-    .toolbar-actions .btn-luxury, .toolbar-actions .btn-group-luxury {
-       width: 100%;
-    }
+    .toolbar-actions { flex-direction: column; width: 100%; }
+    .toolbar-actions .btn-luxury, .toolbar-actions .btn-group-luxury { width: 100%; }
   }
 </style>
 
@@ -523,248 +390,551 @@
 
   <!-- Toolbar -->
   <div class="toolbar-container">
-    <!-- Search -->
     <form method="get" class="search-box" role="search">
       <i class="bi bi-search search-icon"></i>
-      <input type="search" 
-             name="q" 
-             value="{{ q|default:'' }}" 
-             class="luxury-input" 
-             placeholder="Search name, SKU, color..."
-             autocomplete="off">
-      <button type="button" class="search-clear" aria-label="Clear search">
-        <i class="bi bi-x-circle-fill"></i>
-      </button>
-      
-      {% if request.GET.sort %}
-      <input type="hidden" name="sort" value="{{ request.GET.sort }}">
-      {% endif %}
-      {% if request.GET.all %}
-      <input type="hidden" name="all" value="true">
-      {% endif %}
+      <input type="search" name="q" value="{{ q|default:'' }}" class="luxury-input" placeholder="Search name, SKU, color..." autocomplete="off">
+      <button type="button" class="search-clear" aria-label="Clear search"><i class="bi bi-x-circle-fill"></i></button>
+      {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ request.GET.sort }}">{% endif %}
+      {% if request.GET.all %}<input type="hidden" name="all" value="true">{% endif %}
+      {% if request.GET.grouping %}<input type="hidden" name="grouping" value="{{ request.GET.grouping }}">{% endif %}
     </form>
 
     <div class="d-flex gap-2 flex-wrap toolbar-actions">
-      <!-- Sort Dropdown -->
+      <!-- Sort -->
       <div class="dropdown">
         <button class="btn btn-luxury btn-secondary-luxury dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-sort-down"></i> 
-          {% if request.GET.sort == 'name' %} Name (A-Z)
-          {% elif request.GET.sort == 'stock_asc' %} Low Stock First
-          {% else %} Default
-          {% endif %}
+          {% if request.GET.sort == 'name' %} Name (A-Z) {% elif request.GET.sort == 'stock_asc' %} Low Stock First {% else %} Default {% endif %}
         </button>
         <ul class="dropdown-menu border-0 shadow-lg">
-           <li>
-             <a class="dropdown-item {% if not request.GET.sort %}active{% endif %}" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.all %}all=true{% endif %}">
-               Default
-             </a>
-           </li>
-           <li><hr class="dropdown-divider"></li>
-           <li>
-             <a class="dropdown-item {% if request.GET.sort == 'name' %}active{% endif %}" href="?sort=name{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.all %}&all=true{% endif %}">
-               <i class="bi bi-alpha-down me-2"></i>Name (A-Z)
-             </a>
-           </li>
-           <li>
-             <a class="dropdown-item {% if request.GET.sort == 'stock_asc' %}active{% endif %}" href="?sort=stock_asc{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.all %}&all=true{% endif %}">
-               <i class="bi bi-sort-numeric-down-alt me-2"></i>Stock (Low to High)
-             </a>
-           </li>
+           <li><a class="dropdown-item" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.all %}all=true{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}">Default</a></li>
+           <li><a class="dropdown-item" href="?sort=name{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.all %}&all=true{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}"><i class="bi bi-alpha-down me-2"></i>Name (A-Z)</a></li>
+           <li><a class="dropdown-item" href="?sort=stock_asc{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.all %}&all=true{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}"><i class="bi bi-sort-numeric-down-alt me-2"></i>Stock (Low to High)</a></li>
         </ul>
       </div>
 
-      <!-- Show All Toggle -->
-      {% if request.GET.all == 'true' %}
-      <a href="?{% if q %}q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
-         class="btn btn-luxury btn-secondary-luxury active" 
-         title="Show Paginated View">
-         <i class="bi bi-layout-sidebar"></i> Paginate
+      <!-- Grouping Toggle -->
+      {% if request.GET.grouping == 'off' %}
+      <a href="?grouping=on{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.all %}&all={{ request.GET.all }}{% endif %}" 
+         class="btn btn-luxury btn-secondary-luxury" 
+         title="Enable Grouping">
+         <i class="bi bi-layers"></i> Group
       </a>
       {% else %}
-      <a href="?all=true{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" 
-         class="btn btn-luxury btn-secondary-luxury" 
-         title="Show All Items">
-         <i class="bi bi-collection"></i> Show All
+      <a href="?grouping=off{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.all %}&all={{ request.GET.all }}{% endif %}" 
+         class="btn btn-luxury btn-secondary-luxury active" 
+         title="Disable Grouping">
+         <i class="bi bi-layers-fill"></i> Grouped
       </a>
       {% endif %}
 
-      <!-- View Toggles -->
+      <!-- Show All -->
+      {% if request.GET.all == 'true' %}
+      <a href="?{% if q %}q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}" class="btn btn-luxury btn-secondary-luxury active"><i class="bi bi-layout-sidebar"></i> Paginate</a>
+      {% else %}
+      <a href="?all=true{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}" class="btn btn-luxury btn-secondary-luxury"><i class="bi bi-collection"></i> Show All</a>
+      {% endif %}
+
+      <!-- View Modes -->
       <div class="btn-group-luxury" role="group">
-        <button type="button" class="btn-view active" data-view="grid" title="Grid View">
-          <i class="bi bi-grid"></i>
-        </button>
-        <button type="button" class="btn-view" data-view="list" title="List View">
-          <i class="bi bi-list-ul"></i>
-        </button>
-        <button type="button" class="btn-view" data-view="compact" title="Compact View">
-          <i class="bi bi-grid-3x3"></i>
-        </button>
+        <button type="button" class="btn-view active" data-view="grid"><i class="bi bi-grid"></i></button>
+        <button type="button" class="btn-view" data-view="list"><i class="bi bi-list-ul"></i></button>
+        <button type="button" class="btn-view" data-view="compact"><i class="bi bi-grid-3x3"></i></button>
       </div>
     </div>
   </div>
 
   {% if products %}
-
-  <!-- Grid View -->
-  <div id="view-grid" class="view-mode">
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
-      {% for p in products %}
-      <div class="col">
-        <div class="luxury-card">
-          <div class="product-img-wrapper">
-            {% if p.image %}
-              <img src="{{ p.image.url }}" class="product-img" alt="{{ p.name }}" loading="lazy">
-            {% else %}
-              <div class="product-img d-flex align-items-center justify-content-center text-tertiary">
-                <i class="bi bi-image fs-1"></i>
-              </div>
-            {% endif %}
-          </div>
-          
-          <div class="card-body">
-            <div class="product-title text-truncate" title="{{ p.name }}">{{ p.name }}</div>
-            <div class="product-sku">{{ p.sku|default:"-" }}</div>
-            
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div class="d-flex flex-column">
-                <span class="product-price">฿{{ p.price|floatformat:2 }}</span>
-                <span class="product-cost">Cost: ฿{{ p.cost|floatformat:0 }}</span>
-              </div>
-              
-              {% if p.stock == 0 %}
-                <span class="stock-badge stock-out">Out</span>
-              {% elif p.stock <= 5 %}
-                <span class="stock-badge stock-low">{{ p.stock }} left</span>
+  
+  {% if request.GET.grouping == 'off' %}
+    {# --- UNGROUPED VIEW (Default) --- #}
+    
+    <!-- Grid View (Ungrouped) -->
+    <div id="view-grid" class="view-mode">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+        {% for p in products %}
+        <div class="col">
+          <div class="luxury-card">
+            <div class="product-img-wrapper">
+              {% if p.image %}
+                <img src="{{ p.image.url }}" class="product-img" loading="lazy">
               {% else %}
-                <span class="stock-badge stock-in">{{ p.stock }}</span>
+                <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image fs-1"></i></div>
               {% endif %}
             </div>
-
-            <div class="action-btn-group">
-              <a href="{% url 'product_edit' p.pk %}" class="btn-icon flex-grow-1" title="Edit">
-                <i class="bi bi-pencil"></i>
-              </a>
-              <form method="post" action="{% url 'product_delete' p.pk %}" 
-                    onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn-icon delete" title="Delete">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-
-  <!-- List View -->
-  <div id="view-list" class="view-mode d-none">
-    <div class="table-container">
-      <div class="table-responsive">
-        <table class="luxury-table">
-          <thead>
-            <tr>
-              <th style="width: 80px;">Image</th>
-              <th>Product</th>
-              <th>SKU / Colors</th>
-              <th class="text-end">Price</th>
-              <th class="text-end">Cost</th>
-              <th class="text-center">Stock</th>
-              <th class="text-end" style="width: 120px;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for p in products %}
-            <tr>
-              <td>
-                {% if p.image %}
-                  <img src="{{ p.image.url }}" class="list-img" alt="img">
-                {% else %}
-                  <div class="list-img d-flex align-items-center justify-content-center text-secondary">
-                    <i class="bi bi-image"></i>
-                  </div>
-                {% endif %}
-              </td>
-              <td>
-                <div class="fw-medium text-dark">{{ p.name }}</div>
-              </td>
-              <td>
+            <div class="card-body">
+              <div class="product-title text-truncate" title="{{ p.name }}">{{ p.name }}</div>
+              <div class="product-sku">{{ p.sku|default:"-" }}</div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="d-flex flex-column">
-                  <span class="text-dark small font-monospace">{{ p.sku|default:"-" }}</span>
-                  <span class="text-secondary small">{{ p.colors|default:"-" }}</span>
+                  <span class="product-price">฿{{ p.price|floatformat:2 }}</span>
+                  <span class="product-cost">Cost: ฿{{ p.cost|floatformat:0 }}</span>
                 </div>
-              </td>
-              <td class="text-end fw-medium text-dark">฿{{ p.price|floatformat:2 }}</td>
-              <td class="text-end text-secondary">฿{{ p.cost|floatformat:2 }}</td>
-              <td class="text-center">
-                {% if p.stock == 0 %}
-                  <span class="stock-badge stock-out">0</span>
-                {% elif p.stock <= 5 %}
-                  <span class="stock-badge stock-low">{{ p.stock }}</span>
-                {% else %}
-                  <span class="stock-badge stock-in">{{ p.stock }}</span>
+                {% if p.stock == 0 %} <span class="stock-badge stock-out">Out</span>
+                {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }} left</span>
+                {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
                 {% endif %}
-              </td>
-              <td class="text-end">
-                <div class="d-flex justify-content-end gap-1">
-                  <a href="{% url 'product_edit' p.pk %}" class="btn-icon" style="width:28px; height:28px;">
-                    <i class="bi bi-pencil" style="font-size: 0.8rem;"></i>
-                  </a>
-                  <form method="post" action="{% url 'product_delete' p.pk %}" 
-                        onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-icon delete" style="width:28px; height:28px;">
-                      <i class="bi bi-trash" style="font-size: 0.8rem;"></i>
-                    </button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Compact View -->
-  <div id="view-compact" class="view-mode d-none">
-    <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3">
-      {% for p in products %}
-      <div class="col">
-        <div class="luxury-card compact-card">
-          <div class="product-img-wrapper">
-            {% if p.image %}
-              <img src="{{ p.image.url }}" class="product-img" alt="{{ p.name }}" loading="lazy">
-            {% else %}
-              <div class="product-img d-flex align-items-center justify-content-center text-tertiary">
-                <i class="bi bi-image"></i>
               </div>
-            {% endif %}
-          </div>
-          
-          <div class="card-body">
-            <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="small fw-semibold">฿{{ p.price|floatformat:0 }}</span>
-              {% if p.stock == 0 %}
-                <span class="badge bg-danger rounded-pill" style="font-size:0.6rem">Out</span>
-              {% else %}
-                <span class="badge bg-light text-secondary border rounded-pill" style="font-size:0.6rem">{{ p.stock }}</span>
-              {% endif %}
+              <div class="action-btn-group">
+                <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color: var(--success-text); border-color: var(--success-text);" title="Sell"><i class="bi bi-cart-plus"></i></a>
+                <a href="{% url 'product_edit' p.pk %}" class="btn-icon flex-grow-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon delete"><i class="bi bi-trash"></i></button>
+                </form>
+              </div>
             </div>
-            <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-2 w-100" style="font-size: 0.75rem;">
-              Edit
-            </a>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
+
+    <!-- List View (Ungrouped) -->
+    <div id="view-list" class="view-mode d-none">
+      <div class="table-container">
+        <div class="table-responsive">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Image</th>
+                <th>Product</th>
+                <th>SKU / Colors</th>
+                <th class="text-end">Price</th>
+                <th class="text-end">Cost</th>
+                <th class="text-center">Stock</th>
+                <th class="text-end" style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+              <tr>
+                <td>
+                  {% if p.image %}<img src="{{ p.image.url }}" class="list-img">
+                  {% else %}<div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-image"></i></div>
+                  {% endif %}
+                </td>
+                <td><div class="fw-medium text-dark">{{ p.name }}</div></td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span class="text-dark small font-monospace">{{ p.sku|default:"-" }}</span>
+                    <span class="text-secondary small">{{ p.colors|default:"-" }}</span>
+                  </div>
+                </td>
+                <td class="text-end fw-medium text-dark">฿{{ p.price|floatformat:2 }}</td>
+                <td class="text-end text-secondary">฿{{ p.cost|floatformat:2 }}</td>
+                <td class="text-center">
+                  {% if p.stock == 0 %} <span class="stock-badge stock-out">0</span>
+                  {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }}</span>
+                  {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  <div class="d-flex justify-content-end gap-1">
+                    <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color:var(--success-text); border-color:var(--success-text); width:28px; height:28px;"><i class="bi bi-cart-plus" style="font-size:0.8rem"></i></a>
+                    <a href="{% url 'product_edit' p.pk %}" class="btn-icon" style="width:28px; height:28px;"><i class="bi bi-pencil" style="font-size:0.8rem"></i></a>
+                    <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn-icon delete" style="width:28px; height:28px;"><i class="bi bi-trash" style="font-size:0.8rem"></i></button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact View (Ungrouped) -->
+    <div id="view-compact" class="view-mode d-none">
+      <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3">
+        {% for p in products %}
+        <div class="col">
+          <div class="luxury-card compact-card">
+            <div class="product-img-wrapper">
+              {% if p.image %}<img src="{{ p.image.url }}" class="product-img" loading="lazy">
+              {% else %}<div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image"></i></div>
+              {% endif %}
+            </div>
+            <div class="card-body">
+              <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small fw-semibold">฿{{ p.price|floatformat:0 }}</span>
+                {% if p.stock == 0 %} <span class="badge bg-danger rounded-pill" style="font-size:0.6rem">Out</span>
+                {% else %} <span class="badge bg-light text-secondary border rounded-pill" style="font-size:0.6rem">{{ p.stock }}</span>
+                {% endif %}
+              </div>
+              <div class="d-flex gap-1">
+                 <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-cart-plus"></i></a>
+                 <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-pencil"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  {% else %}
+    {# --- GROUPED VIEW (Prioritized Logic) --- #}
+    {% regroup products|dictsort:"name" by name as product_groups %}
+
+    <!-- Grid View (Grouped) -->
+    <div id="view-grid" class="view-mode">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+        {# --- 1. SINGLE ITEMS FIRST --- #}
+        {% for group in product_groups %}
+          {% if group.list|length == 1 %}
+            {% with p=group.list.0 %}
+            <div class="col">
+              <div class="luxury-card">
+                <div class="product-img-wrapper">
+                  {% if p.image %}
+                    <img src="{{ p.image.url }}" class="product-img" loading="lazy">
+                  {% else %}
+                    <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image fs-1"></i></div>
+                  {% endif %}
+                </div>
+                <div class="card-body">
+                  <div class="product-title text-truncate" title="{{ p.name }}">{{ p.name }}</div>
+                  <div class="product-sku">{{ p.sku|default:"-" }}</div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex flex-column">
+                      <span class="product-price">฿{{ p.price|floatformat:2 }}</span>
+                      <span class="product-cost">Cost: ฿{{ p.cost|floatformat:0 }}</span>
+                    </div>
+                    {% if p.stock == 0 %} <span class="stock-badge stock-out">Out</span>
+                    {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }} left</span>
+                    {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="action-btn-group">
+                    <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color: var(--success-text); border-color: var(--success-text);" title="Sell"><i class="bi bi-cart-plus"></i></a>
+                    <a href="{% url 'product_edit' p.pk %}" class="btn-icon flex-grow-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                    <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn-icon delete"><i class="bi bi-trash"></i></button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endwith %}
+          {% endif %}
+        {% endfor %}
+
+        {# --- 2. GROUPED ITEMS AFTER --- #}
+        {% for group in product_groups %}
+          {% if group.list|length > 1 %}
+            <div class="col">
+              <div class="luxury-card is-group">
+                <div class="group-indicator">
+                  <i class="bi bi-layers-fill me-1"></i> {{ group.list|length }} Variants
+                </div>
+                <div class="product-img-wrapper">
+                  {% if group.list.0.image %}
+                    <img src="{{ group.list.0.image.url }}" class="product-img" loading="lazy">
+                  {% else %}
+                    <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image fs-1"></i></div>
+                  {% endif %}
+                </div>
+                <div class="card-body">
+                  <div class="product-title text-truncate" title="{{ group.grouper }}">{{ group.grouper }}</div>
+                  <div class="text-secondary small mb-3">{{ group.list.0.sku|default:"-" }} ...</div>
+                  
+                  <div class="mt-auto dropdown">
+                    <button class="btn-luxury btn-secondary-luxury w-100 dropdown-toggle d-flex justify-content-between align-items-center" 
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                      <span>Select Variant</span>
+                    </button>
+                    <ul class="dropdown-menu variant-dropdown-menu shadow-lg p-0">
+                      {% for p in group.list %}
+                        <li class="variant-item">
+                          <div class="d-flex align-items-center mb-2">
+                            <!-- Image Thumbnail -->
+                            <div class="me-3" style="width: 48px; height: 48px; flex-shrink: 0;">
+                              {% if p.image %}
+                                <img src="{{ p.image.url }}" class="rounded border" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+                              {% else %}
+                                <div class="rounded border bg-light d-flex align-items-center justify-content-center h-100 w-100">
+                                  <i class="bi bi-image text-muted"></i>
+                                </div>
+                              {% endif %}
+                            </div>
+                            
+                            <!-- Info -->
+                            <div class="flex-grow-1">
+                              <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                  <div class="fw-bold text-dark">{{ p.colors|default:"Standard" }}</div>
+                                  <div class="small text-secondary">{{ p.sku|default:"-" }}</div>
+                                </div>
+                                <div class="text-end">
+                                  <div class="fw-bold text-primary">฿{{ p.price|floatformat:0 }}</div>
+                                  {% if p.stock == 0 %} <span class="badge bg-danger py-1" style="font-size:0.6rem">Out</span>
+                                  {% elif p.stock <= 5 %} <span class="badge bg-warning text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
+                                  {% else %} <span class="badge bg-light text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
+                                  {% endif %}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- Actions -->
+                          <div class="d-flex gap-2">
+                             <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 flex-grow-1 d-flex justify-content-center" title="Sell" style="font-size:0.8rem"><i class="bi bi-cart-plus me-1"></i> Sell</a>
+                             <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-3 d-flex justify-content-center" title="Edit"><i class="bi bi-pencil"></i></a>
+                             <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
+                               {% csrf_token %}
+                               <button type="submit" class="btn-luxury btn-danger-luxury py-1 px-3 d-flex justify-content-center" title="Delete"><i class="bi bi-trash"></i></button>
+                             </form>
+                          </div>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- List View (Grouped) -->
+    <div id="view-list" class="view-mode d-none">
+      <div class="table-container">
+        <div class="table-responsive">
+          <table class="luxury-table">
+            <thead>
+              <tr>
+                <th style="width: 80px;">Image</th>
+                <th>Product</th>
+                <th>SKU / Colors</th>
+                <th class="text-end">Price</th>
+                <th class="text-end">Cost</th>
+                <th class="text-center">Stock</th>
+                <th class="text-end" style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {# --- 1. SINGLE ITEMS --- #}
+              {% for group in product_groups %}
+                {% if group.list|length == 1 %}
+                  {% with p=group.list.0 %}
+                  <tr>
+                    <td>
+                      {% if p.image %}<img src="{{ p.image.url }}" class="list-img">
+                      {% else %}<div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-image"></i></div>
+                      {% endif %}
+                    </td>
+                    <td><div class="fw-medium text-dark">{{ p.name }}</div></td>
+                    <td>
+                      <div class="d-flex flex-column">
+                        <span class="text-dark small font-monospace">{{ p.sku|default:"-" }}</span>
+                        <span class="text-secondary small">{{ p.colors|default:"-" }}</span>
+                      </div>
+                    </td>
+                    <td class="text-end fw-medium text-dark">฿{{ p.price|floatformat:2 }}</td>
+                    <td class="text-end text-secondary">฿{{ p.cost|floatformat:2 }}</td>
+                    <td class="text-center">
+                      {% if p.stock == 0 %} <span class="stock-badge stock-out">0</span>
+                      {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }}</span>
+                      {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end">
+                      <div class="d-flex justify-content-end gap-1">
+                        <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color:var(--success-text); border-color:var(--success-text); width:28px; height:28px;"><i class="bi bi-cart-plus" style="font-size:0.8rem"></i></a>
+                        <a href="{% url 'product_edit' p.pk %}" class="btn-icon" style="width:28px; height:28px;"><i class="bi bi-pencil" style="font-size:0.8rem"></i></a>
+                        <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn-icon delete" style="width:28px; height:28px;"><i class="bi bi-trash" style="font-size:0.8rem"></i></button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endwith %}
+                {% endif %}
+              {% endfor %}
+
+              {# --- 2. GROUPED ITEMS --- #}
+              {% for group in product_groups %}
+                {% if group.list|length > 1 %}
+                  <tr>
+                    <td>
+                      {% if group.list.0.image %}<img src="{{ group.list.0.image.url }}" class="list-img">
+                      {% else %}<div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-layers-fill"></i></div>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div class="fw-medium text-dark">{{ group.grouper }}</div>
+                      <span class="badge bg-secondary rounded-pill" style="font-size:0.65rem">{{ group.list|length }} Variants</span>
+                    </td>
+                    <td colspan="4" class="text-secondary small fst-italic">Multiple variants available...</td>
+                    <td class="text-end">
+                      <div class="dropdown">
+                        <button class="btn-luxury btn-secondary-luxury w-100 py-1 px-2 d-flex justify-content-between align-items-center" 
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="font-size:0.8rem">
+                          <span>Select Variant</span>
+                          <i class="bi bi-chevron-down small text-secondary"></i>
+                        </button>
+                        <ul class="dropdown-menu variant-dropdown-menu shadow-lg p-0 dropdown-menu-end">
+                          {% for p in group.list %}
+                            <li class="variant-item">
+                              <div class="d-flex align-items-center mb-2">
+                                <!-- Image Thumbnail -->
+                                <div class="me-3" style="width: 48px; height: 48px; flex-shrink: 0;">
+                                  {% if p.image %}
+                                    <img src="{{ p.image.url }}" class="rounded border" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+                                  {% else %}
+                                    <div class="rounded border bg-light d-flex align-items-center justify-content-center h-100 w-100">
+                                      <i class="bi bi-image text-muted"></i>
+                                    </div>
+                                  {% endif %}
+                                </div>
+                                
+                                <!-- Info -->
+                                <div class="flex-grow-1">
+                                  <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                      <div class="fw-bold text-dark">{{ p.colors|default:"Standard" }}</div>
+                                      <div class="small text-secondary">{{ p.sku|default:"-" }}</div>
+                                    </div>
+                                    <div class="text-end">
+                                      <div class="fw-bold text-primary">฿{{ p.price|floatformat:0 }}</div>
+                                      {% if p.stock == 0 %} <span class="badge bg-danger py-1" style="font-size:0.6rem">Out</span>
+                                      {% elif p.stock <= 5 %} <span class="badge bg-warning text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
+                                      {% else %} <span class="badge bg-light text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
+                                      {% endif %}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Actions -->
+                              <div class="d-flex gap-2">
+                                 <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 flex-grow-1 d-flex justify-content-center" title="Sell" style="font-size:0.8rem"><i class="bi bi-cart-plus me-1"></i> Sell</a>
+                                 <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-3 d-flex justify-content-center" title="Edit"><i class="bi bi-pencil"></i></a>
+                                 <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
+                                   {% csrf_token %}
+                                   <button type="submit" class="btn-luxury btn-danger-luxury py-1 px-3 d-flex justify-content-center" title="Delete"><i class="bi bi-trash"></i></button>
+                                 </form>
+                              </div>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact View (Grouped) -->
+    <div id="view-compact" class="view-mode d-none">
+      <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3">
+        {# --- 1. SINGLE ITEMS --- #}
+        {% for group in product_groups %}
+          {% if group.list|length == 1 %}
+            {% with p=group.list.0 %}
+            <div class="col">
+              <div class="luxury-card compact-card">
+                <div class="product-img-wrapper">
+                  {% if p.image %}<img src="{{ p.image.url }}" class="product-img" loading="lazy">
+                  {% else %}<div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image"></i></div>
+                  {% endif %}
+                </div>
+                <div class="card-body">
+                  <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small fw-semibold">฿{{ p.price|floatformat:0 }}</span>
+                    {% if p.stock == 0 %} <span class="badge bg-danger rounded-pill" style="font-size:0.6rem">Out</span>
+                    {% else %} <span class="badge bg-light text-secondary border rounded-pill" style="font-size:0.6rem">{{ p.stock }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="d-flex gap-1">
+                     <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-cart-plus"></i></a>
+                     <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-pencil"></i></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endwith %}
+          {% endif %}
+        {% endfor %}
+
+        {# --- 2. GROUPED ITEMS --- #}
+        {% for group in product_groups %}
+          {% if group.list|length > 1 %}
+            <div class="col">
+              <div class="luxury-card compact-card is-group">
+                <div class="product-img-wrapper">
+                  <div class="group-indicator" style="top:5px; right:5px; font-size:0.6rem; padding:2px 4px;">{{ group.list|length }}</div>
+                  {% if group.list.0.image %}<img src="{{ group.list.0.image.url }}" class="product-img" loading="lazy">
+                  {% else %}<div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-layers-fill"></i></div>
+                  {% endif %}
+                </div>
+                <div class="card-body">
+                  <div class="product-title text-truncate" title="{{ group.grouper }}">{{ group.grouper }}</div>
+                  
+                  <div class="mt-2 dropdown">
+                    <button class="btn-luxury btn-secondary-luxury w-100 py-1 px-0 dropdown-toggle" style="font-size: 0.75rem;"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                      Variants
+                    </button>
+                    <ul class="dropdown-menu variant-dropdown-menu shadow-lg p-0 dropdown-menu-end" style="min-width: 260px;">
+                      {% for p in group.list %}
+                        <li class="variant-item p-2">
+                          <div class="d-flex align-items-center mb-2">
+                            <!-- Image Thumbnail -->
+                            <div class="me-2" style="width: 40px; height: 40px; flex-shrink: 0;">
+                              {% if p.image %}
+                                <img src="{{ p.image.url }}" class="rounded border" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+                              {% else %}
+                                <div class="rounded border bg-light d-flex align-items-center justify-content-center h-100 w-100">
+                                  <i class="bi bi-image text-muted" style="font-size: 0.8rem;"></i>
+                                </div>
+                              {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                               <div class="d-flex justify-content-between align-items-center">
+                                 <div class="small fw-bold">{{ p.colors|default:"Std" }}</div>
+                                 <div class="small">฿{{ p.price|floatformat:0 }}</div>
+                               </div>
+                               <div class="d-flex justify-content-between align-items-center">
+                                  <span class="text-muted" style="font-size:0.7rem">Stock: {{ p.stock }}</span>
+                               </div>
+                            </div>
+                          </div>
+                          
+                          <div class="d-flex gap-1 mt-1">
+                             <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-0 px-2 flex-grow-1 d-flex justify-content-center" style="font-size:0.75rem">Sell</a>
+                             <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-0 px-2" style="font-size:0.75rem"><i class="bi bi-pencil"></i></a>
+                             <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
+                               {% csrf_token %}
+                               <button type="submit" class="btn-luxury btn-danger-luxury py-0 px-2" style="font-size:0.75rem"><i class="bi bi-trash"></i></button>
+                             </form>
+                          </div>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+  {% endif %}
 
   {% else %}
   <div class="empty-state">
@@ -772,9 +942,7 @@
     <h4>No products found</h4>
     <p class="mb-4">Try adjusting your search or add a new item.</p>
     {% if not q %}
-    <a href="{% url 'product_create' %}" class="btn-luxury btn-primary-luxury">
-      Create Product
-    </a>
+    <a href="{% url 'product_create' %}" class="btn-luxury btn-primary-luxury">Create Product</a>
     {% endif %}
   </div>
   {% endif %}
@@ -784,26 +952,16 @@
   <nav aria-label="Pagination">
     <div class="pagination">
       {% if page_obj.has_previous %}
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page=1">
-        <i class="bi bi-chevron-double-left"></i>
-      </a>
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.previous_page_number }}">
-        <i class="bi bi-chevron-left"></i>
-      </a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page=1"><i class="bi bi-chevron-double-left"></i></a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>
       {% else %}
       <span class="page-link disabled"><i class="bi bi-chevron-double-left"></i></span>
       <span class="page-link disabled"><i class="bi bi-chevron-left"></i></span>
       {% endif %}
-
       <span class="page-link active">{{ page_obj.number }}</span>
-
       {% if page_obj.has_next %}
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.next_page_number }}">
-        <i class="bi bi-chevron-right"></i>
-      </a>
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}page={{ page_obj.paginator.num_pages }}">
-        <i class="bi bi-chevron-double-right"></i>
-      </a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page={{ page_obj.paginator.num_pages }}"><i class="bi bi-chevron-double-right"></i></a>
       {% else %}
       <span class="page-link disabled"><i class="bi bi-chevron-right"></i></span>
       <span class="page-link disabled"><i class="bi bi-chevron-double-right"></i></span>
@@ -817,10 +975,7 @@
 <script>
   (function() {
     'use strict';
-
     const VIEW_STORAGE_KEY = 'baanpaw_products_view_luxury';
-    
-    // View mode management
     const viewButtons = document.querySelectorAll('[data-view]');
     const viewModes = {
       grid: document.getElementById('view-grid'),
@@ -830,33 +985,14 @@
 
     function setActiveView(viewName) {
       if (!viewModes[viewName]) viewName = 'grid';
-
-      // Hide all views
-      Object.values(viewModes).forEach(el => {
-        if (el) el.classList.add('d-none');
-      });
-
-      // Show selected view
-      if (viewModes[viewName]) {
-        viewModes[viewName].classList.remove('d-none');
-      }
-
-      // Update button states
+      Object.values(viewModes).forEach(el => { if (el) el.classList.add('d-none'); });
+      if (viewModes[viewName]) viewModes[viewName].classList.remove('d-none');
       viewButtons.forEach(btn => {
-        if (btn.dataset.view === viewName) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
+        if (btn.dataset.view === viewName) { btn.classList.add('active'); } else { btn.classList.remove('active'); }
       });
-
-      // Save preference
-      try {
-        localStorage.setItem(VIEW_STORAGE_KEY, viewName);
-      } catch (e) {}
+      try { localStorage.setItem(VIEW_STORAGE_KEY, viewName); } catch (e) {}
     }
 
-    // Load saved view
     let initialView = 'grid';
     try {
       const saved = localStorage.getItem(VIEW_STORAGE_KEY);
@@ -864,34 +1000,23 @@
     } catch (e) {}
     setActiveView(initialView);
 
-    // Click handlers
     viewButtons.forEach(btn => {
       btn.addEventListener('click', () => setActiveView(btn.dataset.view));
     });
 
-    // Search clear functionality
     const searchInput = document.querySelector('input[name="q"]');
     const clearBtn = document.querySelector('.search-clear');
-    
     if (searchInput && clearBtn) {
       clearBtn.addEventListener('click', () => {
-        searchInput.value = '';
-        searchInput.focus();
-        window.location.href = window.location.pathname; // Clear query
+        searchInput.value = ''; searchInput.focus(); window.location.href = window.location.pathname;
       });
     }
-
-    // Add loading state to delete forms
     document.querySelectorAll('form[action*="delete"]').forEach(form => {
       form.addEventListener('submit', function(e) {
         const btn = this.querySelector('button[type="submit"]');
-        if (btn) {
-           btn.style.opacity = '0.7';
-           btn.style.pointerEvents = 'none';
-        }
+        if (btn) { btn.style.opacity = '0.7'; btn.style.pointerEvents = 'none'; }
       });
     });
-
   })();
 </script>
 

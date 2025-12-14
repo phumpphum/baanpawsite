@@ -36,6 +36,14 @@
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
+  /* --- PERFORMANCE OPTIMIZATION --- */
+  /* ช่วยให้ Scroll ลื่นขึ้นเมื่อมีข้อมูลเยอะๆ */
+  .luxury-table tbody tr {
+    content-visibility: auto; 
+    contain-intrinsic-size: 80px; 
+  }
+  /* -------------------------------- */
+
   body {
     background-color: var(--bg-body);
     font-family: 'Inter', sans-serif;

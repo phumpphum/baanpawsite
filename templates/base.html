@@ -40,7 +40,7 @@
     /* Luxury Palette - Light Mode */
     --bg-body: #f9fafb;
     --surface: #ffffff;
-    --surface-glass: rgba(255, 255, 255, 0.9);
+    --surface-glass: rgba(255, 255, 255, 0.98); /* Increased opacity for performance */
     
     --text-primary: #111827;
     --text-secondary: #6b7280;
@@ -71,7 +71,7 @@
     /* Luxury Palette - Dark Mode */
     --bg-body: #111827; /* Gray 900 */
     --surface: #1f2937; /* Gray 800 */
-    --surface-glass: rgba(31, 41, 55, 0.9);
+    --surface-glass: rgba(31, 41, 55, 0.98); /* Increased opacity */
     
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
@@ -88,7 +88,13 @@
   }
 
   * {
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    /* Removed global transition for better scroll performance */
+    /* transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; */
+  }
+  
+  /* Specific transitions only where needed */
+  .btn, .form-control, .nav-link, .theme-toggle {
+     transition: all 0.2s ease;
   }
 
   body {
@@ -107,7 +113,8 @@
     position: sticky;
     top: 0;
     z-index: 1040;
-    backdrop-filter: blur(12px);
+    /* Removed backdrop-filter for scroll performance on long pages */
+    /* backdrop-filter: blur(12px); */ 
     border-bottom: 1px solid var(--border-color);
     padding: 0.75rem 0;
   }
