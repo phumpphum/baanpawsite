@@ -16,6 +16,7 @@
     --text-tertiary: #9ca3af;
     
     --primary-color: #0f172a; /* Slate 900 */
+    --accent-color: #6366f1;
     
     --border-color: #e5e7eb;
     --radius-lg: 16px;
@@ -34,8 +35,7 @@
   /* Hero Section */
   .hero-section {
     text-align: center;
-    padding: 4rem 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     animation: fadeIn 0.6s ease-out;
   }
 
@@ -56,55 +56,54 @@
     font-size: 1.1rem;
     color: var(--text-secondary);
     font-weight: 400;
-    max-width: 600px;
+    max-width: 650px;
     margin: 0 auto;
     line-height: 1.6;
   }
 
-  /* Menu Cards */
+  /* Cards */
+  .luxury-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+  }
+
+  .luxury-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: #d1d5db;
+  }
+
+  /* Menu Grid */
   .menu-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
-    padding: 0 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    margin-bottom: 4rem;
   }
 
   .menu-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 2.5rem 2rem;
+    padding: 2rem;
     text-align: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--shadow-sm);
     text-decoration: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
-    position: relative;
-    overflow: hidden;
   }
 
-  .menu-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-    border-color: #d1d5db;
-  }
-
-  /* Icons with soft background */
   .icon-wrapper {
-    width: 80px;
-    height: 80px;
-    border-radius: 24px;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
     transition: all 0.3s ease;
   }
 
@@ -112,9 +111,13 @@
     transform: scale(1.1) rotate(3deg);
   }
 
-  /* Card Content */
+  /* Menu Colors */
+  .card-products .icon-wrapper { background-color: #eff6ff; color: #3b82f6; }
+  .card-sales .icon-wrapper { background-color: #fdf2f8; color: #ec4899; }
+  .card-reports .icon-wrapper { background-color: #f0f9ff; color: #0ea5e9; }
+
   .card-title {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
@@ -123,58 +126,101 @@
   .card-desc {
     font-size: 0.9rem;
     color: var(--text-secondary);
-    line-height: 1.5;
   }
 
-  /* Specific Colors (Subtle Pastels) */
-  .card-products .icon-wrapper { background-color: #eff6ff; color: #3b82f6; } /* Blue */
-  .card-sales .icon-wrapper { background-color: #fdf2f8; color: #ec4899; }    /* Pink */
-  .card-reports .icon-wrapper { background-color: #f0f9ff; color: #0ea5e9; }  /* Cyan */
+  /* Brand Section */
+  .brand-badge {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+  }
 
-  /* Responsive */
+  .brand-content {
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+
+  .quote-box {
+    border-left: 3px solid var(--primary-color);
+    padding-left: 1.5rem;
+    font-style: italic;
+    color: var(--text-primary);
+    margin-top: 1.5rem;
+  }
+
   @media (max-width: 768px) {
     .hero-title { font-size: 2rem; }
-    .menu-grid { grid-template-columns: 1fr; }
-    .menu-card { padding: 2rem 1.5rem; }
+    .luxury-card { padding: 1.5rem; }
   }
 </style>
 
 <div class="container py-5">
+  
+  <!-- Hero Section -->
   <div class="hero-section">
-    <h1 class="hero-title">Welcome to Baanpaw</h1>
+    <h1 class="hero-title">Welcome to Baanpaw will turn to HiDREAM®️ soon !!!</h1>
     <p class="hero-subtitle">
       Streamline your shop management. Track products, record sales, and analyze performance in one elegant dashboard.
     </p>
   </div>
 
+  <!-- Navigation Grid -->
   <div class="menu-grid">
-    <!-- Products Card -->
-    <a href="{% url 'product_list' %}" class="menu-card card-products">
-      <div class="icon-wrapper">
-        <i class="bi bi-box-seam"></i>
-      </div>
+    <a href="{% url 'product_list' %}" class="luxury-card menu-card card-products">
+      <div class="icon-wrapper"><i class="bi bi-box-seam"></i></div>
       <h3 class="card-title">Products</h3>
-      <p class="card-desc">Manage inventory, update stock levels, and organize your catalog.</p>
+      <p class="card-desc">Manage inventory & catalog</p>
     </a>
-
-    <!-- Sales History Card -->
-    <a href="{% url 'sales_history' %}" class="menu-card card-sales">
-      <div class="icon-wrapper">
-        <i class="bi bi-receipt"></i>
-      </div>
+    <a href="{% url 'sales_history' %}" class="luxury-card menu-card card-sales">
+      <div class="icon-wrapper"><i class="bi bi-receipt"></i></div>
       <h3 class="card-title">Sales History</h3>
-      <p class="card-desc">View transaction logs, track daily sales, and monitor revenue.</p>
+      <p class="card-desc">View transaction logs</p>
     </a>
-
-    <!-- Reports Card -->
-    <a href="{% url 'sales_report' %}" class="menu-card card-reports">
-      <div class="icon-wrapper">
-        <i class="bi bi-graph-up-arrow"></i>
-      </div>
+    <a href="{% url 'sales_report' %}" class="luxury-card menu-card card-reports">
+      <div class="icon-wrapper"><i class="bi bi-graph-up-arrow"></i></div>
       <h3 class="card-title">Reports</h3>
-      <p class="card-desc">Analyze business performance with visual charts and statistics.</p>
+      <p class="card-desc">Analytics & statistics</p>
     </a>
   </div>
+
+  <hr class="border-secondary opacity-10 w-50 mx-auto mb-5">
+
+  <!-- Featured Brand Section (Redesigned) -->
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="luxury-card p-4 p-md-5">
+        <div class="text-center mb-4">
+          <span class="brand-badge mb-3">Featured Brand</span>
+          <h2 class="fw-bold" style="color: var(--text-primary);">About HiDREAM ®️</h2>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-10 mx-auto">
+            <p class="brand-content text-center mb-4">
+              Established in 2016, HiDREAM is an original designer brand committed to developing practical and creative daily necessities for furry children.
+            </p>
+            
+            <div class="bg-body rounded-4 p-4 border border-light-subtle">
+              <p class="mb-3 text-secondary small">
+                <strong class="text-primary text-uppercase" style="letter-spacing: 0.5px;">Core Products:</strong> 
+                Pet backpacks, collars, harnesses, leads, car nest pads, and more.
+              </p>
+              <div class="quote-box small">
+                "Our brand philosophy is to constantly explore the texture that will make the lives of owners and pets more real, whether at home or any destination, to enter the right state of comfort and relaxation."
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 {% endblock %}
