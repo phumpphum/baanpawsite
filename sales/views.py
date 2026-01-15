@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q, ProtectedError
 from django.views.decorators.http import require_http_methods, require_POST
@@ -161,6 +162,7 @@ def compress_image(image):
 # PRODUCT VIEWS
 # ============================================================================
 
+@login_required
 def product_list(request):
     """Display paginated list of products with search functionality."""
     q = request.GET.get('q', '').strip()
@@ -260,6 +262,7 @@ def product_list(request):
     })
 
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def product_create(request):
     """Create a new product."""
@@ -286,6 +289,7 @@ def product_create(request):
     })
 
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def product_edit(request, pk):
     """Edit an existing product."""
@@ -315,6 +319,7 @@ def product_edit(request, pk):
     })
 
 
+@login_required
 @require_POST
 def product_delete(request, pk):
     """Delete a product (cascade delete sales or protect)."""
@@ -337,6 +342,7 @@ def product_delete(request, pk):
 # SALES VIEWS
 # ============================================================================
 
+@login_required
 def sales_history(request):
     """Display sales history with filtering and summary statistics."""
     start_str = request.GET.get('start')
@@ -505,6 +511,7 @@ def sales_history(request):
         'all_notes': all_notes,
     })
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def sale_create(request):
     if request.method == 'POST':
@@ -563,6 +570,7 @@ def sale_create(request):
         'action': 'create',
     })
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def sale_edit(request, pk):
     sale = get_object_or_404(Sale, pk=pk, is_deleted=False)
@@ -608,6 +616,7 @@ def sale_edit(request, pk):
         'action': 'edit',
     })
 
+@login_required
 @require_POST
 def sale_delete(request, pk):
     sale = get_object_or_404(Sale, pk=pk, is_deleted=False)
@@ -619,6 +628,7 @@ def sale_delete(request, pk):
     return redirect('sales_history')
 
 
+@login_required
 def sales_deleted(request):
     """Display soft-deleted sales."""
     qs = Sale.objects.select_related('product').filter(
@@ -628,6 +638,7 @@ def sales_deleted(request):
     return render(request, 'sales/sales_deleted.html', {'sales': qs})
 
 
+@login_required
 @require_POST
 def sale_restore(request, pk):
     sale = get_object_or_404(Sale, pk=pk, is_deleted=True)
@@ -638,6 +649,7 @@ def sale_restore(request, pk):
         messages.error(request, str(e))
     return redirect('sales_deleted')
 
+@login_required
 @require_POST
 def sale_delete_permanent(request, pk):
     """Permanently delete a soft-deleted sale."""
@@ -651,6 +663,7 @@ def sale_delete_permanent(request, pk):
 # REPORTS & ANALYTICS
 # ============================================================================
 
+@login_required
 def sales_report(request):
     """Display sales report page with date range and granularity options."""
     tz = get_current_timezone()
@@ -670,6 +683,7 @@ def sales_report(request):
     return render(request, 'sales/sales_report.html', context)
 
 
+@login_required
 def api_sales_series(request):
     """API endpoint for sales data series (JSON)."""
     granularity = request.GET.get('g', 'day')
@@ -793,7 +807,7 @@ def api_sales_series(request):
 # OTHER VIEWS
 # ============================================================================
 
-# 🌐 public
+@login_required
 def admin_home(request):
     return render(request, "admin_home.html")
 
@@ -819,6 +833,7 @@ def api_note_suggestions(request):
 # EXPENSES VIEWS (UPDATED FOR SOFT DELETE)
 # ============================================================================
 
+@login_required
 def expense_list(request):
     """Display expenses list with filtering and category breakdown."""
     start_str = request.GET.get('start')
@@ -932,6 +947,7 @@ def expense_list(request):
         'category_choices': Expense.CATEGORY_CHOICES,
     })
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def expense_create(request):
     """Create a new expense."""
@@ -963,6 +979,7 @@ def expense_create(request):
     })
 
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def expense_edit(request, pk):
     """Edit an existing expense."""
@@ -995,6 +1012,7 @@ def expense_edit(request, pk):
     })
 
 
+@login_required
 @require_POST
 def expense_delete(request, pk):
     """Soft delete an expense (Move to Trash)."""
@@ -1013,6 +1031,7 @@ def expense_delete(request, pk):
 # TRASH / HISTORY VIEWS
 # ============================================================================
 
+@login_required
 def expense_deleted(request):
     """Display list of soft-deleted expenses."""
     # ✅ Show only deleted items
@@ -1023,6 +1042,7 @@ def expense_deleted(request):
     })
 
 
+@login_required
 @require_POST
 def expense_restore(request, pk):
     """Restore a soft-deleted expense."""
@@ -1037,6 +1057,7 @@ def expense_restore(request, pk):
     return redirect('expense_deleted')
 
 
+@login_required
 @require_POST
 def expense_hard_delete(request, pk):
     """Permanently delete an expense from DB."""
@@ -1052,6 +1073,7 @@ def expense_hard_delete(request, pk):
 #  api_sales_export_csv
 # ============================================================================
 
+@login_required
 def api_sales_export_csv(request):
     start = (request.GET.get("start") or "").strip()
     end = (request.GET.get("end") or "").strip()

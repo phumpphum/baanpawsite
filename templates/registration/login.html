@@ -1,0 +1,558 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f1115">
+  <title>Sign In | Baanpaw Shop</title>
+
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}?v=final">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('baanpaw-theme') || 'dark';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      } catch (e) {}
+    })();
+  </script>
+
+  <style>
+    :root {
+      --glass-blur: blur(20px) saturate(180%);
+      --radius-xl: 28px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --purple-glow: rgba(139, 92, 246, 0.25);
+      --bg-body: #f8fafc;
+      --surface-glass: rgba(255, 255, 255, 0.82);
+      --surface-input: rgba(241, 245, 249, 0.9);
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border-color: rgba(15, 23, 42, 0.08);
+      --shadow-glass: 0 25px 60px -12px rgba(15, 23, 42, 0.18);
+      --shadow-button: 0 10px 30px -5px rgba(99, 102, 241, 0.4);
+    }
+
+    [data-bs-theme="dark"] {
+      --bg-body: #0a0b0e;
+      --surface-glass: rgba(22, 24, 32, 0.88);
+      --surface-input: rgba(30, 34, 45, 0.9);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --shadow-glass: 0 30px 70px -15px rgba(0, 0, 0, 0.6);
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    /* Multi-layer animated background */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.6;
+      animation: orbFloat 20s ease-in-out infinite;
+    }
+
+    .bg-orb-1 {
+      width: 500px;
+      height: 500px;
+      background: var(--accent-glow);
+      top: -150px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+
+    .bg-orb-2 {
+      width: 400px;
+      height: 400px;
+      background: var(--purple-glow);
+      bottom: -100px;
+      right: -80px;
+      animation-delay: -7s;
+      animation-duration: 25s;
+    }
+
+    .bg-orb-3 {
+      width: 300px;
+      height: 300px;
+      background: rgba(56, 189, 248, 0.2);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: -14s;
+      animation-duration: 30s;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(30px, -40px) scale(1.05); }
+      50% { transform: translate(-20px, 30px) scale(0.95); }
+      75% { transform: translate(40px, 20px) scale(1.02); }
+    }
+
+    /* Login card */
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface-glass);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-glass);
+      padding: 48px 40px;
+      position: relative;
+      animation: cardEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .login-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-xl);
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent 50%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Brand area */
+    .brand-area {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .logo-container {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .brand-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      object-fit: contain;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 12px 32px -8px rgba(99, 102, 241, 0.35);
+    }
+
+    .logo-glow {
+      position: absolute;
+      inset: -8px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      border-radius: 24px;
+      opacity: 0.25;
+      filter: blur(16px);
+      animation: logoGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes logoGlow {
+      from { opacity: 0.2; transform: scale(1); }
+      to { opacity: 0.35; transform: scale(1.05); }
+    }
+
+    .brand-title {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 8px;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin: 0;
+      font-weight: 400;
+    }
+
+    /* Form styling */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      pointer-events: none;
+      z-index: 5;
+      transition: color 0.2s ease;
+    }
+
+    .form-control {
+      width: 100%;
+      height: 52px;
+      background: var(--surface-input);
+      border: 1.5px solid transparent;
+      border-radius: var(--radius-lg);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 0 18px 0 50px;
+      transition: all 0.25s ease;
+    }
+
+    .form-control:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .form-control:focus {
+      background: var(--surface-input);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+      outline: none;
+    }
+
+    .form-control:focus + .input-icon,
+    .form-control:not(:placeholder-shown) + .input-icon {
+      color: var(--accent);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Login button */
+    .btn-login {
+      width: 100%;
+      height: 54px;
+      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+      border: none;
+      border-radius: var(--radius-lg);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-button);
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-login::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px -8px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-login:hover::before {
+      opacity: 1;
+    }
+
+    .btn-login:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-login i {
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+
+    /* Error alert */
+    .error-alert {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      color: #ef4444;
+      font-size: 0.88rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    [data-bs-theme="dark"] .error-alert {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+    }
+
+    /* Back link */
+    .back-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 28px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: var(--accent);
+    }
+
+    .back-link i {
+      transition: transform 0.2s ease;
+    }
+
+    .back-link:hover i {
+      transform: translateX(-3px);
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-full);
+      background: var(--surface-glass);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 24px -6px rgba(0,0,0,0.15);
+      z-index: 100;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-2px) rotate(15deg);
+      box-shadow: 0 12px 32px -8px rgba(0,0,0,0.2);
+    }
+
+    .theme-toggle i {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 24px 0;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 36px 28px;
+        border-radius: 24px;
+      }
+      .brand-logo {
+        width: 64px;
+        height: 64px;
+      }
+      .brand-title {
+        font-size: 1.5rem;
+      }
+    }
+
+    /* Focus visible for accessibility */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-layer">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+  </div>
+
+  <!-- Theme toggle -->
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+    <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+  </button>
+
+  <!-- Login card -->
+  <div class="login-card">
+    <div class="brand-area">
+      <div class="logo-container">
+        <div class="logo-glow"></div>
+        <img src="{% static 'img/favicon.png' %}" alt="Baanpaw" class="brand-logo">
+      </div>
+      <h1 class="brand-title">Hi CEO</h1>
+      <p class="brand-subtitle">Sign in to manage na!!!</p>
+    </div>
+
+    {% if form.errors %}
+    <div class="error-alert">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>Invalid username or password</span>
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label class="form-label" for="id_username">Username</label>
+        <div class="input-wrapper">
+          <input type="text" 
+                 name="username" 
+                 id="id_username" 
+                 class="form-control" 
+                 placeholder="Enter your username"
+                 autocomplete="username"
+                 autofocus
+                 required>
+          <i class="bi bi-person input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="id_password">Password</label>
+        <div class="input-wrapper">
+          <input type="password" 
+                 name="password" 
+                 id="id_password" 
+                 class="form-control" 
+                 placeholder="Enter your password"
+                 autocomplete="current-password"
+                 required>
+          <i class="bi bi-lock input-icon"></i>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login">
+        <i class="bi bi-arrow-right-circle-fill"></i>
+        Sign In
+      </button>
+    </form>
+
+    <a href="{% url 'root_router' %}" class="back-link">
+      <i class="bi bi-arrow-left"></i>
+      Back to Home
+    </a>
+  </div>
+
+  <script>
+    // Theme toggle
+    const toggle = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
+    
+    function updateIcon() {
+      const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+      icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+    }
+    
+    updateIcon();
+    
+    toggle.addEventListener('click', () => {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-bs-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-bs-theme', next);
+      localStorage.setItem('baanpaw-theme', next);
+      updateIcon();
+    });
+  </script>
+</body>
+</html>

@@ -893,6 +893,16 @@
                   aria-label="Toggle theme" title="Toggle theme">
             <i class="bi bi-moon-fill" id="themeIcon"></i>
           </button>
+
+          {% if user.is_authenticated %}
+          <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="icon-circle-btn" 
+                    aria-label="ออกจากระบบ" title="ออกจากระบบ">
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </form>
+          {% endif %}
         </div>
 
         <!-- toggler -->
