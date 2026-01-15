@@ -1,611 +1,1328 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% block title %}Sales History{% endblock %}
 {% block content %}
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
+  /* ===================== FONTS ===================== */
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
-  :root {
-    /* Luxury Palette */
-    --bg-body: #f9fafb;
-    --surface: #ffffff;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --text-tertiary: #9ca3af;
-    
-    --primary-color: #0f172a; /* Slate 900 */
-    --primary-hover: #1e293b;
-    
-    --success-bg: #ecfdf5;
-    --success-text: #059669;
-    --success-border: #a7f3d0;
-    
-    --danger-bg: #fef2f2;
-    --danger-text: #dc2626;
-    --danger-border: #fecaca;
-    
-    --warning-bg: #fffbeb;
-    --warning-text: #d97706;
-    --warning-border: #fde68a;
-    
-    --border-color: #e5e7eb;
-    --radius-lg: 12px;
-    --radius-md: 8px;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  /* ==========================================================
+     TOKENS
+     ========================================================== */
+  :root{
+    --bg-body:#f3f4f6;
+    --surface:#ffffff;
+    --surface-2:#f9fafb;
+
+    --text-primary:#0f172a;
+    --text-secondary:#64748b;
+    --text-tertiary:#94a3b8;
+
+    --primary-color:#0f172a;
+    --primary-hover:#1e293b;
+    --accent:#6366f1;
+
+    --success-bg:#ecfdf5;
+    --success-text:#059669;
+    --success-border:#a7f3d0;
+
+    --danger-bg:#fef2f2;
+    --danger-text:#dc2626;
+    --danger-border:#fecaca;
+
+    --warning-bg:#fffbeb;
+    --warning-text:#d97706;
+    --warning-border:#fde68a;
+
+    --info-bg:#eff6ff;
+    --info-text:#2563eb;
+    --info-border:#bfdbfe;
+
+    --border-color:#e5e7eb;
+
+    --radius-xl:18px;
+    --radius-lg:14px;
+    --radius-md:12px;
+
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
+    --shadow-md: 0 12px 26px -20px rgba(15,23,42,.35);
+
+    --focus-ring: 0 0 0 4px rgba(99,102,241,.18);
+
+    --hover-overlay: rgba(2,6,23,.03);
+    --row-hover: rgba(2,6,23,.03);
+
+    /* Controls */
+    --ctrl-h:44px;
+    --ctrl-r:999px;
+    --ctrl-pad:14px;
   }
 
-  /* --- PERFORMANCE OPTIMIZATION --- */
-  .luxury-table tbody tr {
-    content-visibility: auto; 
-    contain-intrinsic-size: 80px; 
-  }
-  /* -------------------------------- */
+  /* DARK MODE */
+  [data-bs-theme="dark"]{
+    --bg-body: #0f1115;
+    --surface:#0b1220;
+    --surface-2:#0f172a;
 
-  body {
-    background-color: var(--bg-body);
-    font-family: 'Inter', sans-serif;
+    --text-primary:#e5e7eb;
+    --text-secondary:#9aa7bd;
+    --text-tertiary:#64748b;
+
+    --border-color: rgba(148,163,184,.18);
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+    --shadow-md: 0 18px 34px -26px rgba(0,0,0,.75);
+
+    --focus-ring: 0 0 0 4px rgba(99,102,241,.28);
+
+    --hover-overlay: rgba(226,232,240,.06);
+    --row-hover: rgba(226,232,240,.05);
+  }
+
+  /* BASE */
+  body{
+    font-family:"Inter",sans-serif;
+    color:var(--text-primary);
+    background:var(--bg-body) !important;
+  }
+
+  .num-font{
+    font-family:"JetBrains Mono","Segoe UI Mono",monospace;
+    font-variant-numeric:tabular-nums;
+    font-weight:700;
+    letter-spacing:-.35px;
+  }
+
+  /* Override bootstrap helper colors */
+  .text-secondary{ color:var(--text-secondary)!important; }
+  .text-tertiary{ color:var(--text-tertiary)!important; }
+  .text-dark{ color:var(--text-primary)!important; }
+  .text-primary{ color:var(--info-text)!important; }
+
+  /* STRUCTURE / CARDS */
+  .luxury-card,
+  .filter-section,
+  .table-container,
+  .stat-card,
+  .sale-card,
+  .kpi-box,
+  .kpi-sub,
+  .active-filters{
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-xl);
+   xer-shadow:var(--shadow-sm);
+  }
+
+  /* ==========================================================
+     ✅ HEADER (ให้เหมือน Sales Report)
+     ========================================================== */
+  .header-wrap{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:12px;
+    margin-bottom:1.1rem;
+    flex-wrap:wrap;
+  }
+
+  .page-title{
+    margin:0;
+    font-size:1.35rem;           /* ใกล้ h3 */
+    font-weight:900;
+    letter-spacing:-.02em;
+    color:var(--text-primary);
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+
+  .page-subtitle{
+    margin-top:.35rem;
+    font-size:.86rem;
+    color:var(--text-secondary);
+    display:flex;
+    align-items:center;
+    gap:.55rem;
+    flex-wrap:wrap;
+  }
+
+  .badge-live{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:.78rem;
+    border:1px solid rgba(5,150,105,.22);
+    background:var(--success-bg);
+    color:var(--success-text);
+    white-space:nowrap;
+  }
+
+  .badge-live .dot{
+    width:7px; height:7px;
+    border-radius:50%;
+    background:var(--success-text);
+    display:inline-block;
+    opacity:.9;
+  }
+
+  .header-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .badge-count{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid var(--border-color);
+    background:rgba(148,163,184,.10);
+    color:var(--text-secondary);
+    font-weight:900;
+    font-size:.78rem;
+    white-space:nowrap;
+  }
+
+  /* Active filter chips (top) */
+  .chips{ display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.65rem; }
+  .chip-slim{
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.22rem .55rem;
+    border-radius:999px;
+    border:1px solid var(--border-color);
+    background: rgba(148,163,184,.12);
+    color:var(--text-secondary);
+    font-size:.78rem;
+    font-weight:800;
+  }
+  .chip-slim i{ opacity:.85; }
+
+  /* KPI GRID */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+    gap:.85rem;
+    margin-bottom:1.35rem;
+  }
+  .stat-card{
+    padding:.85rem 1rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    min-height:92px;
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    overflow:hidden;
+  }
+  .stat-card:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-md);
+    border-color:rgba(99,102,241,.35);
+  }
+  .stat-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:.6rem;
+    margin-bottom:.25rem;
+    color:var(--text-secondary);
+    font-weight:900;
+    min-width:0;
+    font-size:.74rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .stat-icon{ font-size:1rem; opacity:.9; color:var(--text-secondary)!important; }
+  .stat-value{
+    font-size:1.28rem;
+    font-weight:900;
+    color:var(--text-primary);
+    line-height:1.15;
+  }
+
+  .stat-card.gross{ border-left:3px solid #111827; }
+  [data-bs-theme="dark"] .stat-card.gross{ border-left-color:#cbd5e1; }
+  .stat-card.received{ border-left:3px solid var(--accent); }
+  .stat-card.discount{ border-left:3px solid var(--danger-text); }
+  .stat-card.commission{ border-left:3px solid var(--warning-text); }
+  .stat-card.cost{ border-left:3px solid rgba(148,163,184,.9); }
+  [data-bs-theme="dark"] .stat-card.cost{ border-left-color: rgba(148,163,184,.55); }
+  .stat-card.profit{ border-left:3px solid var(--success-text); }
+
+  /* FILTER SECTION */
+  .filter-section{ overflow:hidden; margin-bottom:1.25rem; }
+
+  .filter-header{
+    padding:.85rem 1.15rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    user-select:none;
+    background:transparent;
+    border-bottom:1px solid transparent;
+    transition:background .16s ease, border-color .16s ease;
+  }
+  .filter-header[aria-expanded="true"]{
+    border-bottom-color:var(--border-color);
+    background:var(--hover-overlay);
+  }
+
+  .filter-body{
+    padding:1rem 1.15rem;
+    background:var(--surface-2);
+    border-top:1px solid var(--border-color);
+  }
+
+  .icon-box-soft{
+    width:30px; height:30px;
+    border-radius:10px;
+    background: rgba(148,163,184,.14);
     color: var(--text-primary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.95rem;
+    border:1px solid var(--border-color);
   }
 
-  /* Typography for Numbers */
-  .num-font {
-    font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
-    font-variant-numeric: tabular-nums;
-    font-weight: 500;
-    letter-spacing: -0.5px;
+  /* Capsule inputs */
+  .luxury-input, .form-select{
+    border:1px solid var(--border-color);
+    border-radius:var(--ctrl-r);
+    padding:0 var(--ctrl-pad);
+    background:var(--surface);
+    width:100%;
+    font-size:.9rem;
+    font-weight:800;
+    color:var(--text-primary);
+    transition:border-color .14s ease, box-shadow .14s ease, background .14s ease;
+    min-height:var(--ctrl-h);
+    line-height:var(--ctrl-h);
   }
+  [data-bs-theme="dark"] .luxury-input,
+  [data-bs-theme="dark"] .form-select{
+    background: rgba(2,6,23,.22);
+  }
+  .luxury-input:focus, .form-select:focus{
+    border-color:rgba(99,102,241,.75);
+    box-shadow:var(--focus-ring);
+    outline:none;
+  }
+  .luxury-input::placeholder{ color:var(--text-tertiary); }
 
-  /* General Card */
-  .luxury-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
+  .input-icon-wrapper{ position:relative; }
+  .input-icon-wrapper i{
+    position:absolute;
+    left:.78rem; top:50%;
+    transform:translateY(-50%);
+    color:var(--text-tertiary);
+    pointer-events:none;
+    font-size:.95rem;
   }
-
-  /* Header Section */
-  .page-header {
-    padding: 1.5rem 0;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .page-header h1 {
-    font-size: 1.875rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-  }
-
-  /* Stats Grid */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    padding: 1.25rem;
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
-    display: block;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
-  }
-  
-  .stat-card.profit .stat-value { color: var(--success-text); }
-
-  /* Filters Redesigned */
-  .filter-section {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s ease;
-  }
-
-  .filter-section:hover {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    border-color: #d1d5db;
-  }
-
-  .filter-header {
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    background-color: transparent;
-    border-bottom: 1px solid transparent;
-    transition: all 0.3s ease;
-  }
-  
-  .filter-header[aria-expanded="true"] {
-    border-bottom-color: var(--border-color);
-    background-color: #fcfcfc;
-  }
-
-  .filter-body {
-    padding: 1.5rem;
-    background-color: #ffffff;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  }
-
-  .icon-box-soft {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background-color: #f3f4f6;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-  }
-
-  .luxury-input {
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 0.625rem 1rem;
-    background-color: var(--surface);
-    width: 100%;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    transition: all 0.2s;
-  }
-  
-  .luxury-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
-    outline: none;
-  }
-
-  .input-icon-wrapper {
-    position: relative;
-  }
-
-  .input-icon-wrapper i {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-tertiary);
-    pointer-events: none;
-    font-size: 0.9rem;
-  }
-
-  .luxury-input-with-icon {
-    padding-left: 2.5rem !important;
-  }
-
-  .transition-icon {
-    transition: transform 0.3s ease;
-  }
-  
-  .filter-header[aria-expanded="true"] .transition-icon {
-    transform: rotate(180deg);
-  }
+  .luxury-input-with-icon{ padding-left:2.35rem!important; }
 
   /* Buttons */
-  .btn-luxury {
-    padding: 0.625rem 1.25rem;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    font-size: 0.9rem;
+  .btn-luxury{
+    height:var(--ctrl-h);
+    border-radius:var(--ctrl-r);
+    padding:0 16px;
+    font-weight:900;
+    transition:transform .15s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease;
+    border:1px solid transparent;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.55rem;
+    text-decoration:none;
+    font-size:.92rem;
+    cursor:pointer;
+    line-height:1;
+    white-space:nowrap;
+    user-select:none;
+  }
+  .btn-primary-luxury{
+    background:linear-gradient(180deg, var(--primary-color), #0b1224);
+    color:#fff;
+  }
+  .btn-primary-luxury:hover{
+    background:linear-gradient(180deg, var(--primary-hover), #0b1224);
+    transform:translateY(-1px);
+    box-shadow:var(--shadow-md);
   }
 
-  .btn-primary-luxury { background-color: var(--primary-color); color: white; }
-  .btn-primary-luxury:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-  
-  .btn-secondary-luxury { background-color: white; border-color: var(--border-color); color: var(--text-primary); }
-  .btn-secondary-luxury:hover { background-color: #f9fafb; border-color: #d1d5db; }
-
-  .btn-danger-luxury { background-color: white; border-color: #fee2e2; color: var(--danger-text); }
-  .btn-danger-luxury:hover { background-color: #fef2f2; border-color: #fca5a5; }
-
-  /* Table Styles */
-  .table-container {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
+  .btn-secondary-luxury{
+    background:transparent;
+    border-color:var(--border-color);
+    color:var(--text-primary);
+  }
+  .btn-secondary-luxury:hover{
+    background:var(--hover-overlay);
+    border-color:rgba(99,102,241,.35);
+    transform:translateY(-1px);
   }
 
-  .luxury-table {
-    width: 100%;
-    border-collapse: collapse;
+  .btn-success-luxury{
+    background:transparent;
+    border-color:rgba(5,150,105,.45);
+    color:var(--success-text);
+  }
+  .btn-success-luxury:hover{
+    background:rgba(5,150,105,.10);
+    border-color:rgba(5,150,105,.65);
+    transform:translateY(-1px);
   }
 
-  .luxury-table thead {
-    background-color: #f8fafc;
-    border-bottom: 1px solid var(--border-color);
+  .btn-danger-luxury{
+    background:transparent;
+    border-color:rgba(220,38,38,.32);
+    color:var(--danger-text);
+  }
+  .btn-danger-luxury:hover{
+    background:rgba(220,38,38,.10);
+    border-color:rgba(220,38,38,.55);
+    transform:translateY(-1px);
   }
 
-  .luxury-table th {
-    padding: 1rem;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    letter-spacing: 0.05em;
-  }
-
-  .luxury-table td {
-    padding: 1rem;
-    vertical-align: middle;
-    border-bottom: 1px solid #f3f4f6;
+  /* Preset chips */
+  .filter-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    border:1px solid var(--border-color);
+    background: rgba(148,163,184,.10);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    border-radius:999px;
+    padding:8px 12px;
+    font-weight:900;
+    font-size:.82rem;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:transform .14s ease, background .14s ease, border-color .14s ease;
+  }
+  .chip:hover{
+    transform:translateY(-1px);
+    background: rgba(148,163,184,.16);
+    border-color: rgba(99,102,241,.35);
+  }
+  .chip.active{
+    background: rgba(99,102,241,.18);
+    border-color: rgba(99,102,241,.45);
+    color: var(--text-primary);
+  }
+  [data-bs-theme="dark"] .chip.active{
+    background: rgba(99,102,241,.22);
+    border-color: rgba(99,102,241,.55);
   }
 
-  .luxury-table tr:last-child td { border-bottom: none; }
-  .luxury-table tr:hover { background-color: #fafafa; }
-
-  /* Images */
-  .product-img-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-    background: #f9fafb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* Active filters bar */
+  .active-filters{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:var(--radius-xl);
   }
-  
-  .product-img-box img { width: 100%; height: 100%; object-fit: cover; }
-  .product-img-box.no-img { color: var(--text-tertiary); font-size: 1.25rem; }
+  .active-title{
+    font-weight:900;
+    font-size:.8rem;
+    color:var(--text-secondary);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+  }
+  .active-tags{ display:flex; flex-wrap:wrap; gap:8px; flex:1; }
+  .tag-pill{
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:.78rem;
+    font-weight:900;
+    border:1px solid var(--border-color);
+    background: rgba(148,163,184,.10);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:var(--text-primary);
+  }
+  .tag-pill button{
+    border:0; background:transparent; padding:0; line-height:1;
+    color:var(--text-secondary);
+  }
+  .tag-pill button:hover{ color:var(--danger-text); }
+  .active-clear{ white-space:nowrap; }
 
-  /* Enhanced Number Badges & Tags */
-  .badge-frame {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: 1px solid transparent;
-    font-family: 'Inter', sans-serif;
-    min-width: 45px;
+  /* Switch */
+  .switch{ position:relative; display:inline-block; width:44px; height:26px; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{
+    position:absolute; cursor:pointer;
+    inset:0;
+    background: rgba(148,163,184,.18);
+    transition:.2s;
+    border-radius:999px;
+    border:1px solid var(--border-color);
+  }
+  .slider:before{
+    position:absolute; content:"";
+    height:20px; width:20px;
+    left:3px; top:50%;
+    transform:translateY(-50%);
+    background:var(--surface);
+    transition:.2s;
+    border-radius:999px;
+    box-shadow:0 6px 14px rgba(0,0,0,.10);
+  }
+  .switch input:checked + .slider{
+    background: rgba(99,102,241,.22);
+    border-color: rgba(99,102,241,.45);
+  }
+  .switch input:checked + .slider:before{
+    transform:translate(18px, -50%);
   }
 
-  .badge-frame.success { background-color: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
-  .badge-frame.danger { background-color: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
-  .badge-frame.neutral { background-color: #f3f4f6; color: var(--text-secondary); border-color: var(--border-color); }
-  .badge-frame.warning { background-color: var(--warning-bg); color: var(--warning-text); border-color: var(--warning-border); }
+  /* TABLE */
+  .table-container{ overflow:hidden; }
+  .table-responsive{ max-height:72vh; overflow:auto; }
 
-  /* Stock Display */
-  .stock-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid;
-    margin-top: 4px;
+  .luxury-table{ width:100%; border-collapse:separate; border-spacing:0; }
+  .luxury-table thead{
+    background: rgba(148,163,184,.10);
+    border-bottom:1px solid var(--border-color);
+    position:sticky; top:0; z-index:5;
   }
-  
-  .stock-ok { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
-  .stock-low { background: #fffbeb; color: #92400e; border-color: #fde68a; }
-  .stock-out { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-
-  /* Profit Column */
-  .profit-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
+  .luxury-table th{
+    padding:.78rem 1rem;
+    text-align:left;
+    font-size:.74rem;
+    font-weight:900;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    letter-spacing:.08em;
+    white-space:nowrap;
+    vertical-align:top;
   }
+  .luxury-table td{
+    padding:.68rem 1rem;
+    vertical-align:middle;
+    border-bottom:1px solid var(--border-color);
+    color:var(--text-primary);
+    font-size:.9rem;
+  }
+  .luxury-table tr:last-child td{ border-bottom:none; }
+  .luxury-table tbody tr:hover{ background:var(--row-hover); }
+  .luxury-table tbody tr{ content-visibility:auto; contain-intrinsic-size:80px; }
 
-  /* Icon Buttons */
-  .icon-btn {
-    width: 32px; height: 32px;
-    border-radius: 6px;
-    display: inline-flex; align-items: center; justify-content: center;
-    border: 1px solid transparent;
-    background: transparent;
+  /* Product img */
+  .product-img-box{
+    width:62px; height:62px;
+    border-radius:12px;
+    border:1px solid var(--border-color);
+    overflow:hidden;
+    background: rgba(148,163,184,.10);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .18s ease, box-shadow .2s ease;
+  }
+  .product-img-box:hover{ transform:scale(1.02); box-shadow:0 10px 18px -16px rgba(0,0,0,.35); }
+  .product-img-box img{ width:100%; height:100%; object-fit:cover; }
+  .product-img-box.no-img{ color:var(--text-tertiary); font-size:1.5rem; }
+
+  /* Stock badges */
+  .stock-indicator{
+    display:inline-flex; align-items:center; gap:4px;
+    font-size:.7rem; font-weight:900;
+    padding:2px 8px;
+    border-radius:999px;
+    border:1px solid;
+    margin-top:4px;
+    white-space:nowrap;
+  }
+  .stock-ok{ background: rgba(5,150,105,.12); color: var(--success-text); border-color: rgba(5,150,105,.28); }
+  .stock-low{ background: rgba(217,119,6,.12); color: var(--warning-text); border-color: rgba(217,119,6,.28); }
+  .stock-out{ background: rgba(220,38,38,.12); color: var(--danger-text); border-color: rgba(220,38,38,.28); }
+
+  /* Badges */
+  .badge-frame{
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:3px 10px;
+    border-radius:999px;
+    font-size:.74rem;
+    font-weight:900;
+    border:1px solid var(--border-color);
+    background: rgba(148,163,184,.10);
     color: var(--text-secondary);
-    transition: all 0.2s;
+    white-space:nowrap;
   }
-  .icon-btn:hover { background: #f3f4f6; color: var(--text-primary); }
-  .icon-btn.delete:hover { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-border); }
+  .badge-frame.neutral{ }
+  .badge-frame.warning{ background: rgba(217,119,6,.14); border-color: rgba(217,119,6,.26); color: var(--warning-text); }
+  .badge-frame.success{ background: rgba(5,150,105,.14); border-color: rgba(5,150,105,.26); color: var(--success-text); }
+  .badge-frame.danger { background: rgba(220,38,38,.14); border-color: rgba(220,38,38,.26); color: var(--danger-text); }
 
-  @media (max-width: 768px) {
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .luxury-table th, .luxury-table td { padding: 0.75rem 0.5rem; }
+  .profit-wrapper{ display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+
+  /* Icon buttons */
+  .icon-btn{
+    width:34px; height:34px;
+    border-radius:12px;
+    display:inline-flex; align-items:center; justify-content:center;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--text-secondary);
+    transition:background .16s, color .16s, transform .15s, border-color .16s;
+    font-size:.95rem;
   }
+  .icon-btn:hover{
+    background:var(--hover-overlay);
+    color:var(--text-primary);
+    transform:translateY(-1px);
+    border-color:rgba(99,102,241,.25);
+  }
+  .icon-btn.delete:hover{
+    background: rgba(220,38,38,.12);
+    color: var(--danger-text);
+    border-color: rgba(220,38,38,.35);
+  }
+
+  /* MOBILE: CARD LIST */
+  .sale-card{ padding:12px; }
+  .sale-top{ display:flex; gap:10px; align-items:flex-start; }
+  .sale-img{
+    width:68px; height:68px;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid var(--border-color);
+    flex:0 0 auto;
+    background: rgba(148,163,184,.10);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .sale-img img{ width:100%; height:100%; object-fit:cover; }
+  .sale-title{ font-weight:900; font-size:1.02rem; line-height:1.25; margin-bottom:2px; color:var(--text-primary); }
+  .sale-meta{
+    font-size:.80rem;
+    color:var(--text-secondary);
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:2px;
+    align-items:center;
+  }
+
+  .sale-kpi{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .kpi-box{ border-radius:14px; padding:10px; }
+  .kpi-label{ font-size:.72rem; color:var(--text-secondary); font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+  .kpi-value{ font-size:1.08rem; font-weight:900; margin-top:2px; color:var(--text-primary); }
+
+  .kpi-box.combo{
+    grid-column:1 / -1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    padding:10px;
+  }
+  .kpi-sub{
+    border-radius:12px;
+    padding:10px;
+    border:1px dashed rgba(148,163,184,.35);
+    background: rgba(148,163,184,.06);
+  }
+  [data-bs-theme="dark"] .kpi-sub{
+    border-color: rgba(148,163,184,.22);
+    background: rgba(148,163,184,.07);
+  }
+
+  .sale-actions{ display:flex; gap:10px; margin-top:12px; }
+  .sale-actions .btn-luxury{ flex:1; }
+
+  /* Mobile tweaks */
+  @media (max-width:768px){
+    .container-fluid.px-4{ padding-left:1rem!important; padding-right:1rem!important; }
+    .header-wrap{ margin-bottom:.95rem; }
+    .page-title{ font-size:1.18rem; }
+    .stats-grid{ grid-template-columns:repeat(2, 1fr); }
+    .stat-value{ font-size:1.08rem; }
+    .filter-body{ padding:.95rem 1rem; }
+    .filter-body .d-flex.gap-2.align-items-center{ flex-direction:column; align-items:stretch!important; }
+    .filter-body .text-tertiary.fw-medium{ display:none; }
+    .btn-luxury{ min-height:46px; }
+    .table-responsive{ max-height:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none!important; animation:none!important; scroll-behavior:auto!important; }
+  }
+
+  /* TABLE HEADER TRANSLUCENT */
+  :root{
+    --thead-glass: rgba(255,255,255,.72);
+    --thead-border: rgba(15,23,42,.12);
+    --thead-blur: blur(14px) saturate(160%);
+  }
+
+  [data-bs-theme="dark"]{
+    --thead-glass: rgba(255,255,255,.12);
+    --thead-border: rgba(255,255,255,.18);
+  }
+
+  .luxury-table thead{
+    background: var(--thead-glass) !important;
+    border-bottom: 1px solid var(--thead-border) !important;
+    backdrop-filter: var(--thead-blur);
+    -webkit-backdrop-filter: var(--thead-blur);
+  }
+  .luxury-table thead th{ background: transparent !important; }
+  .luxury-table thead tr{ box-shadow: 0 1px 0 rgba(0,0,0,.06); }
+  [data-bs-theme="dark"] .luxury-table thead tr{ box-shadow: 0 1px 0 rgba(255,255,255,.06); }
+
 </style>
 
-<div class="page-header">
-  <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+<div class="container-fluid px-3 px-md-4 pt-3 pb-5">
+
+  <!-- ✅ HEADER ใหม่: Layout/ตัวหนังสือให้เหมือน Sales Report -->
+  <div class="header-wrap">
     <div>
-      <p class="subtitle mb-1">Overview</p>
-      <h1>Sales History</h1>
-    </div>
-    <div class="badge-frame neutral px-3 py-2" style="font-size: 0.85rem; width: auto;">
-      Total {{ sales|length }} record{{ sales|length|pluralize }}
-    </div>
-  </div>
-</div>
+      <h1 class="h3 fw-bold mb-1" style="color:var(--text-primary);">
+        Sales History
+      </h1>
 
-<div class="stats-grid">
-  <div class="stat-card">
-    <span class="stat-label">Sold Items</span>
-    <div class="stat-value num-font">{{ summary.total_qty|floatformat:0|default:0 }}</div>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">Revenue</span>
-    <div class="stat-value num-font">฿{{ summary.total_revenue|floatformat:2|default:"0.00" }}</div>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">Received</span>
-    <div class="stat-value num-font text-primary">฿{{ summary.total_received|floatformat:2|default:"0.00" }}</div>
-  </div>
-  <div class="stat-card">
-    <span class="stat-label">Commission</span>
-    <div class="stat-value num-font text-secondary">฿{{ summary.total_commission|floatformat:2|default:"0.00" }}</div>
-  </div>
-  <div class="stat-card profit">
-    <span class="stat-label">Net Profit</span>
-    <div class="stat-value num-font">฿{{ summary.total_profit|floatformat:2|default:"0.00" }}</div>
-  </div>
-</div>
-
-<!-- Filter Section Redesigned -->
-<div class="filter-section">
-  <div class="filter-header" 
-       data-bs-toggle="collapse" 
-       data-bs-target="#filterCollapse" 
-       aria-expanded="{% if start or end or note %}true{% else %}false{% endif %}">
-    <div class="d-flex align-items-center gap-3">
-      <div class="icon-box-soft">
-        <i class="bi bi-sliders2"></i>
+      <div class="subtitle text-secondary small d-flex align-items-center gap-2">
+        View transaction logs and performance
       </div>
-      <div>
-        <h5 class="mb-0 text-primary fw-bold" style="font-size: 0.95rem;">Filter Options</h5>
-        <span class="text-secondary small" style="font-size: 0.75rem;">Refine sales data by date or keyword</span>
+
+      {% if start or end or note or q or preset %}
+        <div class="chips">
+          {% if preset %}<span class="chip-slim"><i class="bi bi-magic"></i>Preset: {{ preset }}</span>{% endif %}
+          {% if start %}<span class="chip-slim"><i class="bi bi-calendar-event"></i>From {{ start }}</span>{% endif %}
+          {% if end %}<span class="chip-slim"><i class="bi bi-calendar-check"></i>To {{ end }}</span>{% endif %}
+          {% if note %}<span class="chip-slim"><i class="bi bi-chat-left-text"></i>{{ note }}</span>{% endif %}
+          {% if q %}<span class="chip-slim"><i class="bi bi-search"></i>{{ q }}</span>{% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-header">
+        <span>Sold Items</span>
+        <i class="bi bi-box-seam stat-icon"></i>
+      </div>
+      <div class="stat-value num-font">{{ summary.total_qty|floatformat:0|default:0 }}</div>
+    </div>
+
+    <div class="stat-card gross">
+      <div class="stat-header">
+        <span>Gross Sales</span>
+        <i class="bi bi-cash-coin stat-icon"></i>
+      </div>
+      <div class="stat-value num-font">฿{{ summary.total_gross_sales|floatformat:2|default:"0.00" }}</div>
+    </div>
+
+    <div class="stat-card discount">
+      <div class="stat-header">
+        <span>Discount</span>
+        <i class="bi bi-tag stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--danger-text);">฿{{ summary.total_discount|floatformat:2|default:"0.00" }}</div>
+    </div>
+
+    <div class="stat-card commission">
+      <div class="stat-header">
+        <span>Commission</span>
+        <i class="bi bi-person-check stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--warning-text);">
+        ฿{{ summary.total_commission|floatformat:2|default:"0.00" }}
       </div>
     </div>
-    <i class="bi bi-chevron-down text-secondary transition-icon"></i>
-  </div>
 
-  <div class="collapse {% if start or end or note %}show{% endif %}" id="filterCollapse">
-    <div class="filter-body">
-      <form class="row g-4" method="get">
-        
-        <!-- Date Range Group -->
-        <div class="col-lg-5 col-md-12">
-          <label class="form-label text-secondary small text-uppercase fw-bold mb-2">Date Range</label>
-          <div class="d-flex gap-2 align-items-center">
-             <div class="input-icon-wrapper w-100">
-               <i class="bi bi-calendar-event"></i>
-               <input type="date" name="start" value="{{ start|default:'' }}" class="luxury-input luxury-input-with-icon" placeholder="Start Date">
-             </div>
-             <span class="text-tertiary fw-medium">-</span>
-             <div class="input-icon-wrapper w-100">
-               <i class="bi bi-calendar-check"></i>
-               <input type="date" name="end" value="{{ end|default:'' }}" class="luxury-input luxury-input-with-icon" placeholder="End Date">
-             </div>
-          </div>
-        </div>
+    <div class="stat-card received">
+      <div class="stat-header">
+        <span>Received</span>
+        <i class="bi bi-wallet2 stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--info-text);">฿{{ summary.total_received|floatformat:2|default:"0.00" }}</div>
+    </div>
 
-        <!-- Search Input -->
-        <div class="col-lg-4 col-md-8">
-          <label class="form-label text-secondary small text-uppercase fw-bold mb-2">Search</label>
-          <div class="input-icon-wrapper">
-            <i class="bi bi-search"></i>
-            <input type="text" name="note" value="{{ note|default:'' }}" class="luxury-input luxury-input-with-icon" placeholder="Search note or description...">
-          </div>
-        </div>
-      
-        <!-- Action Buttons -->
-        <div class="col-lg-3 col-md-4 d-flex align-items-end gap-2">
-          <button type="submit" class="btn-luxury btn-primary-luxury flex-grow-1 shadow-sm">
-            Apply Filters
-          </button>
-          <a href="{% url 'sales_history' %}" class="btn-luxury btn-secondary-luxury" title="Reset Filters">
-            <i class="bi bi-arrow-counterclockwise"></i>
-          </a>
-        </div>
+    <div class="stat-card cost">
+      <div class="stat-header">
+        <span>Total Cost</span>
+        <i class="bi bi-dash-circle stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--text-tertiary);">฿{{ summary.total_cost|floatformat:2|default:"0.00" }}</div>
+    </div>
 
-      </form>
+    <div class="stat-card profit">
+      <div class="stat-header">
+        <span>Net Profit</span>
+        <i class="bi bi-graph-up-arrow stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--success-text);">฿{{ summary.total_profit|floatformat:2|default:"0.00" }}</div>
     </div>
   </div>
-</div>
 
-<!-- Table -->
-<div class="table-container">
-  <div class="table-responsive">
-    <table class="luxury-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th style="width: 70px;">Image</th>
-          <th>Product / Stock</th>
-          <th class="text-center">Qty</th>
-          <th class="text-end">Price</th>
-          <th class="text-end">Discount</th>
-          <th class="text-end">Final</th>
-          <th class="text-end">Received</th>
-          <th class="text-end">Comm.</th>
-          <th class="text-end">Profit</th>
-          <th class="text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in sales %}
-        <tr>
-          <!-- Date -->
-          <td>
-            <div class="fw-semibold text-dark">{{ s.sold_at|date:"d M" }}</div>
-            <div class="text-secondary small">{{ s.sold_at|date:"Y H:i" }}</div>
-          </td>
-          
-          <!-- Image -->
-          <td>
+  <div class="filter-section">
+    <div class="filter-header"
+         data-bs-toggle="collapse"
+         data-bs-target="#filterCollapse"
+         aria-expanded="{% if start or end or note or q or preset %}true{% else %}false{% endif %}">
+      <div class="d-flex align-items-center gap-2">
+        <div class="icon-box-soft"><i class="bi bi-sliders2"></i></div>
+        <div>
+          <h5 class="mb-0 fw-bold" style="font-size:.9rem; color:var(--text-primary);">Filter Options</h5>
+          <div class="text-secondary small" style="font-size:.78rem;">Quick ranges • Search • Note • Export</div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge rounded-pill bg-light text-secondary border fw-normal" style="font-size:.72rem;">
+          Showing {{ sales|length }} record{{ sales|length|pluralize }}
+        </span>
+        <i class="bi bi-chevron-down text-secondary transition-icon" style="font-size:.9rem;"></i>
+      </div>
+    </div>
+
+    <div class="collapse {% if start or end or note or q or preset %}show{% endif %}" id="filterCollapse">
+      <div class="filter-body">
+        <form class="row g-3" method="get" id="salesFilterForm">
+          <div class="col-12">
+            <label class="form-label text-secondary small text-uppercase fw-bold mb-1">Quick Range</label>
+            <div class="filter-chips">
+              <button type="button" class="chip {% if preset == 'today' %}active{% endif %}" data-preset="today">
+                <i class="bi bi-sun"></i> Today
+              </button>
+              <button type="button" class="chip {% if preset == '7d' %}active{% endif %}" data-preset="7d">
+                <i class="bi bi-calendar-week"></i> Last 7 Days
+              </button>
+              <button type="button" class="chip {% if preset == 'month' %}active{% endif %}" data-preset="month">
+                <i class="bi bi-calendar3"></i> This Month
+              </button>
+              <button type="button" class="chip {% if preset == 'prev_month' %}active{% endif %}" data-preset="prev_month">
+                <i class="bi bi-arrow-left-right"></i> Last Month
+              </button>
+              <button type="button" class="chip {% if preset == 'year' %}active{% endif %}" data-preset="year">
+                <i class="bi bi-calendar2"></i> This Year
+              </button>
+              <input type="hidden" name="preset" id="presetInput" value="{{ preset|default:'' }}">
+            </div>
+          </div>
+
+          <div class="col-lg-5 col-md-12">
+            <label class="form-label text-secondary small text-uppercase fw-bold mb-1">Date Range</label>
+            <div class="d-flex gap-2 align-items-center">
+              <div class="input-icon-wrapper w-100">
+                <i class="bi bi-calendar-event"></i>
+                <input type="date" name="start" value="{{ start|default:'' }}" class="luxury-input luxury-input-with-icon">
+              </div>
+              <span class="text-tertiary fw-medium">-</span>
+              <div class="input-icon-wrapper w-100">
+                <i class="bi bi-calendar-check"></i>
+                <input type="date" name="end" value="{{ end|default:'' }}" class="luxury-input luxury-input-with-icon">
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6">
+            <label class="form-label text-secondary small text-uppercase fw-bold mb-1">Search Product</label>
+            <div class="input-icon-wrapper">
+              <i class="bi bi-box"></i>
+              <input type="text" name="q" value="{{ q|default:'' }}" class="luxury-input luxury-input-with-icon" placeholder="Type product name…">
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label text-secondary small text-uppercase fw-bold mb-1">Note</label>
+            <div class="input-icon-wrapper">
+              <i class="bi bi-chat-left-text"></i>
+              <select name="note" class="form-select luxury-input luxury-input-with-icon" style="cursor:pointer;">
+                <option value="">All Notes</option>
+                {% for n in all_notes %}
+                  <option value="{{ n }}" {% if note == n %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="active-filters" id="activeFiltersBar" aria-live="polite">
+              <div class="active-title"><i class="bi bi-funnel"></i> Active filters</div>
+              <div class="active-tags" id="activeTags"></div>
+              <button type="button" class="btn-luxury btn-secondary-luxury active-clear" id="clearAllBtn" title="Clear all">
+                <i class="bi bi-x-circle"></i> Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="col-12 d-flex align-items-end gap-2 flex-wrap">
+            <button type="submit" class="btn-luxury btn-primary-luxury flex-grow-1 shadow-sm">
+              <i class="bi bi-check2-circle"></i> Apply
+            </button>
+
+            <button type="submit" name="export" value="csv" class="btn-luxury btn-success-luxury" title="Export to CSV">
+              <i class="bi bi-file-earmark-spreadsheet"></i>
+            </button>
+
+            <a href="{% url 'sales_history' %}" class="btn-luxury btn-secondary-luxury" title="Reset">
+              <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+              <div class="text-tertiary small d-none d-md-block">Auto Apply</div>
+              <label class="switch">
+                <input type="checkbox" id="autoApplyToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container d-none d-md-block">
+    <div class="table-responsive">
+      <table class="luxury-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th style="width:80px;">Img</th>
+            <th>Product / Stock / Note</th>
+            <th class="text-center">Qty</th>
+            <th class="text-end">Cost</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Discount</th>
+            <th class="text-end">Final</th>
+            <th class="text-end">Received</th>
+            <th class="text-end">Comm.</th>
+            <th class="text-end">Profit</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for s in sales %}
+            <tr>
+              <td>
+                <div class="fw-semibold text-dark" style="font-size:.9rem">
+                  {{ s.sold_at|date:"d M" }}
+                </div>
+                <div class="text-secondary small" style="font-size:.78rem">
+                  {{ s.sold_at|date:"H:i" }}
+                </div>
+              </td>
+
+              <td>
+                {% if s.product.image %}
+                  <div class="product-img-box"
+                       data-bs-toggle="modal"
+                       data-bs-target="#imageModal"
+                       data-img-url="{{ s.product.image.url }}"
+                       style="cursor:pointer">
+                    <img src="{{ s.product.image.url }}" alt="img" loading="lazy" decoding="async">
+                  </div>
+                {% else %}
+                  <div class="product-img-box no-img"><i class="bi bi-image"></i></div>
+                {% endif %}
+              </td>
+
+              <td>
+                <div class="fw-bold" style="color:var(--text-primary);">
+                  {{ s.product.name }}
+                </div>
+
+                {% with stock=s.product.stock %}
+                  <div class="stock-indicator {% if stock == 0 %}stock-out{% elif stock <= 5 %}stock-low{% else %}stock-ok{% endif %}">
+                    Stock: {{ stock }}
+                  </div>
+                {% endwith %}
+
+                {% if s.note %}
+                  <div class="text-secondary small mt-1" style="font-size:.78rem">
+                    <i class="bi bi-pen" style="font-size:.75rem;"></i>
+                    {{ s.note|truncatechars:18 }}
+                  </div>
+                {% endif %}
+              </td>
+
+              <td class="text-center">
+                <span class="badge-frame neutral num-font">x{{ s.quantity }}</span>
+              </td>
+
+              <td class="text-end num-font" style="color:var(--text-tertiary);">{{ s.product.cost|floatformat:0 }}</td>
+              <td class="text-end num-font" style="color:var(--text-secondary);">{{ s.product.price|floatformat:0 }}</td>
+
+              <td class="text-end">
+                {% if s.discount_amount > 0 %}
+                  <div class="num-font small" style="color:var(--danger-text);">-{{ s.discount_amount|floatformat:0 }}</div>
+                  <span class="badge-frame danger">{{ s.discount_percent|floatformat:0 }}%</span>
+                {% else %}
+                  <span class="text-tertiary">-</span>
+                {% endif %}
+              </td>
+
+              <td class="text-end fw-medium num-font">{{ s.price_at_sale|floatformat:0 }}</td>
+              <td class="text-end fw-bold num-font" style="color:var(--info-text);">{{ s.actual_received|floatformat:0 }}</td>
+
+              <td class="text-end">
+                {% if s.commission > 0 %}
+                  <div class="d-flex flex-column align-items-end">
+                    <span class="num-font small" style="color:var(--warning-text);">{{ s.commission|floatformat:0 }}</span>
+                    <span class="badge-frame warning mt-1" style="font-size:.65rem;">
+                      {{ s.commission_pct|floatformat:0 }}%
+                    </span>
+                  </div>
+                {% else %}
+                  <span class="text-tertiary">-</span>
+                {% endif %}
+              </td>
+
+              <td class="text-end">
+                <div class="profit-wrapper">
+                  <span class="num-font fw-bold {% if s.profit >= 0 %}text-success{% else %}text-danger{% endif %}"
+                        style="{% if s.profit >= 0 %}color:var(--success-text);{% else %}color:var(--danger-text);{% endif %}">
+                    {{ s.profit|floatformat:0 }}
+                  </span>
+                  <span class="badge-frame {% if s.profit >= 0 %}success{% else %}danger{% endif %}">
+                    {{ s.profit_pct|floatformat:0 }}%
+                  </span>
+                </div>
+              </td>
+
+              <td class="text-center">
+                <div class="d-flex justify-content-center gap-1">
+                  <a href="{% url 'sale_edit' s.id %}" class="icon-btn" title="Edit"><i class="bi bi-pencil"></i></a>
+                  <form method="post" action="{% url 'sale_delete' s.id %}" onsubmit="return confirm('Delete this record?');" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="icon-btn delete" title="Delete"><i class="bi bi-trash"></i></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="12" class="text-center py-5 text-secondary">
+                <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
+                No sales records found.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if sales %}
+      <div class="p-3 d-flex justify-content-end border-top"
+           style="background:var(--surface-2); border-top-color: var(--border-color)!important;">
+        <a href="{% url 'sales_deleted' %}" class="btn-luxury btn-danger-luxury" style="font-size:.85rem;">
+          <i class="bi bi-trash me-1"></i> Deleted History
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="d-block d-md-none">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="text-secondary small">Swipe-free view</div>
+      {% if sales %}
+        <a href="{% url 'sales_deleted' %}" class="btn-luxury btn-danger-luxury" style="font-size:.9rem; padding:0 .95rem;">
+          <i class="bi bi-trash"></i>
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="d-grid gap-3">
+      {% for s in sales %}
+        <div class="sale-card">
+          <div class="sale-top">
             {% if s.product.image %}
-              <div class="product-img-box" data-bs-toggle="modal" data-bs-target="#imageModal" data-img-url="{{ s.product.image.url }}" style="cursor:pointer">
-                <img src="{{ s.product.image.url }}" alt="img">
+              <div class="sale-img"
+                   data-bs-toggle="modal"
+                   data-bs-target="#imageModal"
+                   data-img-url="{{ s.product.image.url }}"
+                   style="cursor:pointer">
+                <img src="{{ s.product.image.url }}" alt="img" loading="lazy" decoding="async">
               </div>
             {% else %}
-              <div class="product-img-box no-img"><i class="bi bi-image"></i></div>
+              <div class="sale-img">
+                <i class="bi bi-image text-tertiary" style="font-size:1.45rem;"></i>
+              </div>
             {% endif %}
-          </td>
 
-          <!-- Product & Stock -->
-          <td>
-            <div class="fw-semibold text-dark mb-1">{{ s.product.name }}</div>
-            
-            {% with stock=s.product.stock %}
-            <div class="stock-indicator {% if stock == 0 %}stock-out{% elif stock <= 5 %}stock-low{% else %}stock-ok{% endif %}">
-              <i class="bi bi-box-seam"></i> Stock: {{ stock }}
+            <div class="flex-grow-1">
+              <div class="sale-title">{{ s.product.name }}</div>
+              <div class="sale-meta">
+                <span class="num-font"><i class="bi bi-calendar3 me-1"></i>{{ s.sold_at|date:"d M" }}</span>
+                <span class="num-font"><i class="bi bi-clock me-1"></i>{{ s.sold_at|date:"H:i" }}</span>
+                <span class="badge-frame neutral num-font">x{{ s.quantity }}</span>
+
+                {% with stock=s.product.stock %}
+                  <span class="stock-indicator {% if stock == 0 %}stock-out{% elif stock <= 5 %}stock-low{% else %}stock-ok{% endif %}">
+                    Stock {{ stock }}
+                  </span>
+                {% endwith %}
+              </div>
+
+              {% if s.note %}
+                <div class="text-secondary small mt-2" style="font-size:.82rem">
+                  <i class="bi bi-pen me-1"></i>{{ s.note|truncatechars:52 }}
+                </div>
+              {% endif %}
             </div>
-            {% endwith %}
+          </div>
 
-            {% if s.note %}
-              <div class="text-secondary small mt-1"><i class="bi bi-pen"></i> {{ s.note|truncatechars:20 }}</div>
-            {% endif %}
-          </td>
-
-          <!-- Qty -->
-          <td class="text-center">
-            <span class="badge-frame neutral num-font" style="min-width: auto;">x{{ s.quantity }}</span>
-          </td>
-
-          <!-- Price -->
-          <td class="text-end text-secondary num-font">{{ s.product.price|floatformat:2 }}</td>
-
-          <!-- Discount -->
-          <td class="text-end">
-            {% if s.discount_amount > 0 %}
-              <div class="text-danger num-font small">-{{ s.discount_amount|floatformat:0 }}</div>
-              <span class="badge-frame neutral">{{ s.discount_percent|floatformat:0 }}%</span>
-            {% else %}
-              <span class="text-tertiary">-</span>
-            {% endif %}
-          </td>
-
-          <!-- Final Price -->
-          <td class="text-end fw-medium num-font">{{ s.price_at_sale|floatformat:2 }}</td>
-
-          <!-- Received -->
-          <td class="text-end fw-bold text-dark num-font" style="font-size: 1rem;">
-            {{ s.actual_received|floatformat:2 }}
-          </td>
-
-          <!-- Commission -->
-          <td class="text-end">
-            <div class="profit-wrapper">
-              <span class="text-danger num-font" style="font-size: 0.9rem;">
-                {{ s.commission|floatformat:2 }}
-              </span>
-              <span class="badge-frame warning">
-                {{ s.commission_pct|floatformat:1 }}%
-              </span>
+          <div class="sale-kpi">
+            <div class="kpi-box">
+              <div class="kpi-label">Final</div>
+              <div class="kpi-value num-font">{{ s.price_at_sale|floatformat:0 }}</div>
             </div>
-          </td>
 
-          <!-- Profit & Margin -->
-          <td class="text-end">
-            <div class="profit-wrapper">
-              <span class="num-font fw-bold {% if s.profit >= 0 %}text-success{% else %}text-danger{% endif %}">
-                {{ s.profit|floatformat:2 }}
-              </span>
-              <span class="badge-frame {% if s.profit >= 0 %}success{% else %}danger{% endif %}">
-                {{ s.profit_pct|floatformat:1 }}%
-              </span>
+            <div class="kpi-box">
+              <div class="kpi-label">Received</div>
+              <div class="kpi-value num-font fw-bold" style="color:var(--info-text);">{{ s.actual_received|floatformat:0 }}</div>
             </div>
-          </td>
 
-          <!-- Actions -->
-          <td class="text-center">
-            <div class="d-flex justify-content-center gap-1">
-              <a href="{% url 'sale_edit' s.id %}" class="icon-btn" title="Edit"><i class="bi bi-pencil"></i></a>
-              <form method="post" action="{% url 'sale_delete' s.id %}" onsubmit="return confirm('Delete this record?');" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="icon-btn delete" title="Delete"><i class="bi bi-trash"></i></button>
-              </form>
+            <div class="kpi-box">
+              <div class="kpi-label">Cost</div>
+              <div class="kpi-value num-font" style="color:var(--text-tertiary);">{{ s.product.cost|floatformat:0 }}</div>
             </div>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="10" class="text-center py-5 text-secondary">
-            <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
-            No sales records found.
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+
+            <div class="kpi-box">
+              <div class="kpi-label">Profit</div>
+              <div class="kpi-value num-font fw-bold"
+                   style="{% if s.profit >= 0 %}color:var(--success-text);{% else %}color:var(--danger-text);{% endif %}">
+                {{ s.profit|floatformat:0 }}
+              </div>
+              <div class="mt-1">
+                <span class="badge-frame {% if s.profit >= 0 %}success{% else %}danger{% endif %}">
+                  {{ s.profit_pct|floatformat:0 }}%
+                </span>
+              </div>
+            </div>
+
+            <div class="kpi-box combo">
+              <div class="kpi-sub">
+                <div class="kpi-label">Discount</div>
+                {% if s.discount_amount > 0 %}
+                  <div class="kpi-value num-font" style="color:var(--danger-text);">-{{ s.discount_amount|floatformat:0 }}</div>
+                  <div class="mt-1"><span class="badge-frame danger">{{ s.discount_percent|floatformat:0 }}%</span></div>
+                {% else %}
+                  <div class="kpi-value num-font" style="color:var(--text-tertiary);">-</div>
+                {% endif %}
+              </div>
+
+              <div class="kpi-sub">
+                <div class="kpi-label">Commission</div>
+                {% if s.commission > 0 %}
+                  <div class="kpi-value num-font" style="color:var(--warning-text);">{{ s.commission|floatformat:0 }}</div>
+                  <div class="mt-1"><span class="badge-frame warning">{{ s.commission_pct|floatformat:0 }}%</span></div>
+                {% else %}
+                  <div class="kpi-value num-font" style="color:var(--text-tertiary);">-</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="sale-actions">
+            <a href="{% url 'sale_edit' s.id %}" class="btn-luxury btn-secondary-luxury">
+              <i class="bi bi-pencil"></i> Edit
+            </a>
+
+            <form method="post" action="{% url 'sale_delete' s.id %}" onsubmit="return confirm('Delete this record?');" class="m-0 flex-grow-1">
+              {% csrf_token %}
+              <button type="submit" class="btn-luxury btn-danger-luxury w-100">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </form>
+          </div>
+        </div>
+      {% empty %}
+        <div class="sale-card text-center py-5 text-secondary">
+          <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
+          No sales records found.
+        </div>
+      {% endfor %}
+    </div>
   </div>
-  {% if sales %}
-  <div class="p-3 bg-light d-flex justify-content-end border-top">
-    <a href="{% url 'sales_deleted' %}" class="btn-luxury btn-danger-luxury" style="font-size: 0.8rem;">
-      <i class="bi bi-trash me-1"></i> Deleted History
-    </a>
-  </div>
-  {% endif %}
 </div>
 
-<!-- Image Modal -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg bg-dark">
-      <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="min-height: 200px;">
-        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
-        <img id="modalImage" src="" class="img-fluid" style="max-height: 85vh; border-radius: 4px;">
+    <div class="modal-content border-0 shadow-lg" style="background:var(--surface);">
+      <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="min-height:200px;">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
+                data-bs-dismiss="modal"
+                style="filter: {% if request %}none{% endif %};"></button>
+        <img id="modalImage" src="" class="img-fluid" style="max-height:85vh; border-radius:8px;" loading="lazy" decoding="async" alt="Preview">
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  // Image modal handler
-  const imageModal = document.getElementById('imageModal');
+  // Image Modal
+  const imageModal = document.getElementById("imageModal");
   if (imageModal) {
-    imageModal.addEventListener('show.bs.modal', e => {
+    imageModal.addEventListener("show.bs.modal", (e) => {
       const btn = e.relatedTarget;
-      const url = btn.getAttribute('data-img-url');
-      imageModal.querySelector('#modalImage').src = url;
+      const url = btn?.getAttribute("data-img-url") || "";
+      const img = imageModal.querySelector("#modalImage");
+      if (img) img.src = url;
     });
-    imageModal.addEventListener('hidden.bs.modal', () => {
-      imageModal.querySelector('#modalImage').src = '';
+    imageModal.addEventListener("hidden.bs.modal", () => {
+      const img = imageModal.querySelector("#modalImage");
+      if (img) img.src = "";
     });
   }
+
+  // Filter chevron rotate
+  const filterCollapse = document.getElementById("filterCollapse");
+  if (filterCollapse) {
+    const icon = document.querySelector(".filter-header .bi-chevron-down");
+    const setIcon = (open) => icon && (icon.style.transform = open ? "rotate(180deg)" : "rotate(0deg)");
+    setIcon(filterCollapse.classList.contains("show"));
+    filterCollapse.addEventListener("show.bs.collapse", () => setIcon(true));
+    filterCollapse.addEventListener("hide.bs.collapse", () => setIcon(false));
+  }
+
+  // Filter Upgrade Logic
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function fmtDate(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+
+  const form = document.getElementById("salesFilterForm");
+  const presetInput = document.getElementById("presetInput");
+  const startInput = form?.querySelector('input[name="start"]');
+  const endInput = form?.querySelector('input[name="end"]');
+  const chips = document.querySelectorAll(".chip[data-preset]");
+
+  const autoToggle = document.getElementById("autoApplyToggle");
+  const AUTO_KEY = "baanpaw-sales-filter-auto";
+
+  if (autoToggle) {
+    autoToggle.checked = localStorage.getItem(AUTO_KEY) === "1";
+    autoToggle.addEventListener("change", () => {
+      localStorage.setItem(AUTO_KEY, autoToggle.checked ? "1" : "0");
+    });
+  }
+
+  function maybeAutoSubmit(){
+    if (autoToggle && autoToggle.checked && form) form.requestSubmit();
+  }
+
+  function setPreset(p){
+    if (!presetInput) return;
+    presetInput.value = p;
+
+    const now = new Date();
+    let s=null, e=null;
+
+    if (p==="today"){
+      s=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      e=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (p==="7d"){
+      e=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      s=new Date(e); s.setDate(s.getDate()-6);
+    } else if (p==="month"){
+      s=new Date(now.getFullYear(), now.getMonth(), 1);
+      e=new Date(now.getFullYear(), now.getMonth()+1, 0);
+    } else if (p==="prev_month"){
+      s=new Date(now.getFullYear(), now.getMonth()-1, 1);
+      e=new Date(now.getFullYear(), now.getMonth(), 0);
+    } else if (p==="year"){
+      s=new Date(now.getFullYear(), 0, 1);
+      e=new Date(now.getFullYear(), 11, 31);
+    }
+
+    if (startInput && endInput && s && e){
+      startInput.value = fmtDate(s);
+      endInput.value = fmtDate(e);
+    }
+  }
+
+  chips.forEach(btn => {
+    btn.addEventListener("click", () => {
+      chips.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      setPreset(btn.getAttribute("data-preset"));
+      maybeAutoSubmit();
+    });
+  });
+
+  // Active filters tags
+  const activeWrap = document.getElementById("activeTags");
+  const clearAllBtn = document.getElementById("clearAllBtn");
+
+  function addTag(label, fieldName){
+    if (!activeWrap || !form) return;
+
+    const tag = document.createElement("span");
+    tag.className = "tag-pill";
+    tag.innerHTML = `${label} <button type="button" aria-label="remove">&times;</button>`;
+
+    tag.querySelector("button")?.addEventListener("click", () => {
+      const el = form.querySelector(`[name="${fieldName}"]`);
+      if (el) el.value = "";
+      if (fieldName === "preset") chips.forEach((b) => b.classList.remove("active"));
+      form.requestSubmit();
+    });
+
+    activeWrap.appendChild(tag);
+  }
+
+  function rebuildActiveTags(){
+    if (!form || !activeWrap) return;
+    activeWrap.innerHTML = "";
+    const data = new FormData(form);
+
+    for (const [k,v] of data.entries()){
+      if (!v) continue;
+      if (k === "export") continue;
+
+      const map = { start:"Start", end:"End", q:"Product", note:"Note", preset:"Preset" };
+      addTag(`${map[k] || k}: ${v}`, k);
+    }
+  }
+
+  if (clearAllBtn && form){
+    clearAllBtn.addEventListener("click", () => {
+      form.querySelectorAll("input, select").forEach(el => {
+        if (!el.name) return;
+        if (el.tagName === "SELECT") el.value = "";
+        else if (el.type === "checkbox") el.checked = false;
+        else if (el.type !== "submit") el.value = "";
+      });
+      chips.forEach(b => b.classList.remove("active"));
+      form.requestSubmit();
+    });
+  }
+
+  // auto-submit
+  if (form){
+    form.addEventListener("change", (e) => {
+      const t = e.target;
+      if (!t || !t.name) return;
+      if (t.name === "export") return;
+
+      if (autoToggle && autoToggle.checked){
+        if (t.name === "q") return;
+        form.requestSubmit();
+      }
+    });
+
+    const qInput = form.querySelector('input[name="q"]');
+    qInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter"){
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
+  }
+
+  rebuildActiveTags();
 </script>
 
 {% endblock %}

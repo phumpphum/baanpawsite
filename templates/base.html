@@ -1,17 +1,21 @@
+{% load static %}
+
 <!doctype html>
-<html lang="th" data-bs-theme="light">
+<html lang="th" data-bs-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Baanpaw Shop - Modern inventory and sales management system">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#0f1115">
   <title>{% block title %}Baanpaw Shop{% endblock %}</title>
 
-  <!-- Prevent theme flash -->
+  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}?v=final">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon.png' %}?v=final">
+
   <script>
     (function() {
       try {
-        const savedTheme = localStorage.getItem('baanpaw-theme') || 'light';
+        const savedTheme = localStorage.getItem('baanpaw-theme') || 'dark';
         document.documentElement.setAttribute('data-bs-theme', savedTheme);
       } catch (e) {
         console.warn('Theme preference not available:', e);
@@ -19,454 +23,1040 @@
     })();
   </script>
 
-  <!-- Preconnect for performance -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Bootstrap & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
-        xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Custom Styles -->
-<style>
-  :root {
-    --nav-height: 70px;
+  <style>
+    /* ==========================================================
+       1) TOKENS (✅ background unified with Sales Report)
+       ========================================================== */
+    :root{
+      --glass-blur: blur(18px) saturate(180%);
+      --radius-full: 9999px;
+      --accent: #6366f1;
 
-    /* Luxury Palette - Light Mode */
-    --bg-body: #f9fafb;
-    --surface: #ffffff;
-    --surface-glass: rgba(255, 255, 255, 0.98); /* Increased opacity for performance */
-    
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --text-tertiary: #9ca3af;
+      /* ✅ Unified page background (LIGHT) */
+      --bg-body: #f3f4f6;
 
-    --primary-color: #0f172a; /* Slate 900 */
-    --primary-hover: #1e293b;
-    --accent-color: #6366f1;
+      /* ✅ White translucent menu (Dashboard/Products/Add/...) */
+      --menu-glass: rgba(255, 255, 255, 0.78);
+      --menu-glass-2: rgba(255, 255, 255, 0.88);
+      --menu-border: rgba(15, 23, 42, 0.14);
 
-    --border-color: #e5e7eb;
-    --border-hover: #d1d5db;
+      /* ✅ Capsule sizing */
+      --capsule-h: 52px;
+      --capsule-pad-x: 16px;
+      --capsule-gap: 12px;
 
-    --radius-lg: 12px;
-    --radius-md: 8px;
-    --radius-full: 9999px;
+      /* glass surfaces for navbar pills */
+      --surface-glass: rgba(255, 255, 255, 0.62);
+      --surface-glass-2: rgba(255, 255, 255, 0.72);
 
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    
-    /* Status Colors */
-    --success-bg: #ecfdf5; --success-text: #059669;
-    --danger-bg: #fef2f2; --danger-text: #dc2626;
-    --warning-bg: #fffbeb; --warning-text: #d97706;
-    --info-bg: #eff6ff; --info-text: #3b82f6;
-  }
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #94a3b8;
 
-  [data-bs-theme="dark"] {
-    /* Luxury Palette - Dark Mode */
-    --bg-body: #111827; /* Gray 900 */
-    --surface: #1f2937; /* Gray 800 */
-    --surface-glass: rgba(31, 41, 55, 0.98); /* Increased opacity */
-    
-    --text-primary: #f9fafb;
-    --text-secondary: #9ca3af;
-    --text-tertiary: #6b7280;
+      --border-color: rgba(15, 23, 42, 0.10);
+      --shadow-glass: 0 12px 30px rgba(15, 23, 42, 0.10);
 
-    --primary-color: #f3f4f6;
-    --primary-hover: #e5e7eb;
-    
-    --border-color: #374151;
-    --border-hover: #4b5563;
-    
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  }
+      --focus-ring: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+    }
 
-  * {
-    /* Removed global transition for better scroll performance */
-    /* transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; */
-  }
+    /* DARK */
+    [data-bs-theme="dark"]{
+      /* ✅ Unified page background (DARK) */
+      --bg-body: #0f1115;
+
+      /* ✅ Dark translucent menu (consistent with dark theme) */
+      --menu-glass: rgba(15, 23, 42, 0.78);
+      --menu-glass-2: rgba(15, 23, 42, 0.88);
+      --menu-border: rgba(255, 255, 255, 0.14);
+
+      --surface-glass: rgba(15, 23, 42, 0.62);
+      --surface-glass-2: rgba(15, 23, 42, 0.78);
+
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-tertiary: #94a3b8;
+
+      --border-color: rgba(255, 255, 255, 0.12);
+      --shadow-glass: 0 18px 40px rgba(0, 0, 0, 0.55);
+
+      --focus-ring: 0 0 0 0.25rem rgba(165, 180, 252, 0.22);
+      color-scheme: dark;
+    }
+
+    *{ -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    /* ✅ IMPORTANT: base controls page background now */
+    body{
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-body) !important;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ==========================================================
+       ✅ NAVBAR (no big frame) + capsules
+       ========================================================== */
+    .modern-navbar{
+      position: sticky;
+      top: 0;
+      z-index: 1040;
+      padding: 14px 0;
+      background: transparent;
+    }
+
+    /* wrapper row */
+    .topbar-shell{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      overflow: visible;
+    }
+
+    /* LEFT: Brand pill */
+    .brand-chip{
+      display:flex;
+      align-items:center;
+      gap: var(--capsule-gap);
+      padding: 0 var(--capsule-pad-x);
+      height: var(--capsule-h);
+      border-radius: var(--radius-full);
+      background: var(--surface-glass-2);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary) !important;
+      flex: 0 0 auto;
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--shadow-glass);
+    }
+    .brand-logo{
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      object-fit: contain;
+    }
+    .brand-text{
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    /* CENTER: Menu capsule (WHITE translucent) */
+    .nav-chip{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      height: var(--capsule-h);
+      padding: 0 10px;
+      border-radius: var(--radius-full);
+      background: var(--menu-glass);
+      border: 1px solid var(--menu-border);
+      margin: 0 auto;
+      flex-wrap: nowrap;
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .navbar-nav{ display:flex; flex-direction: row; gap: 8px; }
+
+    .modern-nav-link{
+      height: calc(var(--capsule-h) - 12px);
+      padding: 0 16px !important;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: rgba(15, 23, 42, 0.78) !important;
+      line-height: 1;
+      white-space: nowrap;
+      transition: transform .15s ease, background .2s ease, color .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .modern-nav-link:hover{
+      background: rgba(15, 23, 42, 0.06);
+      color: rgba(15, 23, 42, 0.95) !important;
+      transform: translateY(-1px);
+    }
+
+    /* Active stays bold/clear */
+    .modern-nav-link.active{
+      background: #111827 !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(17, 24, 39, 0.18) !important;
+      box-shadow: 0 10px 22px rgba(17, 24, 39, 0.18);
+    }
+
+    /* ✅ DARK MODE: Nav links เป็นสีขาว */
+    [data-bs-theme="dark"] .modern-nav-link{
+      color: rgba(255, 255, 255, 0.78) !important;
+    }
+    [data-bs-theme="dark"] .modern-nav-link:hover{
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.95) !important;
+    }
+    [data-bs-theme="dark"] .modern-nav-link.active{
+      background: rgba(255, 255, 255, 0.12) !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.18) !important;
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35);
+    }
+
+    /* RIGHT tools */
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      flex: 0 0 auto;
+      margin-left: auto;
+    }
+
+    .clock-chip{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      height: var(--capsule-h);
+      padding: 0 var(--capsule-pad-x);
+      border-radius: var(--radius-full);
+      background: var(--surface-glass-2);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.90rem;
+      white-space: nowrap;
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--shadow-glass);
+    }
+
+    .icon-circle-btn{
+      width: var(--capsule-h);
+      height: var(--capsule-h);
+      border-radius: var(--radius-full);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background: var(--surface-glass-2);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      transition: transform .15s ease, background .2s ease;
+      padding: 0;
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--shadow-glass);
+    }
+    .icon-circle-btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.90);
+    }
+    [data-bs-theme="dark"] .icon-circle-btn:hover{
+      background: rgba(255,255,255,0.14);
+    }
+    .icon-circle-btn i{ font-size: 1.05rem; line-height: 1; }
+
+    /* collapse layout */
+    #navbarMain{ flex: 1 1 auto; justify-content: center; }
+
+    @media (min-width: 992px){
+      #navbarMain.collapse.navbar-collapse{
+        display:flex !important;
+        flex-basis:auto;
+        align-items:center;
+      }
+      .navbar-nav{ margin: 0; }
+    }
+
+    /* toggler */
+    .navbar-toggler{
+      height: var(--capsule-h);
+      padding: 0 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-color);
+      background: var(--surface-glass-2);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: var(--shadow-glass);
+    }
+    .navbar-toggler:focus{ box-shadow: var(--focus-ring) !important; }
+
+    /* DARK MODE: hamburger white icon */
+    [data-bs-theme="dark"] .modern-navbar{
+      --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(248,250,252,1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+    [data-bs-theme="dark"] .navbar-toggler-icon{
+      background-image: var(--bs-navbar-toggler-icon-bg) !important;
+      filter: none !important;
+      opacity: 1 !important;
+    }
+
+    main{
+      flex: 1;
+      padding-top: 2rem;
+      padding-bottom: 3rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important; }
+    }
+
+    /* ==========================================================
+       ✅ MOBILE: show menu pill full width + HORIZONTAL SCROLL
+       (แก้ปัญหา "เห็นไม่หมด" ในโทรศัพท์)
+       ========================================================== */
+    @media (max-width: 991.98px){
+      :root{ --capsule-h: 54px; }
+
+      /* wrap row: Brand | Tools | Toggler | Menu */
+      .topbar-shell{
+        flex-wrap: wrap;
+        row-gap: 10px;
+        align-items: center;
+      }
+      .brand-chip{ order: 1; }
+      .topbar-right{ order: 2; margin-left: auto; }
+      .navbar-toggler{ order: 3; margin-left: 8px; }
+      #navbarMain{
+        order: 4;
+        flex-basis: 100%;
+        width: 100%;
+      }
+
+      /* hide clock on mobile */
+      .clock-chip{ display:none !important; }
+
+      /* keep collapse clean (no big card) */
+      .navbar-collapse{
+        margin-top: 10px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+
+      /* menu pill full width */
+      ul.navbar-nav.nav-chip{
+        width: 100% !important;
+        margin: 0 !important;
+
+        /* ✅ pill look */
+        background: var(--menu-glass-2) !important;
+        border: 1px solid var(--menu-border) !important;
+        border-radius: var(--radius-full) !important;
+        box-shadow: var(--shadow-glass);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+
+        /* ✅ horizontal scroll */
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+
+        /* space */
+        height: var(--capsule-h) !important;
+        padding: 0 10px !important;
+        gap: 10px !important;
+
+        /* hide scrollbar */
+        scrollbar-width: none;
+        mask-image: linear-gradient(to right,
+          transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to right,
+          transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+      }
+      ul.navbar-nav.nav-chip::-webkit-scrollbar{ display:none; }
+
+      ul.navbar-nav.nav-chip .nav-item{ flex: 0 0 auto !important; }
+      ul.navbar-nav.nav-chip .modern-nav-link{
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        height: calc(var(--capsule-h) - 12px) !important;
+        padding: 0 16px !important;
+      }
+
+      .brand-text{ display:none; } /* กันแออัด */
+      .container-fluid{ overflow-x: hidden; }
+    }
+
+    /* ✅ MOBILE: remove capsule shadows */
+    @media (max-width: 991.98px){
+
+      /* เอาเงาทุก capsule ออก */
+      .brand-chip,
+      ul.navbar-nav.nav-chip,
+      .icon-circle-btn,
+      .navbar-toggler{
+        box-shadow: none !important;
+      }
+
+      /* (ถ้ายังรู้สึกมีเงาจากบางตัว) ปิดเงารวมของ topbar ด้วย */
+      .topbar-shell{
+        box-shadow: none !important;
+      }
+    }
   
-  /* Specific transitions only where needed */
-  .btn, .form-control, .nav-link, .theme-toggle {
-     transition: all 0.2s ease;
+    /* =========================
+    FORCE TABBAR/NAV TEXT WHITE (DARK)
+    ใส่ท้ายสุดของ base.html
+    ========================= */
+  [data-bs-theme="dark"] .navbar,
+  [data-bs-theme="dark"] .navbar *{
+    text-shadow: none;
   }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-body);
-    color: var(--text-primary);
-    min-height: 100vh;
+  /* ลิงก์บนแถบเมนู / tabbar */
+  [data-bs-theme="dark"] .navbar .navbar-brand,
+  [data-bs-theme="dark"] .navbar .nav-link,
+  [data-bs-theme="dark"] .navbar .navbar-text,
+  [data-bs-theme="dark"] .navbar .dropdown-toggle{
+    color: rgba(255,255,255,.95) !important;
+  }
+
+  /* hover/active */
+  [data-bs-theme="dark"] .navbar .nav-link:hover,
+  [data-bs-theme="dark"] .navbar .nav-link:focus{
+    color: #fff !important;
+  }
+
+  [data-bs-theme="dark"] .navbar .nav-link.active,
+  [data-bs-theme="dark"] .navbar .nav-link[aria-current="page"],
+  [data-bs-theme="dark"] .navbar .show > .nav-link{
+    color: #fff !important;
+  }
+
+  /* dropdown menu + items */
+  [data-bs-theme="dark"] .dropdown-menu{
+    background: rgba(15,23,42,.92) !important;
+    border: 1px solid rgba(255,255,255,.12) !important;
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
+
+  [data-bs-theme="dark"] .dropdown-item{
+    color: rgba(255,255,255,.92) !important;
+  }
+
+  [data-bs-theme="dark"] .dropdown-item:hover,
+  [data-bs-theme="dark"] .dropdown-item:focus{
+    background: rgba(255,255,255,.08) !important;
+    color: #fff !important;
+  }
+
+  [data-bs-theme="dark"] .dropdown-divider{
+    border-top-color: rgba(255,255,255,.10) !important;
+  }
+
+  /* toggler icon (มือถือ) */
+  [data-bs-theme="dark"] .navbar-toggler{
+    border-color: rgba(255,255,255,.18) !important;
+  }
+  [data-bs-theme="dark"] .navbar-toggler-icon{
+    filter: invert(1) opacity(.9);
+  }
+
+  /* ถ้าใช้ offcanvas ในมือถือ */
+  [data-bs-theme="dark"] .offcanvas,
+  [data-bs-theme="dark"] .offcanvas .nav-link{
+    color: rgba(255,255,255,.95) !important;
+  }
+
+  /* =========================
+    FIX: Navbar text in DARK MODE
+    - Baanpaw brand
+    - time number / clock
+    - theme toggle button/icon
+    ========================= */
+
+  /* 1) Brand "Baanpaw" */
+  html[data-bs-theme="dark"] .navbar .navbar-brand,
+  html[data-bs-theme="dark"] .navbar .navbar-brand *{
+    color: #ffffff !important;
+    opacity: 0.95;
+  }
+
+  /* 2) Time / clock (ครอบคลุมทั้ง id/class ที่พบบ่อย) */
+  html[data-bs-theme="dark"] #navClock,
+  html[data-bs-theme="dark"] #clock,
+  html[data-bs-theme="dark"] .nav-clock,
+  html[data-bs-theme="dark"] .nav-time,
+  html[data-bs-theme="dark"] .navbar-text,
+  html[data-bs-theme="dark"] .navbar .time,
+  html[data-bs-theme="dark"] .navbar .time .num,
+  html[data-bs-theme="dark"] .navbar .num{
+    color: #ffffff !important;
+    opacity: 0.92;
+  }
+
+  /* 3) Theme toggle button/icon */
+  html[data-bs-theme="dark"] #themeToggle,
+  html[data-bs-theme="dark"] .theme-toggle,
+  html[data-bs-theme="dark"] .btn-theme-toggle{
+    color: #ffffff !important;
+    border-color: rgba(255,255,255,.22) !important;
+    background: rgba(255,255,255,.08) !important;
+  }
+
+  html[data-bs-theme="dark"] #themeToggle i,
+  html[data-bs-theme="dark"] .theme-toggle i,
+  html[data-bs-theme="dark"] .btn-theme-toggle i{
+    color: #ffffff !important;
+    opacity: 0.95;
+  }
+
+  /* (กันเคสปุ่มเป็น link) */
+  html[data-bs-theme="dark"] .navbar a:not(.dropdown-item){
+    color: rgba(255,255,255,.90);
+  }
+  html[data-bs-theme="dark"] .navbar a:not(.dropdown-item):hover{
+    color: #ffffff;
+  }
+
+    /* ==========================================================
+    ✅ HARD FIX: Make Brand / Clock / Theme Toggle WHITE in DARK
+    (ยิงตรง class/id ที่คุณใช้จริง)
+    ========================================================== */
+
+  /* Brand pill + text */
+  html[data-bs-theme="dark"] .brand-chip,
+  html[data-bs-theme="dark"] .brand-chip .brand-text{
+    color: #ffffff !important;
+    opacity: 0.95;
+  }
+
+  /* Clock pill + number */
+  html[data-bs-theme="dark"] .clock-chip,
+  html[data-bs-theme="dark"] #clock{
+    color: #ffffff !important;
+    opacity: 0.92;
+  }
+
+  /* Theme toggle button + icon */
+  html[data-bs-theme="dark"] #themeToggler,
+  html[data-bs-theme="dark"] #themeToggler i,
+  html[data-bs-theme="dark"] #themeIcon{
+    color: #ffffff !important;
+    opacity: 0.95;
+  }
+
+  /* กันเคสมี rule อื่นไปย้อมสี <i> */
+  html[data-bs-theme="dark"] .icon-circle-btn i{
+    color: #ffffff !important;
+  }
+
+  /* ถ้าเป็นเส้นคั่นใต้ navbar */
+  .navbar{
+    border-bottom: 0 !important;
+    box-shadow: none !important; /* เผื่อมี shadow ที่ดูเหมือนเส้น */
+  }
+
+  /* =========================
+    REMOVE UNDERLINE (all links)
+    ใส่ท้ายสุดของ <style>
+    ========================= */
+  a, a:hover, a:focus, a:active,
+  .navbar a, .navbar a:hover, .navbar a:focus,
+  .brand-chip, .brand-chip:hover,
+  .modern-nav-link, .modern-nav-link:hover,
+  .dropdown-toggle, .dropdown-toggle:hover{
+    text-decoration: none !important;
+  }
+
+    /* ✅ FIX layout shift เวลา scrollbar มี/ไม่มี */
+  html{
+    scrollbar-gutter: stable;   /* browser ใหม่ ๆ */
+    overflow-y: scroll;         /* fallback: บังคับให้มี scrollbar ตลอด */
+  }
+
+    /* =========================================
+    ACTIVE NAV "BREATHING" (subtle)
+    ========================================= */
+  @keyframes navBreath {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+      filter: brightness(1);
+    }
+    50% {
+      transform: translateY(-1px) scale(1.02);
+      filter: brightness(1.08);
+    }
+  }
+
+  /* ทำให้ active หายใจ */
+  .modern-nav-link.active{
+    animation: navBreath 2s ease-in-out infinite;
+    will-change: transform, filter;
+  }
+
+  /* เพิ่ม glow เบาๆ ให้ดู premium ขึ้น (ทั้ง light/dark) */
+  .modern-nav-link.active{
+    position: relative;
+  }
+  .modern-nav-link.active::after{
+    content:"";
+    position:absolute;
+    inset:-6px;
+    border-radius: 9999px;
+    pointer-events:none;
+    opacity:.55;
+    filter: blur(10px);
+    background: radial-gradient(circle at 30% 40%, rgba(99,102,241,.35), transparent 55%);
+  }
+
+  /* Dark mode ให้ glow นุ่มขึ้น */
+  html[data-bs-theme="dark"] .modern-nav-link.active::after{
+    opacity:.6;
+    background: radial-gradient(circle at 30% 40%, rgba(165,180,252,.28), transparent 60%);
+  }
+
+  /* เคารพคนไม่ชอบ motion */
+  @media (prefers-reduced-motion: reduce){
+    .modern-nav-link.active{ animation: none !important; }
+    .modern-nav-link.active::after{ display:none !important; }
+  }
+
+  /* =========================================
+     LOADING SPINNER OVERLAY
+     ========================================= */
+  .loading-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  .loading-overlay.active{
+    opacity: 1;
+    visibility: visible;
+  }
+
+  html[data-bs-theme="dark"] .loading-overlay{
+    background: rgba(15,17,21,0.88);
+  }
+
+  .spinner-box{
     display: flex;
     flex-direction: column;
-  }
-
-  /* Navbar */
-  .modern-navbar {
-    background: var(--surface-glass);
-    box-shadow: var(--shadow-sm);
-    position: sticky;
-    top: 0;
-    z-index: 1040;
-    /* Removed backdrop-filter for scroll performance on long pages */
-    /* backdrop-filter: blur(12px); */ 
-    border-bottom: 1px solid var(--border-color);
-    padding: 0.75rem 0;
-  }
-
-  .navbar-brand {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-primary) !important;
-    display: flex;
     align-items: center;
-    gap: 0.5rem;
-    letter-spacing: -0.025em;
-  }
-  
-  .navbar-brand i {
-    color: var(--text-primary);
+    gap: 16px;
   }
 
-  /* Nav Links */
-  .navbar-nav {
-    gap: 0.25rem;
-  }
-
-  .modern-nav-link {
-    padding: 0.5rem 1rem !important;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--text-secondary) !important;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-  }
-
-  .modern-nav-link:hover {
-    background: var(--bg-body);
-    color: var(--text-primary) !important;
-  }
-
-  .modern-nav-link.active {
-    background: var(--text-primary);
-    color: var(--surface) !important;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .modern-nav-link.active i {
-    color: var(--surface);
-  }
-
-  /* Clock Widget */
-  .clock-widget {
-    background: var(--bg-body);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-full);
-    font-family: 'Inter', monospace;
-    font-variant-numeric: tabular-nums;
-    font-weight: 500;
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  /* Theme Toggle */
-  .theme-toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.35rem 0.75rem;
-    background: var(--bg-body);
-    border-radius: var(--radius-full);
-    border: 1px solid var(--border-color);
-  }
-
-  .theme-toggle {
-    width: 40px;
-    height: 22px;
-    appearance: none;
-    background: #cbd5e1;
-    border-radius: 20px;
-    position: relative;
-    cursor: pointer;
-    outline: none;
-    transition: background 0.3s;
-  }
-
-  .theme-toggle::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 18px;
-    height: 18px;
-    background: white;
+  .spinner{
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(99,102,241,0.18);
+    border-top-color: #6366f1;
     border-radius: 50%;
-    transition: transform 0.3s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    animation: spin 0.85s linear infinite;
   }
 
-  .theme-toggle:checked {
-    background: var(--text-primary);
+  html[data-bs-theme="dark"] .spinner{
+    border-color: rgba(165,180,252,0.18);
+    border-top-color: #a5b4fc;
   }
 
-  .theme-toggle:checked::after {
-    transform: translateX(18px);
+  @keyframes spin{
+    to{ transform: rotate(360deg); }
   }
 
-  .theme-icon {
-    font-size: 1rem;
-    color: var(--text-secondary);
+  .loading-text{
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary, #64748b);
+    letter-spacing: 0.02em;
   }
 
-  /* Toggler Icon Override */
-  .navbar-toggler {
-    border: 1px solid var(--border-color);
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-md);
+  html[data-bs-theme="dark"] .loading-text{
+    color: rgba(255,255,255,0.72);
   }
+
+  /* =========================================
+     MOBILE RESPONSIVE IMPROVEMENTS
+     ========================================= */
   
-  .navbar-toggler:focus {
-    box-shadow: none;
-    border-color: var(--text-primary);
+  /* Better touch targets on mobile */
+  @media (max-width: 576px){
+    /* Minimum touch target size */
+    .btn, button, .form-control, .form-select{
+      min-height: 44px;
+    }
+
+    /* Better button sizing */
+    .btn{
+      padding: 10px 16px;
+      font-size: 0.9rem;
+    }
+
+    /* Icon-only buttons should be square, not full-width */
+    .btn-icon-only,
+    .btn:has(> i:only-child),
+    .btn:has(> svg:only-child){
+      width: 44px !important;
+      min-width: 44px !important;
+      max-width: 44px !important;
+      padding: 10px !important;
+      flex: 0 0 auto !important;
+    }
+
+    /* Form inputs bigger on mobile */
+    .form-control, .form-select{
+      font-size: 16px !important; /* Prevents iOS zoom on focus */
+      padding: 12px 14px;
+    }
+
+    /* Better card spacing */
+    .card, .luxury-card{
+      margin-bottom: 16px;
+    }
+
+    /* Stack flex containers */
+    .d-flex.gap-2,
+    .d-flex.gap-3{
+      flex-wrap: wrap;
+    }
+
+    /* Make action bars stack on mobile */
+    .action-bar,
+    .btn-group-mobile{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Page header improvements */
+    .page-header{
+      flex-direction: column !important;
+      text-align: center;
+    }
+    .page-header .page-title{
+      text-align: center;
+      width: 100%;
+    }
+
+    /* Input group adjustments */
+    .input-group-mobile{
+      flex-direction: column;
+    }
+    .input-group-mobile > *{
+      width: 100% !important;
+      border-radius: 8px !important;
+      margin-bottom: 8px;
+    }
+
+    /* Stat cards grid */
+    .stat-card{
+      padding: 14px !important;
+    }
+    .stat-card .stat-value{
+      font-size: 1.5rem !important;
+    }
   }
 
-  .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(17, 24, 39, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-  }
-  
-  [data-bs-theme="dark"] .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(249, 250, 251, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-  }
+  /* Medium mobile adjustments */
+  @media (max-width: 768px){
+    /* 2-column form inputs stack to 1 */
+    .row-mobile-stack > .col-6,
+    .row-mobile-stack > .col-md-6{
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
 
-  /* Toasts */
-  .modern-toast {
-    background: var(--surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-    min-width: 300px;
-  }
-
-  .modern-toast.success { border-left: 4px solid var(--success-text); }
-  .modern-toast.error { border-left: 4px solid var(--danger-text); }
-  .modern-toast.warning { border-left: 4px solid var(--warning-text); }
-  .modern-toast.info { border-left: 4px solid var(--info-text); }
-
-  .toast-icon {
-    font-size: 1.25rem;
-    margin-right: 0.75rem;
-  }
-  
-  .modern-toast.success .toast-icon { color: var(--success-text); }
-  .modern-toast.error .toast-icon { color: var(--danger-text); }
-  .modern-toast.warning .toast-icon { color: var(--warning-text); }
-  .modern-toast.info .toast-icon { color: var(--info-text); }
-
-  .toast-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
-  .toast-message { font-size: 0.85rem; color: var(--text-secondary); }
-
-  /* Main Content */
-  main {
-    flex: 1;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
+    /* Better table scrolling */
+    .table-responsive-mobile{
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-responsive-mobile table{
+      min-width: 600px;
+    }
   }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
-  }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
-
-  /* Mobile */
-  @media (max-width: 991.98px) {
-    .navbar-nav { padding-top: 1rem; }
-    .modern-nav-link { width: 100%; margin-bottom: 0.25rem; }
-    .clock-widget, .theme-toggle-container { margin-top: 1rem; width: 100%; justify-content: center; }
-  }
 </style>
 
   {% block extra_head %}{% endblock %}
 </head>
+
 <body>
-  <!-- Skip to main content -->
+  <!-- ✅ Loading Spinner Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner-box">
+      <div class="spinner"></div>
+      <span class="loading-text">Loading...</span>
+    </div>
+  </div>
+
   <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
 
-  <!-- Navigation -->
+  {% block navbar %}
   <nav class="navbar navbar-expand-lg modern-navbar">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand" href="{% url 'home' %}">
-        <i class="bi bi-box-seam-fill"></i> Baanpaw
-      </a>
+    <div class="container-fluid px-3 px-md-4">
+      <div class="topbar-shell w-100">
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+        <!-- LEFT: Brand pill -->
+        <a class="brand-chip" href="{% url 'admin_home' %}">
+          <img src="{% static 'img/favicon.png' %}" class="brand-logo" alt="Baanpaw">
+          <span class="brand-text">Baanpaw</span>
+        </a>
 
-      <div class="collapse navbar-collapse" id="navbarMain">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="modern-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
-              <i class="bi bi-grid"></i> Dashboard
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="modern-nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="{% url 'product_list' %}">
-              <i class="bi bi-box"></i> Products
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="modern-nav-link {% if request.resolver_match.url_name == 'product_create' %}active{% endif %}" href="{% url 'product_create' %}">
-              <i class="bi bi-plus-circle"></i> Add
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="modern-nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}" href="{% url 'sale_create' %}">
-              <i class="bi bi-cart"></i> Sale
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="modern-nav-link {% if request.resolver_match.url_name == 'sales_history' %}active{% endif %}" href="{% url 'sales_history' %}">
-              <i class="bi bi-clock-history"></i> History
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="modern-nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}" href="{% url 'sales_report' %}">
-              <i class="bi bi-graph-up"></i> Reports
-            </a>
-          </li>
-        </ul>
+        <!-- CENTER: Menu pill -->
+        <div class="collapse navbar-collapse" id="navbarMain">
+          <ul class="navbar-nav nav-chip">
+            <li class="nav-item">
+              <a class="modern-nav-link {% if request.resolver_match.url_name == 'admin_home' %}active{% endif %}"
+                 href="{% url 'admin_home' %}">
+                Dashboard
+              </a>
+            </li>
 
-        <div class="d-flex align-items-center gap-3 flex-wrap">
-          <!-- Clock -->
-          <div class="clock-widget">
+            <li class="nav-item">
+              <a class="modern-nav-link {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}"
+                 href="{% url 'product_list' %}">
+                Products
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="modern-nav-link {% if request.resolver_match.url_name == 'product_create' %}active{% endif %}"
+                 href="{% url 'product_create' %}">
+                Add
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="modern-nav-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}"
+                 href="{% url 'sale_create' %}">
+                Sale
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="modern-nav-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}"
+                 href="{% url 'expense_list' %}">
+                Expenses
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="modern-nav-link {% if request.resolver_match.url_name == 'sales_history' %}active{% endif %}"
+                 href="{% url 'sales_history' %}">
+                History
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="modern-nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}"
+                 href="{% url 'sales_report' %}">
+                Reports
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="topbar-right">
+          <div class="clock-chip d-none d-lg-flex">
             <i class="bi bi-clock"></i>
             <span id="clock">--:--</span>
           </div>
 
-          <!-- Theme Toggle -->
-          <div class="theme-toggle-container">
-            <i class="bi bi-sun-fill theme-icon"></i>
-            <input type="checkbox" class="theme-toggle" id="themeToggler" aria-label="Toggle dark mode">
-            <i class="bi bi-moon-fill theme-icon"></i>
-          </div>
+          <button type="button" class="icon-circle-btn" id="themeToggler"
+                  aria-label="Toggle theme" title="Toggle theme">
+            <i class="bi bi-moon-fill" id="themeIcon"></i>
+          </button>
         </div>
+
+        <!-- toggler -->
+        <button type="button" class="navbar-toggler"
+                data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                aria-controls="navbarMain" aria-expanded="false"
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
       </div>
     </div>
   </nav>
+  {% endblock %}
 
-  <!-- Main Content -->
   <main class="container-fluid px-4" id="main-content">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Toast Notification -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="toast" class="toast modern-toast" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex p-3 align-items-start">
-        <div class="toast-icon" id="toastIcon"></div>
+        <div class="toast-icon me-3 fs-5" id="toastIcon"></div>
         <div class="w-100">
           <div class="d-flex justify-content-between">
             <div class="toast-title" id="toastTitle">Notification</div>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
           </div>
-          <div class="toast-message" id="toastMessage"></div>
+          <div class="toast-message opacity-75 mt-1" id="toastMessage"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-          xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
           crossorigin="anonymous"></script>
 
   <script>
     'use strict';
 
-    // Theme Management
     const THEME_KEY = 'baanpaw-theme';
     const toggler = document.getElementById('themeToggler');
-    
-    function initTheme() {
-      const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
-      const isDark = savedTheme === 'dark';
-      document.documentElement.setAttribute('data-bs-theme', savedTheme);
-      if (toggler) toggler.checked = isDark;
+    const themeIcon = document.getElementById('themeIcon');
+
+    function setIcon(theme){
+      if (!themeIcon) return;
+      themeIcon.className = (theme === 'dark') ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
     }
 
-    if (toggler) {
-      toggler.addEventListener('change', function() {
-        const theme = this.checked ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-bs-theme', theme);
-        localStorage.setItem(THEME_KEY, theme);
-      });
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      localStorage.setItem(THEME_KEY, theme);
+      setIcon(theme);
+
+      const navbarTogglerIcon = document.querySelector('.navbar-toggler-icon');
+      if (navbarTogglerIcon) {
+        navbarTogglerIcon.style.filter = (theme === 'dark')
+          ? 'invert(1) grayscale(100%) brightness(200%)'
+          : 'none';
+      }
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+      applyTheme(savedTheme);
     }
     initTheme();
 
-    // Clock
+    if (toggler) {
+      toggler.addEventListener('click', function () {
+        const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      });
+    }
+
     function updateClock() {
       const el = document.getElementById('clock');
-      if (el) {
-        const now = new Date();
-        el.textContent = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-      }
+      if (!el) return;
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Toast System
     window.notify = function(message, type = 'success', title = null) {
       const toastEl = document.getElementById('toast');
+      if (!toastEl) return;
+
       const toastIcon = document.getElementById('toastIcon');
       const toastTitle = document.getElementById('toastTitle');
       const toastMessage = document.getElementById('toastMessage');
-      
-      if (!toastEl) return;
+      const toastCloseBtn = toastEl.querySelector('.btn-close');
 
-      // Reset classes
-      toastEl.className = `toast modern-toast ${type}`;
-      
-      // Icons
-      const icons = {
-        success: '<i class="bi bi-check-circle-fill"></i>',
-        error: '<i class="bi bi-x-circle-fill"></i>',
-        warning: '<i class="bi bi-exclamation-triangle-fill"></i>',
-        info: '<i class="bi bi-info-circle-fill"></i>'
-      };
-      
-      // Defaults
-      const titles = {
-        success: 'Success',
-        error: 'Error',
-        warning: 'Warning',
-        info: 'Information'
+      const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+      const configs = {
+        success: { icon: 'bi-check-circle-fill', color: isDark ? '#4ade80' : '#16a34a', title: 'Success' },
+        error:   { icon: 'bi-x-circle-fill',     color: isDark ? '#f87171' : '#dc2626', title: 'Error' },
+        warning: { icon: 'bi-exclamation-triangle-fill', color: isDark ? '#facc15' : '#ca8a04', title: 'Warning' },
+        info:    { icon: 'bi-info-circle-fill',  color: isDark ? '#60a5fa' : '#2563eb', title: 'Info' }
       };
 
-      toastIcon.innerHTML = icons[type] || icons.success;
-      toastTitle.textContent = title || titles[type];
+      const config = configs[type] || configs.success;
+
+      toastIcon.className = `toast-icon me-3 fs-5 bi ${config.icon}`;
+      toastIcon.style.color = config.color;
+      toastTitle.textContent = title || config.title;
       toastMessage.textContent = message;
+
+      if (isDark) toastCloseBtn.classList.add('btn-close-white');
+      else toastCloseBtn.classList.remove('btn-close-white');
 
       const toast = new bootstrap.Toast(toastEl);
       toast.show();
     };
+  </script>
+
+  <!-- ✅ Loading Spinner Controller -->
+  <script>
+    (function(){
+      const overlay = document.getElementById('loadingOverlay');
+      if (!overlay) return;
+
+      // Show loading
+      window.showLoading = function(text){
+        const textEl = overlay.querySelector('.loading-text');
+        if (textEl && text) textEl.textContent = text;
+        overlay.classList.add('active');
+      };
+
+      // Hide loading
+      window.hideLoading = function(){
+        overlay.classList.remove('active');
+      };
+
+      // Auto-show on internal link navigation (except # links)
+      document.addEventListener('click', function(e){
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        
+        const href = link.getAttribute('href');
+        // Skip: external links, hash links, download links, new tab links
+        if (!href || 
+            href.startsWith('#') || 
+            href.startsWith('javascript:') ||
+            link.target === '_blank' ||
+            link.hasAttribute('download') ||
+            link.dataset.noLoading === 'true') return;
+        
+        // Show loading for internal navigation
+        showLoading('Loading...');
+      });
+
+      // Auto-show on form submit
+      document.addEventListener('submit', function(e){
+        const form = e.target;
+        if (form.dataset.noLoading === 'true') return;
+        showLoading('Saving...');
+      });
+
+      // Hide on page show (back/forward navigation)
+      window.addEventListener('pageshow', hideLoading);
+    })();
   </script>
 
   {% block extra_scripts %}{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, Sale
+from .models import Product, Sale, Expense
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -52,4 +52,15 @@ class SaleForm(forms.ModelForm):
             f"{obj.name} ({obj.colors})" if getattr(obj, "colors", "") else obj.name
         )
         
-
+class ExpenseForm(forms.ModelForm):
+    class Meta:
+        model = Expense
+        fields = ['title', 'category', 'amount', 'paid_at', 'note', 'receipt_image']
+        widgets = {
+            'paid_at': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control'}),
+            'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'receipt_image': forms.FileInput(attrs={'class': 'form-control'}),
+        }

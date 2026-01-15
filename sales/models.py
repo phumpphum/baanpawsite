@@ -1,24 +1,26 @@
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
     sku = models.CharField(max_length=100, blank=True, null=True, unique=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    cost   = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # ⬅️ ต้นทุน ใหม่
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     image = models.ImageField(upload_to='products/', blank=True, null=True)
-    stock = models.PositiveIntegerField(default=0)  # ⬅️ NEW
-    colors = models.CharField(max_length=255, blank=True, help_text="ใส่หลายสีคั่นด้วย ,")  # ⬅️ NEW
+    stock = models.PositiveIntegerField(default=0)
+    colors = models.CharField(max_length=255, blank=True, help_text="ใส่หลายสีคั่นด้วย ,")
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.name
 
     def colors_list(self):
-        # คืนเป็นรายการสีแบบ list (ตัดช่องว่างให้เรียบร้อย)
         if not self.colors:
             return []
-        return [c.strip() for c in self.colors.split(',') if c.strip()]   
+        return [c.strip() for c in self.colors.split(',') if c.strip()]
+
 
 class Sale(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -27,21 +29,148 @@ class Sale(models.Model):
     actual_received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     note = models.CharField(max_length=200, blank=True, null=True)
-    sold_at = models.DateTimeField(blank=True, null=True)
+    sold_at = models.DateTimeField(default=timezone.now)
 
-    # ✅ ฟิลด์ใหม่
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(blank=True, null=True)
 
-    def delete_soft(self):
-        self.is_deleted = True
-        self.deleted_at = timezone.now()
-        self.save()
-
-    def restore(self):
-        self.is_deleted = False
-        self.deleted_at = None
-        self.save()
+    class Meta:
+        indexes = [
+            models.Index(fields=['sold_at']),
+            models.Index(fields=['is_deleted']),
+        ]
 
     def __str__(self):
         return f"{self.product} @ {self.sold_at}"
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        """
+        - สร้าง Sale ใหม่: ตัดสต๊อก
+        - แก้ไข Sale เดิม: ปรับสต๊อกตามส่วนต่าง (รองรับเปลี่ยนจำนวน/เปลี่ยนสินค้า)
+        - ถ้า is_deleted=True ไม่ให้ตัดสต๊อก (เพราะถือว่าไม่ใช่ยอดขายจริง)
+        """
+        if self.quantity <= 0:
+            raise ValidationError("Quantity must be greater than 0")
+
+        # ไม่ให้ยอดขายที่ถูกลบ (soft delete) ไปยุ่ง stock ผ่าน save ปกติ
+        # การคืน/ตัด stock ให้ทำผ่าน delete_soft/restore เท่านั้น
+        if self.is_deleted:
+            super().save(*args, **kwargs)
+            return
+
+        if not self.pk:
+            # --- Create ---
+            product = Product.objects.select_for_update().get(pk=self.product_id)
+            if product.stock < self.quantity:
+                raise ValidationError("Stock not enough")
+            product.stock -= self.quantity
+            product.save(update_fields=["stock"])
+            super().save(*args, **kwargs)
+            return
+
+        # --- Update existing sale ---
+        old = Sale.objects.select_for_update().get(pk=self.pk)
+
+        # ถ้าเดิมเป็น deleted แต่ตอนนี้จะ save แบบ not deleted ให้ใช้ restore() แทน
+        if old.is_deleted:
+            raise ValidationError("This sale is deleted. Use restore() to reactivate it.")
+
+        # ล็อก product ที่เกี่ยวข้องทั้งเก่าและใหม่
+        old_product = Product.objects.select_for_update().get(pk=old.product_id)
+        new_product = old_product if old.product_id == self.product_id else Product.objects.select_for_update().get(pk=self.product_id)
+
+        if old.product_id == self.product_id:
+            # เปลี่ยนจำนวนในสินค้าตัวเดิม
+            delta = self.quantity - old.quantity  # + = ต้องตัดเพิ่ม, - = คืนบางส่วน
+            if delta > 0 and new_product.stock < delta:
+                raise ValidationError("Stock not enough for the updated quantity")
+            new_product.stock -= delta
+            new_product.save(update_fields=["stock"])
+        else:
+            # เปลี่ยนสินค้า: คืนให้สินค้าเก่า แล้วตัดจากสินค้าใหม่
+            old_product.stock += old.quantity
+            if new_product.stock < self.quantity:
+                raise ValidationError("Stock not enough for the new product")
+            new_product.stock -= self.quantity
+            old_product.save(update_fields=["stock"])
+            new_product.save(update_fields=["stock"])
+
+        super().save(*args, **kwargs)
+
+    @transaction.atomic
+    def delete_soft(self):
+        """
+        soft delete = คืน stock กลับ (ทำครั้งเดียว)
+        """
+        sale = Sale.objects.select_for_update().get(pk=self.pk)
+        if sale.is_deleted:
+            return  # กันกดซ้ำ
+
+        product = Product.objects.select_for_update().get(pk=sale.product_id)
+        product.stock += sale.quantity
+        product.save(update_fields=["stock"])
+
+        sale.is_deleted = True
+        sale.deleted_at = timezone.now()
+        sale.save(update_fields=["is_deleted", "deleted_at"])
+
+        # sync instance
+        self.is_deleted = sale.is_deleted
+        self.deleted_at = sale.deleted_at
+
+    @transaction.atomic
+    def restore(self):
+        """
+        restore = ตัด stock กลับอีกรอบ (ทำเมื่อเคย delete_soft แล้ว)
+        """
+        sale = Sale.objects.select_for_update().get(pk=self.pk)
+        if not sale.is_deleted:
+            return  # กันกดซ้ำ
+
+        product = Product.objects.select_for_update().get(pk=sale.product_id)
+        if product.stock < sale.quantity:
+            raise ValidationError("Stock not enough to restore this sale")
+
+        product.stock -= sale.quantity
+        product.save(update_fields=["stock"])
+
+        sale.is_deleted = False
+        sale.deleted_at = None
+        sale.save(update_fields=["is_deleted", "deleted_at"])
+
+        # sync instance
+        self.is_deleted = sale.is_deleted
+        self.deleted_at = sale.deleted_at
+
+# ============================================================================
+#  Expense                              
+# ============================================================================
+
+class Expense(models.Model):
+    CATEGORY_CHOICES = [
+        ('rent', 'ค่าเช่าที่'),
+        ('utilities', 'ค่าน้ำ/ค่าไฟ'),
+        ('salary', 'เงินเดือนพนักงาน'),
+        ('marketing', 'การตลาด/โฆษณา'),
+        ('restock', 'ซื้อสินค้าเติมสต็อก'),
+        ('packaging', 'อุปกรณ์แพ็คของ'),
+        ('transport', 'ค่าขนส่ง'),
+        ('other', 'อื่นๆ'),
+    ]
+
+    title = models.CharField(max_length=200, verbose_name="รายการ")
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other', verbose_name="หมวดหมู่")
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="จำนวนเงิน")
+    paid_at = models.DateTimeField(default=timezone.now, verbose_name="วันที่จ่าย")
+    note = models.TextField(blank=True, null=True, verbose_name="หมายเหตุ")
+    receipt_image = models.ImageField(upload_to='expenses/', blank=True, null=True, verbose_name="รูปสลิป/ใบเสร็จ")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    is_deleted = models.BooleanField(default=False, verbose_name="ลบแล้ว")
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="เวลาที่ลบ")
+
+    def __str__(self):
+        return f"{self.title} - {self.amount}"

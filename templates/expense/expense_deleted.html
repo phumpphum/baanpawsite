@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Trash - Expenses{% endblock %}
+
+{% block content %}
+<style>
+    /* Reuse styles from main page */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
+    
+    :root {
+        --primary-color: #0f172a; --text-primary: #111827; --text-secondary: #6b7280;
+        --border-color: #e5e7eb; --surface: #ffffff;
+        --danger-bg: #fef2f2; --danger-text: #dc2626;
+        --success-bg: #ecfdf5; --success-text: #059669;
+    }
+    
+    /* DARK MODE */
+    [data-bs-theme="dark"] {
+        --text-primary: #e5e7eb; --text-secondary: #9aa7bd;
+        --border-color: rgba(148,163,184,.18); --surface: #0b1220;
+        --danger-bg: rgba(220,38,38,.15); --danger-text: #f87171;
+        --success-bg: rgba(5,150,105,.15); --success-text: #4ade80;
+    }
+    
+    body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; color: var(--text-primary); }
+    [data-bs-theme="dark"] body { background-color: #0f1115 !important; }
+    
+    .table-container {
+        background: var(--surface); border-radius: 12px;
+        border: 1px solid var(--border-color); overflow: hidden;
+    }
+    .luxury-table { width: 100%; border-collapse: collapse; }
+    .luxury-table thead { background: #fef2f2; border-bottom: 1px solid var(--border-color); } /* Red header for trash */
+    .luxury-table th { padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--danger-text); text-transform: uppercase; }
+    .luxury-table td { padding: 0.6rem 1rem; border-bottom: 1px solid #f3f4f6; font-size: 0.85rem; vertical-align: middle; }
+    
+    .btn-action { 
+        padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; 
+        border: 1px solid transparent; display: inline-flex; align-items: center; gap: 4px; 
+    }
+    .btn-restore { background: var(--success-bg); color: var(--success-text); border-color: #a7f3d0; }
+    .btn-restore:hover { background: #d1fae5; }
+    
+    .btn-hard-delete { background: var(--danger-bg); color: var(--danger-text); border-color: #fecaca; }
+    .btn-hard-delete:hover { background: #fee2e2; }
+
+    .num-font { font-family: 'JetBrains Mono', monospace; }
+</style>
+
+<div class="container-fluid px-4 pt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-danger"><i class="bi bi-trash-fill me-2"></i>Deleted Expenses</h4>
+            <span class="text-secondary small">Items in trash will remain here until permanently deleted.</span>
+        </div>
+        <a href="{% url 'expense_list' %}" class="btn btn-light border text-secondary btn-sm px-3">
+            <i class="bi bi-arrow-left me-1"></i> Back to Expenses
+        </a>
+    </div>
+
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="luxury-table">
+                <thead>
+                    <tr>
+                        <th>Deleted Date</th>
+                        <th>Original Date</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th class="text-end">Amount</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-danger">{{ expense.deleted_at|date:"d M Y" }}</div>
+                            <small class="text-secondary">{{ expense.deleted_at|date:"H:i" }}</small>
+                        </td>
+                        <td class="text-secondary">
+                            {{ expense.paid_at|date:"d/m/Y" }}
+                        </td>
+                        <td class="fw-medium">{{ expense.title }}</td>
+                        <td><span class="badge bg-light text-secondary border fw-normal">{{ expense.get_category_display }}</span></td>
+                        <td class="text-end num-font text-danger">-{{ expense.amount|intcomma }}</td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <form method="post" action="{% url 'expense_restore' expense.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-action btn-restore" title="Restore">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'expense_hard_delete' expense.pk %}" onsubmit="return confirm('PERMANENTLY DELETE?\nThis cannot be undone!');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-action btn-hard-delete" title="Delete Forever">
+                                        <i class="bi bi-x-circle"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-secondary">
+                            <i class="bi bi-trash display-4 opacity-25"></i>
+                            <p class="mt-2">Trash is empty.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

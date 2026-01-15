@@ -1,0 +1,859 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Edit Product{% else %}Add New Product{% endif %} - Baanpaw Shop{% endblock %}
+
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+  :root{
+    /* Luxury Palette */
+    --bg-body:#f3f4f6;
+    --surface:#ffffff;
+    --text-primary:#111827;
+    --text-secondary:#6b7280;
+    --text-tertiary:#9ca3af;
+
+    --primary-color:#0f172a;
+    --primary-hover:#1e293b;
+
+    --border-color:#e5e7eb;
+    --radius-lg:16px;
+    --radius-md:12px;
+
+    --shadow-sm:0 1px 2px 0 rgba(0,0,0,.05);
+    --shadow-md:0 10px 26px rgba(0,0,0,.06);
+
+    --success-text:#059669; --success-bg:#ecfdf5;
+    --warning-text:#d97706; --warning-bg:#fffbeb;
+    --danger-text:#dc2626;  --danger-bg:#fef2f2;
+
+    /* ✅ CAPSULE SYSTEM */
+    --ctrl-h:44px;        /* input/button height */
+    --ctrl-r:999px;       /* capsule radius */
+    --ctrl-pad:14px;      /* horizontal padding */
+    --ring:0 0 0 3px rgba(15,23,42,.06);
+
+    /* DARK tokens */
+    --dark-surface: rgba(15, 23, 42, 0.65);
+    --dark-surface-2: rgba(15, 23, 42, 0.78);
+    --dark-border: rgba(255,255,255,0.12);
+    --dark-border-2: rgba(255,255,255,0.08);
+    --dark-text: #f8fafc;
+    --dark-text-2: rgba(255,255,255,0.72);
+    --dark-text-3: rgba(255,255,255,0.55);
+    --dark-ring: 0 0 0 0.25rem rgba(165, 180, 252, 0.22);
+  }
+
+  body{
+    background-color:var(--bg-body)!important;
+    font-family:'Inter',sans-serif;
+    color:var(--text-primary);
+  }
+  [data-bs-theme="dark"] body{
+    background:#0f1115 !important;
+    color:var(--dark-text)!important;
+  }
+
+  /* ✅ Override border-color for dark mode (ให้ capsule ไม่ขาว) */
+  [data-bs-theme="dark"]{
+    --border-color: rgba(148, 163, 184, 0.18);
+  }
+
+  /* Container */
+  .page-wrap{
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  /* Header */
+  .page-header{
+    background:transparent;
+    padding:0 0 1rem 0;
+    margin-bottom:1.25rem;
+    border-bottom:1px solid var(--border-color);
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  [data-bs-theme="dark"] .page-header{border-bottom-color:var(--dark-border)!important;}
+
+  .page-title{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .page-title h1{
+    font-size:1.55rem;
+    font-weight:700;
+    letter-spacing:-.02em;
+    margin:0;
+    color:var(--text-primary);
+  }
+  .subtitle{
+    font-size:.9rem;
+    color:var(--text-secondary);
+  }
+  [data-bs-theme="dark"] .page-title h1{color:var(--dark-text)!important;}
+  [data-bs-theme="dark"] .subtitle{color:var(--dark-text-2)!important;}
+
+  /* Cards */
+  .luxury-card{
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);
+    padding:1.25rem;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .luxury-card:hover{
+    box-shadow:var(--shadow-md);
+    border-color:#d1d5db;
+  }
+  [data-bs-theme="dark"] .luxury-card{
+    background:var(--dark-surface);
+    border-color: rgba(148, 163, 184, 0.12);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+
+  .card-section-title{
+    font-size:.78rem;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    gap:.55rem;
+  }
+  .card-section-title .bi{font-size:1rem;}
+  [data-bs-theme="dark"] .card-section-title{color:var(--dark-text-2)!important;}
+
+  .divider-top{
+    border-top:1px solid var(--border-color);
+    margin-top:12px;
+    padding-top:12px;
+  }
+  [data-bs-theme="dark"] .divider-top{border-top-color:var(--dark-border)!important;}
+
+  /* Labels & helper */
+  .form-label{
+    font-size:.72rem;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    margin-bottom:6px;
+  }
+  .form-text{
+    font-size:.72rem;
+    color:var(--text-tertiary);
+    margin-top:6px;
+  }
+  [data-bs-theme="dark"] .form-label{color:var(--dark-text-2)!important;}
+  [data-bs-theme="dark"] .form-text{color:var(--dark-text-3)!important;}
+
+  /* ✅ CAPSULE INPUTS (input/select/textarea) */
+  .luxury-input, .form-select, textarea.luxury-input{
+    width:100%;
+    height:var(--ctrl-h);
+    border:1px solid var(--border-color);
+    border-radius:var(--ctrl-r);
+    padding:0 var(--ctrl-pad);
+    font-size:.95rem;
+    font-weight:600;
+    color:var(--text-primary);
+    background:var(--surface);
+    transition:all .2s ease;
+    outline:none;
+  }
+  textarea.luxury-input{
+    height:auto;
+    min-height:110px;
+    padding:10px var(--ctrl-pad);
+    font-weight:500;
+    border-radius:16px;
+  }
+  .luxury-input::placeholder{color:var(--text-tertiary);font-weight:500;}
+  .luxury-input:focus, .form-select:focus, textarea.luxury-input:focus{
+    border-color:var(--primary-color);
+    box-shadow:var(--ring);
+  }
+
+  [data-bs-theme="dark"] .luxury-input,
+  [data-bs-theme="dark"] .form-select,
+  [data-bs-theme="dark"] textarea.luxury-input{
+    background:var(--dark-surface-2)!important;
+    border-color:rgba(255,255,255,0.14)!important;
+    color:var(--dark-text)!important;
+  }
+  [data-bs-theme="dark"] .luxury-input::placeholder{color:var(--dark-text-3)!important;}
+  [data-bs-theme="dark"] .luxury-input:focus,
+  [data-bs-theme="dark"] .form-select:focus,
+  [data-bs-theme="dark"] textarea.luxury-input:focus{
+    border-color:rgba(165,180,252,0.45)!important;
+    box-shadow:var(--dark-ring)!important;
+  }
+
+  /* ✅ CAPSULE INPUT GROUP */
+  .luxury-input-group{
+    display:flex;
+    align-items:center;
+    width:100%;
+    height:var(--ctrl-h);
+    border:1px solid var(--border-color);
+    border-radius:var(--ctrl-r);
+    overflow:hidden;
+    background:var(--surface);
+    transition:all .2s ease;
+  }
+  .luxury-input-group:focus-within{
+    border-color:var(--primary-color);
+    box-shadow:var(--ring);
+  }
+  .luxury-input-group .input-group-text{
+    height:100%;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    padding:0 12px;
+    background:#f8fafc;
+    border:0;
+    border-right:1px solid var(--border-color);
+    color:var(--text-secondary);
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .luxury-input-group input{
+    flex:1;
+    height:100%;
+    border:0;
+    outline:0;
+    background:transparent;
+    padding:0 var(--ctrl-pad);
+    font-size:.95rem;
+    font-weight:600;
+    color:var(--text-primary);
+    min-width:0;
+  }
+  .luxury-input-group input::placeholder{color:var(--text-tertiary);font-weight:500;}
+
+  [data-bs-theme="dark"] .luxury-input-group{
+    background:var(--dark-surface-2);
+    border-color:rgba(255,255,255,0.14);
+  }
+  [data-bs-theme="dark"] .luxury-input-group:focus-within{
+    border-color:rgba(165,180,252,0.45)!important;
+    box-shadow:var(--dark-ring)!important;
+  }
+  [data-bs-theme="dark"] .luxury-input-group .input-group-text{
+    background:rgba(255,255,255,0.06);
+    border-right-color:rgba(255,255,255,0.12);
+    color:rgba(255,255,255,0.72);
+  }
+  [data-bs-theme="dark"] .luxury-input-group input{color:var(--dark-text);}
+
+  /* ✅ STOCK COUNTER as capsule segmented */
+  .stock-counter{
+    display:flex;
+    align-items:center;
+    width:100%;
+    height:var(--ctrl-h);
+    border:1px solid var(--border-color);
+    border-radius:var(--ctrl-r);
+    overflow:hidden;
+    background:var(--surface);
+    transition:all .2s ease;
+  }
+  .stock-counter:focus-within{
+    border-color:var(--primary-color);
+    box-shadow:var(--ring);
+  }
+  .stock-btn{
+    width:48px;
+    height:100%;
+    border:0;
+    background:#f8fafc;
+    color:var(--text-primary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .stock-btn:hover{background:#eef2f7;}
+  .stock-input{
+    flex:1;
+    height:100%;
+    border:0;
+    outline:0;
+    background:transparent;
+    text-align:center;
+    font-weight:800;
+    color:var(--text-primary);
+  }
+
+  [data-bs-theme="dark"] .stock-counter{
+    background:var(--dark-surface-2);
+    border-color:rgba(255,255,255,0.14);
+  }
+  [data-bs-theme="dark"] .stock-counter:focus-within{
+    border-color:rgba(165,180,252,0.45)!important;
+    box-shadow:var(--dark-ring)!important;
+  }
+  [data-bs-theme="dark"] .stock-btn{
+    background:rgba(255,255,255,0.06);
+    color:var(--dark-text);
+  }
+  [data-bs-theme="dark"] .stock-btn:hover{background:rgba(255,255,255,0.10);}
+  [data-bs-theme="dark"] .stock-input{color:var(--dark-text);}
+
+  /* ✅ CAPSULE BUTTONS */
+  .btn-luxury{
+    height:var(--ctrl-h);
+    border-radius:var(--ctrl-r);
+    padding:0 16px;
+    font-weight:800;
+    font-size:.92rem;
+    border:1px solid transparent;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.55rem;
+    cursor:pointer;
+    text-decoration:none;
+    transition:all .2s ease;
+    white-space:nowrap;
+    line-height:1;
+  }
+  .btn-primary-luxury{background:var(--primary-color);color:#fff;}
+  .btn-primary-luxury:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 10px 18px -16px rgba(15,23,42,.35);color:#fff;}
+
+  .btn-secondary-luxury{background:#fff;border-color:var(--border-color);color:var(--text-primary);}
+  .btn-secondary-luxury:hover{background:#f9fafb;border-color:#d1d5db;color:var(--text-primary);}
+
+  .btn-danger-luxury{background:#fff;border-color:#fee2e2;color:var(--danger-text);}
+  .btn-danger-luxury:hover{background:var(--danger-bg);border-color:#fca5a5;}
+
+  .btn-icon-pill{
+    width:var(--ctrl-h);
+    min-width:var(--ctrl-h);
+    padding:0;
+  }
+
+  [data-bs-theme="dark"] .btn-primary-luxury{
+    background:rgba(165,180,252,0.22);
+    border-color:rgba(165,180,252,0.28);
+    color:#f8fafc;
+    box-shadow:0 8px 26px rgba(165,180,252,0.16);
+  }
+  [data-bs-theme="dark"] .btn-primary-luxury:hover{
+    background:rgba(165,180,252,0.28);
+    box-shadow:0 12px 34px rgba(165,180,252,0.20);
+  }
+  [data-bs-theme="dark"] .btn-secondary-luxury{
+    background:rgba(255,255,255,0.08);
+    border-color:rgba(255,255,255,0.14);
+    color:#fff;
+  }
+  [data-bs-theme="dark"] .btn-secondary-luxury:hover{background:rgba(255,255,255,0.12);}
+  [data-bs-theme="dark"] .btn-danger-luxury{
+    background:rgba(255,255,255,0.06);
+    border-color:rgba(248,113,113,0.28);
+    color:#f87171;
+  }
+  [data-bs-theme="dark"] .btn-danger-luxury:hover{background:rgba(248,113,113,0.10);}
+
+  /* Upload Zone */
+  .upload-zone{
+    border:1px dashed var(--border-color);
+    border-radius:18px;
+    background:#f9fafb;
+    min-height:320px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:all .2s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .upload-zone:hover{border-color:#cbd5e1;background:#f3f4f6;}
+  .upload-zone img{max-width:100%;max-height:100%;object-fit:contain;z-index:2;padding:12px;}
+  .upload-icon{font-size:2.6rem;color:#cbd5e1;margin-bottom:.5rem;}
+
+  [data-bs-theme="dark"] .upload-zone{
+    background:rgba(2,6,23,0.22);
+    border-color:rgba(255,255,255,0.16);
+  }
+  [data-bs-theme="dark"] .upload-zone:hover{
+    background:rgba(2,6,23,0.30);
+    border-color:rgba(255,255,255,0.22);
+  }
+  [data-bs-theme="dark"] .upload-icon{color:rgba(255,255,255,0.22);}
+  [data-bs-theme="dark"] .text-secondary{color:var(--dark-text-2)!important;}
+  [data-bs-theme="dark"] .text-tertiary{color:var(--dark-text-3)!important;}
+  [data-bs-theme="dark"] .text-primary{color:#a5b4fc!important;}
+
+  /* Color Tags (capsule chips) */
+  .color-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    padding:.35rem .65rem;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid var(--border-color);
+    font-size:.78rem;
+    font-weight:700;
+    color:var(--text-primary);
+    margin:6px 6px 0 0;
+  }
+  .color-dot{
+    width:10px;height:10px;border-radius:50%;
+    border:1px solid rgba(0,0,0,0.12);
+  }
+  [data-bs-theme="dark"] .color-tag{
+    background:rgba(255,255,255,0.08);
+    border-color:rgba(255,255,255,0.14);
+    color:var(--dark-text);
+  }
+  [data-bs-theme="dark"] .color-dot{border-color:rgba(255,255,255,0.22);}
+
+  /* Stats */
+  .summary-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:.55rem 0;
+    border-bottom:1px dashed var(--border-color);
+    font-size:.9rem;
+    color:var(--text-secondary);
+  }
+  .summary-row:last-of-type{border-bottom:none;}
+  .summary-value{
+    font-weight:900;
+    color:var(--text-primary);
+    font-variant-numeric:tabular-nums;
+  }
+  .summary-value.positive{color:var(--success-text);}
+  .summary-value.negative{color:var(--danger-text);}
+
+  [data-bs-theme="dark"] .summary-row{
+    border-bottom-color:rgba(255,255,255,0.12);
+    color:var(--dark-text-2);
+  }
+  [data-bs-theme="dark"] .summary-value{color:var(--dark-text);}
+  [data-bs-theme="dark"] .summary-value.positive{color:#4ade80;}
+  [data-bs-theme="dark"] .summary-value.negative{color:#f87171;}
+
+  .total-section{
+    border-radius:18px;
+    padding:14px;
+    text-align:center;
+    margin-top:12px;
+    background:linear-gradient(135deg, rgba(15,23,42,0.92), rgba(30,41,59,0.92));
+    color:#fff;
+  }
+  .total-label{
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    opacity:.85;
+    font-weight:800;
+  }
+  .total-amount{
+    font-size:1.4rem;
+    font-weight:900;
+    margin:6px 0 0;
+    letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  [data-bs-theme="dark"] .total-section{
+    background:linear-gradient(135deg, rgba(165,180,252,0.22), rgba(196,181,253,0.18));
+    border:1px solid rgba(165,180,252,0.28);
+    box-shadow:0 12px 40px rgba(0,0,0,0.55), 0 0 26px rgba(165,180,252,0.18);
+  }
+
+  /* Alerts */
+  [data-bs-theme="dark"] .alert-danger{
+    background: rgba(248,113,113,0.12)!important;
+    border-color: rgba(248,113,113,0.20)!important;
+    color: #fecaca!important;
+  }
+
+  /* Responsive */
+  @media (max-width: 992px){
+    .page-title h1{font-size:1.35rem;}
+  }
+  @media (max-width: 576px){
+    .page-wrap{padding:0 12px;}
+    .btn-luxury{width:100%;}
+    .header-actions{width:100%;}
+    .header-actions .btn-luxury{width:100%;}
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important; animation:none!important;}
+  }
+
+  /* ✅ พื้นหลังเดียวกันทุกหน้า (Light/Dark) */
+  :root{ --bg-body:#f3f4f6; }
+  [data-bs-theme="dark"]{ --bg-body:#0f1115; }
+
+  body{
+    background-color: var(--bg-body) !important;
+  }
+  [data-bs-theme="dark"] body{
+    background: #0f1115 !important;
+  }
+</style>
+
+<div class="page-wrap pt-2 pb-3">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-title">
+      <h1>{% if form.instance.pk %}Edit Product{% else %}Add Product{% endif %}</h1>
+      <div class="subtitle">{% if form.instance.pk %}Update details{% else %}Create new item{% endif %}</div>
+    </div>
+    <div class="header-actions">
+      <a href="{% url 'product_list' %}" class="btn-luxury btn-secondary-luxury">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form method="post"
+        enctype="multipart/form-data"
+        id="productForm"
+        novalidate
+        action="{% if form.instance.pk %}{% url 'product_edit' form.instance.pk %}{% else %}{% url 'product_create' %}{% endif %}">
+
+    {% csrf_token %}
+
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <div class="fw-semibold mb-1">Save ไม่สำเร็จ</div>
+        {{ form.errors }}
+      </div>
+    {% endif %}
+
+    <!-- 3 Columns Layout -->
+    <div class="row g-3 mb-3">
+
+      <!-- Col 1: General -->
+      <div class="col-lg-3 col-md-6">
+        <div class="luxury-card h-100">
+          <div class="card-section-title"><i class="bi bi-info-circle"></i> General</div>
+
+          <div class="mb-3">
+            <label class="form-label">Name <span class="text-danger">*</span></label>
+            {{ form.name }}
+            {% if form.name.errors %}
+              <div class="text-danger small mt-1">{{ form.name.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">SKU</label>
+            <div class="luxury-input-group">
+              <span class="input-group-text"><i class="bi bi-upc"></i></span>
+              {{ form.sku }}
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Colors</label>
+            {{ form.colors }}
+            <div id="color-tags" class="mt-2"></div>
+            <div class="form-text">Comma separated (e.g. Red, Blue)</div>
+          </div>
+
+          <!-- Actions -->
+          <div class="divider-top mt-auto">
+            <button type="submit" class="btn-luxury btn-primary-luxury w-100 mb-2" id="submitBtn">
+              {% if form.instance.pk %}Update Product{% else %}Save Product{% endif %}
+            </button>
+            <a href="{% url 'product_list' %}" class="btn-luxury btn-secondary-luxury w-100 mb-2">Cancel</a>
+
+            {% if form.instance.pk %}
+            <button type="button" class="btn-luxury btn-danger-luxury w-100" id="deleteBtn">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 2: Pricing -->
+      <div class="col-lg-3 col-md-6">
+        <div class="luxury-card h-100">
+          <div class="card-section-title"><i class="bi bi-tag"></i> Pricing</div>
+
+          <div class="mb-3">
+            <label class="form-label">Sale Price <span class="text-danger">*</span></label>
+            <div class="luxury-input-group">
+              <span class="input-group-text">฿</span>
+              {{ form.price }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Cost Price</label>
+            <div class="luxury-input-group">
+              <span class="input-group-text">฿</span>
+              {{ form.cost }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">In Stock <span class="text-danger">*</span></label>
+            <div class="stock-counter">
+              <button type="button" id="btn-minus" class="stock-btn" aria-label="Decrease"><i class="bi bi-dash"></i></button>
+              {{ form.stock }}
+              <button type="button" id="btn-plus" class="stock-btn" aria-label="Increase"><i class="bi bi-plus"></i></button>
+            </div>
+          </div>
+
+          <div class="card-section-title divider-top mt-2"><i class="bi bi-graph-up"></i> Stats</div>
+
+          <div class="flex-grow-1">
+            <div class="summary-row">
+              <span>Profit</span>
+              <span class="summary-value" id="calc-profit">฿0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Margin</span>
+              <span class="summary-value" id="calc-margin">0%</span>
+            </div>
+          </div>
+
+          <div class="total-section mt-3">
+            <div class="total-label">Total Inventory Value</div>
+            <div class="total-amount" id="calc-inventory">฿0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 3: Image -->
+      <div class="col-lg-6 col-md-12">
+        <div class="luxury-card h-100">
+          <div class="card-section-title"><i class="bi bi-image"></i> Image</div>
+
+          <div class="upload-zone" id="drop-zone">
+            <div class="d-none">{{ form.image }}</div>
+
+            <img id="preview"
+                 src="{% if form.instance.pk and form.instance.image %}{{ form.instance.image.url }}{% endif %}"
+                 class="{% if not form.instance.image %}d-none{% endif %}"
+                 alt="Preview">
+
+            <div id="preview-empty" class="text-center p-3 {% if form.instance.image %}d-none{% endif %}">
+              <i class="bi bi-cloud-arrow-up upload-icon"></i>
+              <p class="text-secondary small mb-0 fw-semibold">Click to upload image</p>
+              <p class="text-tertiary small mt-1" style="font-size:.75rem;">or drag and drop here</p>
+            </div>
+          </div>
+
+          <div id="file-name" class="mt-2 text-center small text-primary fw-semibold d-none">
+            <i class="bi bi-check-circle me-1"></i><span>filename.jpg</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<script>
+  (function() {
+    'use strict';
+
+    const stockInput = document.getElementById('id_stock');
+    const priceInput = document.getElementById('id_price');
+    const costInput  = document.getElementById('id_cost');
+    const colorsInput = document.getElementById('id_colors');
+    const fileInput  = document.getElementById('id_image');
+    const dropZone   = document.getElementById('drop-zone');
+    const deleteBtn  = document.getElementById('deleteBtn');
+
+    const preview = document.getElementById('preview');
+    const previewEmpty = document.getElementById('preview-empty');
+    const fileNameDisplay = document.getElementById('file-name');
+    const colorTags = document.getElementById('color-tags');
+
+    // ✅ Apply capsule classes to Django inputs
+    const textAndNumber = document.querySelectorAll('input[type="text"], input[type="number"], input[type="url"], input[type="email"], textarea, select');
+    textAndNumber.forEach(el => {
+      if (el.id === 'id_stock') {
+        el.classList.add('stock-input');
+        el.setAttribute('inputmode', 'numeric');
+      } else {
+        // if it is inside input-group, do not add luxury-input (the group styles it)
+        if (!el.parentElement?.classList?.contains('luxury-input-group')) {
+          if (el.tagName.toLowerCase() === 'select') el.classList.add('form-select');
+          else el.classList.add('luxury-input');
+        }
+      }
+    });
+
+    // Stock Counter
+    const btnPlus  = document.getElementById('btn-plus');
+    const btnMinus = document.getElementById('btn-minus');
+
+    btnPlus?.addEventListener('click', () => {
+      let val = parseInt(stockInput.value) || 0;
+      stockInput.value = val + 1;
+      updateCalculations();
+    });
+
+    btnMinus?.addEventListener('click', () => {
+      let val = parseInt(stockInput.value) || 0;
+      if (val > 0) {
+        stockInput.value = val - 1;
+        updateCalculations();
+      }
+    });
+
+    // Image Upload
+    dropZone?.addEventListener('click', () => fileInput.click());
+
+    function setDropZoneActive(active){
+      if(!dropZone) return;
+      if(active){
+        dropZone.style.borderColor = 'var(--text-tertiary)';
+        dropZone.style.background  = '#f3f4f6';
+      }else{
+        dropZone.style.borderColor = 'var(--border-color)';
+        dropZone.style.background  = '#f9fafb';
+      }
+    }
+
+    dropZone?.addEventListener('dragover', (e) => { e.preventDefault(); setDropZoneActive(true); });
+    dropZone?.addEventListener('dragleave', (e) => { e.preventDefault(); setDropZoneActive(false); });
+
+    dropZone?.addEventListener('drop', (e) => {
+      e.preventDefault();
+      setDropZoneActive(false);
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect({ target: { files: e.dataTransfer.files } });
+      }
+    });
+
+    fileInput?.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 5*1024*1024) {
+        alert('Invalid file. Please use JPG/PNG/WebP under 5MB.');
+        return;
+      }
+
+      fileNameDisplay.classList.remove('d-none');
+      fileNameDisplay.querySelector('span').textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        preview.src = ev.target.result;
+        preview.classList.remove('d-none');
+        previewEmpty.classList.add('d-none');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Color Tags
+    colorsInput?.addEventListener('input', renderColorTags);
+
+    function renderColorTags() {
+      const val = (colorsInput?.value || '').trim();
+      colorTags.innerHTML = '';
+      if(!val) return;
+
+      val.split(',').forEach(color => {
+        color = color.trim();
+        if(!color) return;
+        const tag = document.createElement('span');
+        tag.className = 'color-tag';
+        tag.innerHTML = `<span class="color-dot" style="background:${getColorCode(color)}"></span> ${escapeHtml(color)}`;
+        colorTags.appendChild(tag);
+      });
+    }
+
+    function getColorCode(name) {
+      const ctx = document.createElement('canvas').getContext('2d');
+      ctx.fillStyle = name;
+      return (ctx.fillStyle === '#000000' && name.toLowerCase() !== 'black') ? '#cbd5e1' : ctx.fillStyle;
+    }
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    // Profit Calculation
+    const calcProfit = document.getElementById('calc-profit');
+    const calcMargin = document.getElementById('calc-margin');
+    const calcInventory = document.getElementById('calc-inventory');
+
+    function updateCalculations() {
+      const price = parseFloat(priceInput?.value) || 0;
+      const cost  = parseFloat(costInput?.value) || 0;
+      const stock = parseInt(stockInput?.value) || 0;
+
+      const profit = price - cost;
+      const margin = price > 0 ? (profit / price * 100) : 0;
+      const totalInv = cost * stock;
+
+      calcProfit.textContent = `฿${profit.toFixed(2)}`;
+      calcProfit.className = `summary-value ${profit >= 0 ? 'positive' : 'negative'}`;
+
+      calcMargin.textContent = `${margin.toFixed(1)}%`;
+      calcMargin.className = `summary-value ${margin >= 0 ? 'positive' : 'negative'}`;
+
+      calcInventory.textContent = `฿${totalInv.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+
+    [priceInput, costInput, stockInput].forEach(el => el?.addEventListener('input', updateCalculations));
+
+    // Delete Logic
+    deleteBtn?.addEventListener('click', () => {
+      const name = document.getElementById('id_name')?.value || 'Item';
+      if(confirm(`Delete "${name}" permanently?`)) {
+        const f = document.createElement('form');
+        f.method = 'post';
+        f.action = '{% if form.instance.pk %}{% url "product_delete" form.instance.pk %}{% endif %}';
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        f.appendChild(csrf);
+
+        document.body.appendChild(f);
+        f.submit();
+      }
+    });
+
+    // Init
+    updateCalculations();
+    if(colorsInput?.value) renderColorTags();
+
+  })();
+</script>
+
+{% endblock %}

@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if action == 'edit' %}Edit Expense{% else %}New Expense{% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg-body:#f3f4f6; --surface:#ffffff;
+    --text-primary:#111827; --text-secondary:#6b7280; --text-tertiary:#9ca3af;
+
+    --primary-color:#0f172a; --primary-hover:#1e293b;
+    --border-color:#e5e7eb;
+
+    --success-bg:#ecfdf5; --success-text:#059669; --success-border:#a7f3d0;
+    --danger-bg:#fef2f2; --danger-text:#dc2626; --danger-border:#fecaca;
+
+    --radius-xl:18px; --radius-lg:14px; --radius-md:12px;
+    --shadow-sm:0 1px 2px 0 rgba(0,0,0,.05);
+    --shadow-md:0 14px 40px rgba(15,23,42,.10);
+    --ring:0 0 0 4px rgba(99,102,241,.14);
+
+    /* Capsule system (match Expenses list) */
+    --ctrl-h:44px;
+    --ctrl-r:999px;
+    --ctrl-pad:14px;
+
+    /* Dark tokens (match base.html glass) */
+    --dark-surface: rgba(15, 23, 42, 0.65);
+    --dark-surface-2: rgba(15, 23, 42, 0.78);
+    --dark-border: rgba(255,255,255,0.12);
+    --dark-text: #f8fafc;
+    --dark-text-2: rgba(255,255,255,0.72);
+    --dark-text-3: rgba(255,255,255,0.55);
+    --dark-ring: 0 0 0 0.25rem rgba(165, 180, 252, 0.22);
+  }
+
+  body{
+    font-family:'Inter',sans-serif;
+    background-color:var(--bg-body);
+    color:var(--text-primary);
+  }
+  [data-bs-theme="dark"] body{
+    background:#0f1115 !important;
+    color:var(--dark-text)!important;
+  }
+
+  .num-font{
+    font-family:'JetBrains Mono','Segoe UI Mono',monospace;
+    font-variant-numeric:tabular-nums;
+    font-weight:700;
+    letter-spacing:-.4px;
+  }
+
+  /* Page header (compact) */
+  .page-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding:0 0 .9rem 0;
+    margin-bottom:1rem;
+    border-bottom:1px solid rgba(229,231,235,.85);
+  }
+  [data-bs-theme="dark"] .page-head{
+    border-bottom-color:rgba(255,255,255,.10);
+  }
+  .page-head .title{
+    font-size:1.35rem;
+    font-weight:900;
+    letter-spacing:-.02em;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:.7rem;
+  }
+  .page-head .subtitle{
+    margin-top:.2rem;
+    font-size:.86rem;
+    color:var(--text-secondary);
+  }
+  [data-bs-theme="dark"] .page-head .subtitle{ color:var(--dark-text-2); }
+
+  .icon-badge{
+    width:40px; height:40px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(99,102,241,.10);
+    color:var(--primary-color);
+    border:1px solid rgba(99,102,241,.20);
+  }
+  [data-bs-theme="dark"] .icon-badge{
+    background:rgba(165,180,252,.14);
+    border-color:rgba(165,180,252,.18);
+    color:#a5b4fc;
+  }
+
+  /* Card */
+  .luxury-card{
+    background:var(--surface);
+    border:1px solid rgba(229,231,235,.95);
+    border-radius:var(--radius-xl);
+    box-shadow:var(--shadow-sm);
+    overflow:hidden;
+  }
+  [data-bs-theme="dark"] .luxury-card{
+    background:var(--dark-surface);
+    border-color:var(--dark-border);
+    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset, 0 10px 30px rgba(0,0,0,.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .card-header-clean{
+    background:transparent;
+    border-bottom:1px solid rgba(229,231,235,.90);
+    padding:1.1rem 1.25rem;
+  }
+  [data-bs-theme="dark"] .card-header-clean{
+    border-bottom-color:rgba(255,255,255,.10);
+  }
+
+  /* Labels */
+  .form-label{
+    font-size:.72rem;
+    font-weight:900;
+    color:var(--text-secondary);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin-bottom:.45rem;
+  }
+  [data-bs-theme="dark"] .form-label{ color:var(--dark-text-2); }
+
+  /* ✅ Capsule inputs (match list page) */
+  .form-control, .form-select, textarea{
+    width:100%;
+    border:1px solid rgba(229,231,235,.95);
+    border-radius:var(--ctrl-r);
+    padding:0 var(--ctrl-pad);
+    background:var(--surface);
+    font-size:.92rem;
+    font-weight:700;
+    color:var(--text-primary);
+    transition:border-color .2s, box-shadow .2s, transform .2s;
+    box-shadow:none;
+    min-height:var(--ctrl-h);
+  }
+  textarea.form-control{
+    border-radius:18px; /* textarea ดูเป็นกล่องนุ่มๆ */
+    padding:12px 14px;
+    min-height:110px;
+    font-weight:650;
+  }
+  .form-control::placeholder{ color:var(--text-tertiary); font-weight:600; }
+  .form-control:focus, .form-select:focus, textarea:focus{
+    border-color:rgba(99,102,241,.65);
+    box-shadow:var(--ring);
+    outline:none;
+    background:var(--surface);
+  }
+
+  [data-bs-theme="dark"] .form-control,
+  [data-bs-theme="dark"] .form-select,
+  [data-bs-theme="dark"] textarea{
+    background:rgba(15,23,42,.75)!important;
+    border-color:rgba(255,255,255,.14)!important;
+    color:var(--dark-text)!important;
+  }
+  [data-bs-theme="dark"] .form-control:focus,
+  [data-bs-theme="dark"] .form-select:focus,
+  [data-bs-theme="dark"] textarea:focus{
+    border-color:rgba(165,180,252,0.45)!important;
+    box-shadow:var(--dark-ring)!important;
+  }
+
+  /* Input group -> pill */
+  .luxury-group{
+    display:flex;
+    align-items:center;
+    border:1px solid rgba(229,231,235,.95);
+    border-radius:var(--ctrl-r);
+    overflow:hidden;
+    background:var(--surface);
+    min-height:var(--ctrl-h);
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .luxury-group:focus-within{
+    border-color:rgba(99,102,241,.65);
+    box-shadow:var(--ring);
+  }
+  .luxury-group .addon{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 12px;
+    min-height:var(--ctrl-h);
+    color:var(--text-secondary);
+    background:rgba(249,250,251,.9);
+    border-right:1px solid rgba(229,231,235,.95);
+    font-weight:800;
+  }
+  .luxury-group .control{
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    min-height:var(--ctrl-h);
+    padding:0 var(--ctrl-pad)!important;
+    background:transparent!important;
+  }
+
+  [data-bs-theme="dark"] .luxury-group{
+    background:rgba(15,23,42,.75);
+    border-color:rgba(255,255,255,.14);
+  }
+  [data-bs-theme="dark"] .luxury-group:focus-within{
+    border-color:rgba(165,180,252,0.45);
+    box-shadow:var(--dark-ring);
+  }
+  [data-bs-theme="dark"] .luxury-group .addon{
+    background:rgba(255,255,255,.06);
+    border-right-color:rgba(255,255,255,.12);
+    color:rgba(255,255,255,.72);
+  }
+
+  /* Buttons (capsule) */
+  .btn-luxury{
+    height:var(--ctrl-h);
+    border-radius:var(--ctrl-r);
+    padding:0 16px;
+    font-weight:900;
+    transition:transform .15s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
+    border:1px solid transparent;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.55rem;
+    text-decoration:none;
+    font-size:.92rem;
+    line-height:1;
+    white-space:nowrap;
+  }
+
+  .btn-primary-luxury{
+    background:linear-gradient(180deg, var(--primary-color), #0b1224);
+    color:#fff;
+  }
+  .btn-primary-luxury:hover{
+    background:linear-gradient(180deg, var(--primary-hover), #0b1224);
+    transform:translateY(-1px);
+    box-shadow:0 10px 22px -14px rgba(15,23,42,.55);
+    color:#fff;
+  }
+
+  .btn-secondary-luxury{
+    background:rgba(255,255,255,.92);
+    border-color:rgba(229,231,235,.95);
+    color:var(--text-primary);
+  }
+  .btn-secondary-luxury:hover{
+    background:#f9fafb;
+    border-color:#d1d5db;
+    color:var(--text-primary);
+  }
+
+  .btn-danger-luxury{
+    background:rgba(255,255,255,.92);
+    border-color:var(--danger-border);
+    color:var(--danger-text);
+  }
+  .btn-danger-luxury:hover{
+    background:var(--danger-bg);
+    border-color:#fca5a5;
+    transform:translateY(-1px);
+  }
+
+  [data-bs-theme="dark"] .btn-primary-luxury{
+    background: rgba(165,180,252,0.22);
+    border: 1px solid rgba(165,180,252,0.28);
+    color: #f8fafc;
+    box-shadow: 0 8px 26px rgba(165, 180, 252, 0.16);
+  }
+  [data-bs-theme="dark"] .btn-primary-luxury:hover{
+    background: rgba(165,180,252,0.28);
+    box-shadow: 0 12px 34px rgba(165, 180, 252, 0.20);
+  }
+
+  [data-bs-theme="dark"] .btn-secondary-luxury{
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.14);
+    color: #fff;
+  }
+  [data-bs-theme="dark"] .btn-secondary-luxury:hover{ background: rgba(255,255,255,0.12); }
+
+  [data-bs-theme="dark"] .btn-danger-luxury{
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(248,113,113,0.28);
+    color: #f87171;
+  }
+  [data-bs-theme="dark"] .btn-danger-luxury:hover{ background: rgba(248,113,113,0.10); }
+
+  /* Alerts */
+  .alert-soft{
+    border:0;
+    border-radius:16px;
+    padding:14px 14px;
+    background:rgba(248,113,113,.10);
+    color:var(--danger-text);
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+  [data-bs-theme="dark"] .alert-soft{
+    background:rgba(248,113,113,.12);
+    color:#fca5a5;
+  }
+
+  /* Upload box */
+  .upload-box{
+    border:1px dashed rgba(229,231,235,.95);
+    border-radius:18px;
+    padding:14px;
+    background:rgba(249,250,251,.75);
+    text-align:center;
+  }
+  [data-bs-theme="dark"] .upload-box{
+    background:rgba(2,6,23,.22);
+    border-color:rgba(255,255,255,.12);
+  }
+
+  .img-preview-box{
+    border:1px solid rgba(229,231,235,.95);
+    border-radius:16px;
+    padding:6px;
+    background:#fff;
+    display:inline-block;
+    transition:transform .18s, border-color .18s, box-shadow .2s;
+  }
+  .img-preview-box:hover{
+    transform:scale(1.02);
+    border-color:rgba(99,102,241,.45);
+    box-shadow:0 14px 26px -22px rgba(0,0,0,.45);
+  }
+  [data-bs-theme="dark"] .img-preview-box{
+    background:rgba(255,255,255,.06);
+    border-color:rgba(255,255,255,.12);
+  }
+
+  .hint{
+    font-size:.78rem;
+    color:var(--text-secondary);
+    margin-top:.45rem;
+  }
+  [data-bs-theme="dark"] .hint{ color:var(--dark-text-3); }
+
+  /* Layout spacing */
+  .content-wrap{ padding-top:8px; padding-bottom:22px; }
+
+  @media (max-width: 576px){
+    .container.py-5{ padding-top:1.25rem!important; padding-bottom:1.25rem!important; }
+    .card-header-clean{ padding:1rem 1rem; }
+    .card-body{ padding:1rem!important; }
+    .page-head .title{ font-size:1.22rem; }
+    .btn-luxury{ width:100%; }
+    .action-row{ flex-direction:column; gap:10px!important; align-items:stretch!important; }
+    .right-actions{ flex-direction:column; width:100%; }
+    .right-actions .btn-luxury{ width:100%; }
+  }
+</style>
+
+<div class="container py-5 content-wrap">
+  <div class="row justify-content-center">
+    <div class="col-md-9 col-lg-7">
+
+      <div class="page-head">
+        <div>
+          <h1 class="title">
+            <span class="icon-badge">
+              {% if action == 'edit' %}
+                <i class="bi bi-pencil-square"></i>
+              {% else %}
+                <i class="bi bi-plus-lg"></i>
+              {% endif %}
+            </span>
+            {% if action == 'edit' %}Edit Expense{% else %}New Expense{% endif %}
+          </h1>
+          <div class="subtitle">
+            {% if action == 'edit' %}
+              Update the record and keep everything tidy
+            {% else %}
+              Add a new operational cost record
+            {% endif %}
+          </div>
+        </div>
+
+        <a href="{% url 'expense_list' %}" class="btn-luxury btn-secondary-luxury d-none d-sm-inline-flex">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+      </div>
+
+      <div class="luxury-card">
+        <div class="card-header-clean">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="fw-bold" style="letter-spacing:-.01em;">
+              Expense Details
+            </div>
+            <span class="badge rounded-pill bg-light text-secondary border fw-normal" style="font-size:.78rem;">
+              {% if action == 'edit' %}Editing{% else %}New{% endif %}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if form.errors %}
+              <div class="alert-soft mb-4">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <div>
+                  <div class="fw-bold text-uppercase" style="letter-spacing:.06em; font-size:.78rem;">Validation Error</div>
+                  <div class="small">Please check the fields below.</div>
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Date -->
+            <div class="mb-4">
+              <label class="form-label">Transaction Date</label>
+              <div class="luxury-group">
+                <span class="addon"><i class="bi bi-calendar-event"></i></span>
+                {{ form.paid_at }}
+              </div>
+              <div class="hint"><i class="bi bi-info-circle me-1"></i>Set the date/time of payment</div>
+            </div>
+
+            <!-- Title -->
+            <div class="mb-4">
+              <label class="form-label">Title <span class="text-danger">*</span></label>
+              {{ form.title }}
+              <div class="hint"><i class="bi bi-lightbulb me-1"></i>E.g., Shop Rent, Electricity Bill, Packaging</div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <!-- Category -->
+              <div class="col-md-6">
+                <label class="form-label">Category</label>
+                {{ form.category }}
+              </div>
+
+              <!-- Amount -->
+              <div class="col-md-6">
+                <label class="form-label">Amount (THB) <span class="text-danger">*</span></label>
+                <div class="luxury-group">
+                  <span class="addon num-font">฿</span>
+                  {{ form.amount }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Receipt -->
+            <div class="mb-4">
+              <label class="form-label">Receipt / Slip</label>
+              <div class="upload-box">
+                {% if form.instance.receipt_image %}
+                  <div class="mb-3">
+                    <a href="{{ form.instance.receipt_image.url }}" target="_blank" class="img-preview-box">
+                      <img src="{{ form.instance.receipt_image.url }}" alt="Current Slip"
+                           style="height: 130px; width:auto; object-fit: cover; border-radius: 12px;">
+                    </a>
+                    <div class="small mt-2" style="color: var(--success-text); font-weight:800;">
+                      <i class="bi bi-check-circle-fill me-1"></i> Current file uploaded
+                    </div>
+                  </div>
+                {% endif %}
+
+                {{ form.receipt_image }}
+                <div class="hint">Upload JPG/PNG (Max 5MB)</div>
+              </div>
+            </div>
+
+            <!-- Note -->
+            <div class="mb-4">
+              <label class="form-label">Note (Optional)</label>
+              {{ form.note }}
+            </div>
+
+            <hr class="my-4" style="border-color: rgba(229,231,235,.65);">
+            <div class="d-flex justify-content-between align-items-center gap-2 action-row">
+              <a href="{% url 'expense_list' %}" class="btn-luxury btn-secondary-luxury text-decoration-none d-sm-none">
+                <i class="bi bi-arrow-left"></i> Back
+              </a>
+
+              <div class="d-flex gap-2 right-actions">
+                {% if action == 'edit' %}
+                  <button type="button" class="btn-luxury btn-danger-luxury" onclick="confirmDelete()">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                {% endif %}
+                <button type="submit" class="btn-luxury btn-primary-luxury">
+                  <i class="bi bi-save"></i> Save Record
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% if action == 'edit' %}
+<form id="deleteForm" action="{% url 'expense_delete' expense.pk %}" method="post" style="display:none;">
+  {% csrf_token %}
+</form>
+
+<script>
+function confirmDelete() {
+  if (confirm('Are you sure you want to delete this expense?\nThis action cannot be undone.')) {
+    document.getElementById('deleteForm').submit();
+  }
+}
+
+(function applyLuxuryClasses(){
+  // Ensure Django widgets look correct even if form doesn't include classes
+  const paid = document.getElementById('id_paid_at');
+  const title = document.getElementById('id_title');
+  const cat = document.getElementById('id_category');
+  const amt = document.getElementById('id_amount');
+  const note = document.getElementById('id_note');
+
+  if (paid) paid.classList.add('form-control','control');
+  if (title) title.classList.add('form-control');
+  if (cat)  cat.classList.add('form-select');
+  if (amt)  amt.classList.add('form-control','control','num-font');
+  if (note) note.classList.add('form-control');
+
+  // receipt input style (small improvement)
+  const receipt = document.getElementById('id_receipt_image');
+  if (receipt) receipt.classList.add('form-control');
+})();
+</script>
+{% else %}
+<script>
+(function applyLuxuryClasses(){
+  const paid = document.getElementById('id_paid_at');
+  const title = document.getElementById('id_title');
+  const cat = document.getElementById('id_category');
+  const amt = document.getElementById('id_amount');
+  const note = document.getElementById('id_note');
+
+  if (paid) paid.classList.add('form-control','control');
+  if (title) title.classList.add('form-control');
+  if (cat)  cat.classList.add('form-select');
+  if (amt)  amt.classList.add('form-control','control','num-font');
+  if (note) note.classList.add('form-control');
+
+  const receipt = document.getElementById('id_receipt_image');
+  if (receipt) receipt.classList.add('form-control');
+})();
+</script>
+{% endif %}
+
+{% endblock %}

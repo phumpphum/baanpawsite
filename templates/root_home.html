@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Baanpaw Pets — Links</title>
+  <meta name="description" content="Baanpaw official links: LINE OA, Shopee, Instagram" />
+  <meta name="theme-color" content="#8a6f5a" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@500;600;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* --- Cream / Brown (Baanpaw vibe) --- */
+      --bg-gradient: radial-gradient(1200px 700px at 20% 10%, #fff6ea 0%, #f4e6d3 40%, #efe0cf 70%, #ead9c6 100%);
+      --surface: rgba(255, 255, 255, 0.82);
+      --surface-hover: rgba(255, 255, 255, 0.94);
+
+      --brand: #8a6f5a;       /* น้ำตาลครีม */
+      --brand-2: #b08b6f;     /* คาราเมล */
+      --accent: #d2b48c;      /* tan */
+      --text-main: #2b2420;
+      --text-sub: #5b4b41;
+
+      --border: rgba(138, 111, 90, 0.25);
+      --shadow-soft: 0 12px 40px rgba(43, 36, 32, 0.12);
+      --shadow-hover: 0 16px 52px rgba(43, 36, 32, 0.18);
+      --radius: 28px;
+      --anim-speed: 0.3s;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      height: 100%;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Kanit', sans-serif;
+      min-height: 100dvh;
+      color: var(--text-main);
+      overflow-x: hidden;
+      background-color: transparent;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      position: relative;
+    }
+
+    /* --- Snow Effect (คงไว้ได้ ถ้าไม่เอาให้ลบ div#snow-container และโค้ด JS) --- */
+    #snow-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      opacity: 0.22; /* เบาลงให้เข้าธีมครีม */
+      filter: blur(0.2px);
+    }
+    .snowflake {
+      position: absolute;
+      top: -10px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      animation: fall linear infinite;
+    }
+    @keyframes fall {
+      0%   { transform: translateY(0) rotate(0deg); opacity: 0.55; }
+      100% { transform: translateY(105vh) rotate(360deg); opacity: 0.05; }
+    }
+
+    /* --- Main --- */
+    .wrap {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      padding-bottom: 18px;
+    }
+
+    /* --- Top Actions --- */
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 18px;
+      padding-right: 10px;
+    }
+
+    .circle-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(138, 111, 90, 0.25);
+      background: rgba(255,255,255,0.55);
+      color: var(--brand);
+      display: grid; place-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+      box-shadow: 0 8px 22px rgba(43, 36, 32, 0.10);
+    }
+    .circle-btn:hover {
+      background: rgba(255,255,255,0.85);
+      transform: translateY(-2px);
+      color: #6f5646;
+      box-shadow: 0 12px 30px rgba(43, 36, 32, 0.14);
+    }
+    .circle-btn:active { transform: translateY(0); }
+
+    /* --- Avatar & Profile --- */
+    .avatar-container {
+      position: relative;
+      width: 120px; height: 120px;
+      margin: 0 auto 18px;
+    }
+
+    /* เอาหมวกซานต้าออก */
+    .avatar-container::after { content: none; }
+
+    .avatar {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: #fff;
+      border: 5px solid rgba(138, 111, 90, 0.55);
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      animation: float 6s ease-in-out infinite;
+      position: relative;
+    }
+    .avatar::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(210,180,140,0.18), rgba(255,255,255,0.45), rgba(210,180,140,0.18), transparent);
+      animation: shine 5s ease-in-out infinite;
+      z-index: 1;
+    }
+    .avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes shine {
+      0% { transform: translate(-100%, -100%) rotate(45deg); }
+      100% { transform: translate(100%, 100%) rotate(45deg); }
+    }
+
+    .handle {
+      font-family: 'Mali', 'Kanit', sans-serif;
+      font-size: 30px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      letter-spacing: 0.4px;
+      color: var(--text-main);
+      text-shadow: 0 6px 18px rgba(43,36,32,0.10);
+    }
+
+    .bio {
+      font-size: 15px;
+      color: var(--text-sub);
+      margin-bottom: 34px;
+      font-weight: 400;
+    }
+
+    /* --- Links --- */
+    .links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .links li {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: slideUp 0.5s ease forwards;
+    }
+    .links li:nth-child(1) { animation-delay: 0.08s; }
+    .links li:nth-child(2) { animation-delay: 0.16s; }
+    .links li:nth-child(3) { animation-delay: 0.24s; }
+
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    .link {
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 20px 24px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 18px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+      overflow: hidden;
+    }
+
+    /* ไล่เงาบางๆแบบครีม */
+    .link::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(400px 220px at 20% 0%, rgba(210,180,140,0.22) 0%, transparent 65%),
+                  radial-gradient(380px 220px at 90% 120%, rgba(138,111,90,0.10) 0%, transparent 65%);
+      opacity: 0.75;
+      pointer-events: none;
+    }
+
+    /* shimmer เบามาก */
+    .link::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -120%;
+      width: 100%; height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
+      transition: left 0.6s ease;
+      pointer-events: none;
+    }
+    .link:hover::before { left: 120%; }
+
+    .link:hover {
+      background: var(--surface-hover);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(138, 111, 90, 0.32);
+    }
+    .link:active { transform: translateY(-1px); }
+
+    .link-icon {
+      width: 28px; height: 28px;
+      margin-right: 16px;
+      fill: none;
+      stroke: var(--brand);
+      transition: transform 0.25s ease, stroke 0.25s ease;
+    }
+    .link:hover .link-icon {
+      transform: scale(1.06);
+      stroke: #6f5646;
+    }
+
+    .link-text {
+      flex: 1;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .arrow-icon {
+      position: relative;
+      z-index: 1;
+      opacity: 0.55;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      stroke: var(--brand);
+    }
+    .link:hover .arrow-icon {
+      transform: translateX(2px);
+      opacity: 0.85;
+      stroke: #6f5646;
+    }
+
+    /* --- Footer --- */
+    .footer-area {
+      margin-top: 42px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      animation: slideUp 0.5s ease forwards 0.38s;
+      opacity: 0;
+    }
+
+    .legal {
+      font-size: 13px;
+      color: rgba(91, 75, 65, 0.85);
+      display: flex;
+      gap: 8px;
+      font-weight: 300;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 420px) {
+      .handle { font-size: 28px; }
+      .link { padding: 18px 20px; font-size: 17px; }
+      .avatar-container { width: 112px; height: 112px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="snow-container"></div>
+
+  <div class="wrap">
+    <div class="card">
+
+      <div class="top-actions">
+        <button class="circle-btn" onclick="sharePage()" title="Share">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M12 16V4"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    <path d="M8 8l4-4 4 4"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </svg>
+</button>
+      </div>
+
+      <div class="avatar-container">
+        <div class="avatar">
+          <img src="https://drive.google.com/thumbnail?id=1XturaTMMO-Mw3bPuyeZJYhTPVk5QlltP&sz=w400" alt="Baanpaw Logo">
+        </div>
+      </div>
+
+      <div class="handle">@baanpaw</div>
+      <div class="bio">Pet Accessories & Carrier Bags 🐶🐱</div>
+
+      <ul class="links">
+
+        <li>
+          <a class="link" href="https://s.shopee.co.th/BMw5wx0ks" target="_blank" rel="noopener">
+            <svg class="link-icon" viewBox="0 0 24 24">
+              <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="link-text">Shop on Shopee</span>
+            <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        </li>
+
+        <li>
+<a class="link" href="https://lin.ee/ChQUtRS" target="_blank" rel="noopener">
+  <!-- ✅ ของใหม่ (แก้แล้ว สีไม่ดำ) -->
+<svg class="link-icon" viewBox="0 0 24 24" fill="none" stroke="var(--brand)">
+  <path
+    d="M21 11.5c0 4.1-4 7.5-9 7.5-1 0-2-.1-2.9-.4L5 21l1.2-3.1C4.8 16.6 3 14.7 3 11.5 3 7.4 7 4 12 4s9 3.4 9 7.5z"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M8.5 11.5h0M12 11.5h0M15.5 11.5h0"
+    stroke-width="2.5"
+    stroke-linecap="round"
+  />
+</svg>
+
+  <span class="link-text">Add LINE Friend</span>
+
+  <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</a>
+        </li>
+
+        <li>
+          <a class="link" href="https://www.instagram.com/baanpaw_pets/" target="_blank" rel="noopener">
+            <svg class="link-icon" viewBox="0 0 24 24">
+              <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6zM17.8 6.6a.9.9 0 1 1 0 1.8.9.9 0 0 1 0-1.8z"/>
+            </svg>
+            <span class="link-text">Follow Instagram</span>
+            <svg class="arrow-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+        </li>
+
+      </ul>
+
+      <div class="footer-area">
+        <div class="legal">
+          <span>© 2026 baanpaw-บ้านพอว์</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function sharePage(){
+      if(navigator.share){
+        navigator.share({ title: document.title, url: location.href });
+      } else {
+        prompt("Copy this link:", location.href);
+      }
+    }
+
+    // --- Script สร้างหิมะ (คงไว้ได้) ---
+    document.addEventListener("DOMContentLoaded", function() {
+      const snowContainer = document.getElementById('snow-container');
+      const numberOfSnowflakes = 40;
+
+      for (let i = 0; i < numberOfSnowflakes; i++) createSnowflake();
+
+      function createSnowflake() {
+        const snowflake = document.createElement('div');
+        snowflake.classList.add('snowflake');
+
+        const size = (Math.random() * 5 + 2) + 'px';
+        snowflake.style.width = size;
+        snowflake.style.height = size;
+
+        snowflake.style.left = Math.random() * 100 + 'vw';
+
+        const duration = (Math.random() * 10 + 6) + 's';
+        snowflake.style.animationDuration = duration;
+
+        snowflake.style.animationDelay = (Math.random() * 5) + 's';
+
+        snowflake.style.opacity = (Math.random() * 0.35 + 0.08);
+
+        snowContainer.appendChild(snowflake);
+
+        snowflake.addEventListener('animationiteration', () => {
+          snowflake.style.left = Math.random() * 100 + 'vw';
+        });
+      }
+    });
+  </script>
+</body>
+</html>

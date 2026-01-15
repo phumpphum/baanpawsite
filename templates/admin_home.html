@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Baanpaw Shop{% endblock %}
+
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    /* Luxury Palette (LIGHT defaults) */
+    --bg-body: #f3f4f6;
+    --surface: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-tertiary: #9ca3af;
+
+    --primary-color: #0f172a;
+    --accent-color: #6366f1;
+
+    --border-color: #e5e7eb;
+    --radius-lg: 16px;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+
+    /* Glass tokens (dark) */
+    --glass-surface: rgba(15, 23, 42, 0.62);
+    --glass-surface-2: rgba(2, 6, 23, 0.22);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-border-2: rgba(255,255,255,0.08);
+    --glass-text: #f8fafc;
+    --glass-text-2: rgba(255,255,255,0.72);
+    --glass-text-3: rgba(255,255,255,0.55);
+  }
+
+  /* ✅ พื้นหลังเดียวกันทุกหน้า */
+  body{
+    background: var(--bg-body) !important;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+  }
+
+  /* ✅ KEY FIX: Override “variables” in dark mode ให้ทั้งหมดอ้างเป็นสีขาว */
+  [data-bs-theme="dark"]{
+    --bg-body: #0f1115;
+    --surface: var(--glass-surface);
+    --text-primary: var(--glass-text);
+    --text-secondary: var(--glass-text-2);
+    --text-tertiary: var(--glass-text-3);
+    --border-color: var(--glass-border);
+  }
+
+  /* Hero Section */
+  .hero-section {
+    text-align: center;
+    margin-bottom: 2rem;
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+
+  /* Cards */
+  .luxury-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+  }
+
+  .luxury-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: #d1d5db;
+  }
+
+  /* --- MENU GRID LAYOUT (UPDATED FOR MOBILE COMPACT) --- */
+  .menu-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 3rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .menu-card {
+    padding: 1rem;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 140px;
+  }
+
+  .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .card-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    line-height: 1.2;
+  }
+
+  @media (min-width: 768px) {
+    .hero-title { font-size: 3rem; margin-bottom: 1rem; }
+    .hero-section { margin-bottom: 3rem; }
+
+    .menu-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .menu-card {
+      padding: 2rem;
+      min-height: 220px;
+    }
+
+    .icon-wrapper {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .card-desc { font-size: 0.9rem; }
+  }
+
+  .menu-card:hover .icon-wrapper {
+    transform: scale(1.1) rotate(3deg);
+  }
+
+  /* Menu Colors (light) */
+  .card-products .icon-wrapper { background-color: #eff6ff; color: #3b82f6; }
+  .card-add .icon-wrapper      { background-color: #f0fdf4; color: #16a34a; }
+  .card-sale .icon-wrapper     { background-color: #faf5ff; color: #a855f7; }
+  .card-expenses .icon-wrapper { background-color: #fef2f2; color: #ef4444; }
+  .card-history .icon-wrapper  { background-color: #fff7ed; color: #f97316; }
+  .card-reports .icon-wrapper  { background-color: #f0f9ff; color: #0ea5e9; }
+
+  /* Brand Section */
+  .brand-badge {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-block;
+  }
+
+  .brand-content {
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+
+  .quote-box {
+    border-left: 3px solid var(--primary-color);
+    padding-left: 1.5rem;
+    font-style: italic;
+    color: var(--text-primary);
+    margin-top: 1.5rem;
+  }
+
+  /* =========================
+     ✅ DARK MODE (Home) - COMPLETE
+     ========================= */
+
+  /* ทำให้การ์ดเป็น glass + ขอบ/เงาเหมือนหน้าอื่น */
+  [data-bs-theme="dark"] .luxury-card{
+    background: var(--glass-surface) !important;
+    border-color: var(--glass-border) !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset, 0 10px 30px rgba(0,0,0,0.45) !important;
+    backdrop-filter: blur(16px) saturate(170%);
+    -webkit-backdrop-filter: blur(16px) saturate(170%);
+  }
+  [data-bs-theme="dark"] .luxury-card:hover{
+    border-color: rgba(165,180,252,0.22) !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08) inset, 0 18px 50px rgba(0,0,0,0.55) !important;
+  }
+
+  /* icon wrapper ให้เข้ากับ dark */
+  [data-bs-theme="dark"] .icon-wrapper{
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+  [data-bs-theme="dark"] .card-products .icon-wrapper { background: rgba(59,130,246,0.18) !important; color:#93c5fd !important; }
+  [data-bs-theme="dark"] .card-add .icon-wrapper      { background: rgba(34,197,94,0.18)  !important; color:#86efac !important; }
+  [data-bs-theme="dark"] .card-sale .icon-wrapper     { background: rgba(168,85,247,0.18) !important; color:#d8b4fe !important; }
+  [data-bs-theme="dark"] .card-expenses .icon-wrapper { background: rgba(239,68,68,0.16)  !important; color:#fca5a5 !important; }
+  [data-bs-theme="dark"] .card-history .icon-wrapper  { background: rgba(249,115,22,0.16) !important; color:#fdba74 !important; }
+  [data-bs-theme="dark"] .card-reports .icon-wrapper  { background: rgba(14,165,233,0.18) !important; color:#7dd3fc !important; }
+
+  /* brand badge ใน dark */
+  [data-bs-theme="dark"] .brand-badge{
+    background: rgba(165,180,252,0.22) !important;
+    border: 1px solid rgba(165,180,252,0.28) !important;
+    color:#f8fafc !important;
+  }
+
+  /* inner info box (bg-body / border-light-subtle) */
+  [data-bs-theme="dark"] .bg-body{
+    background: var(--glass-surface-2) !important;
+  }
+  [data-bs-theme="dark"] .border-light-subtle{
+    border-color: var(--glass-border) !important;
+  }
+
+  /* Quote box */
+  [data-bs-theme="dark"] .quote-box{
+    border-left-color: rgba(165,180,252,0.55) !important;
+    color: rgba(255,255,255,0.88) !important;
+  }
+
+  /* HR */
+  [data-bs-theme="dark"] hr{
+    border-color: rgba(255,255,255,0.12) !important;
+    opacity: 1 !important;
+  }
+
+  /* Bootstrap utility classes inside section */
+  [data-bs-theme="dark"] .text-secondary{ color: var(--text-secondary) !important; }
+  [data-bs-theme="dark"] .text-primary{ color: #a5b4fc !important; }
+
+  /* ✅ สำคัญสุด: ตัวที่เคยเป็นดำเพราะ inline style / fw-bold */
+  [data-bs-theme="dark"] h1,
+  [data-bs-theme="dark"] h2,
+  [data-bs-theme="dark"] h3,
+  [data-bs-theme="dark"] .fw-bold,
+  [data-bs-theme="dark"] .fw-semibold{
+    color: var(--text-primary) !important;
+  }
+
+</style>
+
+<div class="container py-4 py-md-5">
+  <div class="hero-section">
+    <h1 class="hero-title">Welcome to baanpaw-pets</h1>
+    <p class="hero-subtitle">
+      Streamline shop management. Track products, record sales, and analyze performance.
+    </p>
+  </div>
+
+  <div class="menu-grid">
+    <a href="{% url 'product_list' %}" class="luxury-card menu-card card-products">
+      <div class="icon-wrapper"><i class="bi bi-box-seam"></i></div>
+      <h3 class="card-title">Products</h3>
+      <p class="card-desc">Inventory</p>
+    </a>
+
+    <a href="{% url 'product_create' %}" class="luxury-card menu-card card-add">
+      <div class="icon-wrapper"><i class="bi bi-plus-square"></i></div>
+      <h3 class="card-title">Add</h3>
+      <p class="card-desc">New Item</p>
+    </a>
+
+    <a href="{% url 'sale_create' %}" class="luxury-card menu-card card-sale">
+      <div class="icon-wrapper"><i class="bi bi-bag-check"></i></div>
+      <h3 class="card-title">Sale</h3>
+      <p class="card-desc">Transaction</p>
+    </a>
+
+    <a href="{% url 'expense_list' %}" class="luxury-card menu-card card-expenses">
+      <div class="icon-wrapper"><i class="bi bi-wallet2"></i></div>
+      <h3 class="card-title">Expenses</h3>
+      <p class="card-desc">Costs</p>
+    </a>
+
+    <a href="{% url 'sales_history' %}" class="luxury-card menu-card card-history">
+      <div class="icon-wrapper"><i class="bi bi-clock-history"></i></div>
+      <h3 class="card-title">History</h3>
+      <p class="card-desc">Logs</p>
+    </a>
+
+    <a href="{% url 'sales_report' %}" class="luxury-card menu-card card-reports">
+      <div class="icon-wrapper"><i class="bi bi-graph-up-arrow"></i></div>
+      <h3 class="card-title">Reports</h3>
+      <p class="card-desc">Analytics</p>
+    </a>
+  </div>
+
+  <hr class="border-secondary opacity-10 w-50 mx-auto mb-5">
+
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="luxury-card p-4 p-md-5">
+        <div class="text-center mb-4">
+          <span class="brand-badge mb-3">Featured Brand</span>
+          <h2 class="fw-bold" style="color: var(--text-primary);">About HiDREAM ®️</h2>
+        </div>
+
+        <div class="row">
+          <div class="col-md-10 mx-auto">
+            <p class="brand-content text-center mb-4">
+              Established in 2016, HiDREAM is an original designer brand committed to developing practical and creative daily necessities for furry children.
+            </p>
+
+            <div class="bg-body rounded-4 p-4 border border-light-subtle">
+              <p class="mb-3 text-secondary small">
+                <strong class="text-primary text-uppercase" style="letter-spacing: 0.5px;">Core Products:</strong>
+                Pet backpacks, collars, harnesses, leads, car nest pads, and more.
+              </p>
+              <div class="quote-box small">
+                "Our brand philosophy is to constantly explore the texture that will make the lives of owners and pets more real..."
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

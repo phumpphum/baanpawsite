@@ -3,369 +3,1032 @@
 
 {% block content %}
 
-{% if messages %}
-<script>
-  (function() {
-    {% for m in messages %}
-    notify("{{ m|escapejs }}", "{{ m.tags|default:'info' }}");
-    {% endfor %}
-  })();
-</script>
-{% endif %}
-
+{# --- 1. STYLES SECTION --- #}
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
   :root {
     /* Luxury Palette */
-    --bg-body: #f9fafb;
+    --bg-body: #f3f4f6;
     --surface: #ffffff;
     --text-primary: #111827;
     --text-secondary: #6b7280;
     --text-tertiary: #9ca3af;
-    
-    --primary-color: #0f172a; /* Slate 900 */
-    --primary-hover: #1e293b;
-    
-    --border-color: #e5e7eb;
-    --radius-lg: 12px;
-    --radius-md: 8px;
-    
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    
-    --success-text: #059669;
-    --success-bg: #ecfdf5;
-    --warning-text: #d97706;
-    --warning-bg: #fffbeb;
-    --danger-text: #dc2626;
-    --danger-bg: #fef2f2;
+
+    --primary-color:#0f172a; /* Slate 900 */
+    --primary-hover:#1e293b;
+
+    --border-color:#e5e7eb;
+    --radius-lg:12px;
+    --radius-md:8px;
+
+    --shadow-sm:0 1px 2px 0 rgba(0,0,0,.05);
+    --shadow-md:0 4px 6px -1px rgba(0,0,0,.05), 0 2px 4px -1px rgba(0,0,0,.03);
+
+    --success-text:#059669;
+    --success-bg:#ecfdf5;
+    --warning-text:#d97706;
+    --warning-bg:#fffbeb;
+    --danger-text:#dc2626;
+    --danger-bg:#fef2f2;
+
+    /* ✅ Capsule system */
+    --ctrl-h: 42px;           /* toolbar/search/buttons height */
+    --ctrl-r: 999px;          /* capsule radius */
+    --action-h: 38px;         /* action button height (cards) */
+    --action-h-sm: 36px;      /* action button height (table/list actions) */
   }
 
-  body {
-    background-color: var(--bg-body) !important;
-    font-family: 'Inter', sans-serif;
-    color: var(--text-primary);
+  /* DARK MODE */
+  [data-bs-theme="dark"] {
+    --bg-body: #0f1115;
+    --surface: #0b1220;
+    --text-primary: #e5e7eb;
+    --text-secondary: #9aa7bd;
+    --text-tertiary: #64748b;
+    --border-color: rgba(148,163,184,.18);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+    --shadow-md: 0 18px 34px -26px rgba(0,0,0,.75);
   }
+
+  body{
+    background-color:var(--bg-body)!important;
+    font-family:'Inter',sans-serif;
+    color:var(--text-primary);
+  }
+  [data-bs-theme="dark"] body{
+    background-color:#0f1115 !important;
+  }
+
+  /* ===== Helpers ===== */
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+  .cell-right{text-align:right;}
+  .cell-center{text-align:center;}
 
   /* Header */
-  .page-header {
-    background: transparent;
-    padding: 1.5rem 0;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
+  .page-header{
+    background:transparent;
+    padding:0 0 1rem 0;
+    margin-bottom:2rem;
+    border-bottom:1px solid var(--border-color);
   }
-
-  .page-header h1 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.025em;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  .page-header h1{
+    font-size:1.75rem;
+    font-weight:600;
+    color:var(--text-primary);
+    letter-spacing:-0.025em;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:.75rem;
   }
-
-  .page-header .subtitle {
-    font-size: 0.95rem;
-    color: var(--text-secondary);
-    margin-top: 0.25rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  .page-header .subtitle{
+    font-size:.95rem;
+    color:var(--text-secondary);
+    margin-top:.25rem;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    flex-wrap:wrap;
   }
 
   /* Cards */
-  .luxury-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s ease;
-    overflow: visible; 
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+  .luxury-card{
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);
+    transition:all .3s ease;
+    overflow:visible;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    z-index:auto;
+  }
+  .luxury-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-md);
+    border-color:#d1d5db;
   }
 
-  .luxury-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
-    border-color: #d1d5db;
+  /* ✅ Dropdown Elevation (เฉพาะ variant dropdown) */
+  .luxury-card.dropdown-elevated{z-index:4000;}
+
+  /* ✅ Scope z-index ให้เฉพาะ dropdown variant (กันไปชน SORT dropdown/อื่นๆ) */
+  .variant-dd{position:relative;}
+  .variant-dd.show{z-index:4500;}
+  .variant-dd .variant-dropdown-menu{z-index:4510;}
+
+  /* ปกติ (desktop/tablet) */
+  .dropdown-menu.variant-dropdown-menu{
+    position:absolute;
+  }
+
+  /* ✅ Mobile bottom-sheet + backdrop */
+  @media (max-width: 768px){
+    .dropdown-menu.variant-dropdown-menu.show{
+      position:fixed!important;
+      left:12px!important;
+      right:12px!important;
+      bottom:12px!important;
+      top:auto!important;
+
+      width:auto!important;
+      min-width:0!important;
+      max-height:75vh!important;
+
+      overflow:hidden!important;
+      border-radius:18px!important;
+
+      transform:none!important;
+      z-index:9999!important;
+    }
+    .variant-menu-body{
+      max-height:calc(75vh - 110px)!important;
+      overflow:auto!important;
+    }
+
+    /* ✅ backdrop ที่กดเพื่อปิดได้ */
+    .variant-sheet-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      z-index:9998;
+    }
+    body.variant-sheet-open{
+      overflow:hidden;
+      touch-action:none;
+    }
   }
 
   /* Group Indicator */
-  .group-indicator {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(15, 23, 42, 0.85);
-    color: white;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-    z-index: 10;
-    font-weight: 500;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  /* Stacked Card Effect for Groups */
-  .luxury-card.is-group::before {
-    content: '';
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    right: -4px;
-    bottom: -4px;
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    z-index: -1;
-    box-shadow: var(--shadow-sm);
-  }
-  .luxury-card.is-group::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    right: -8px;
-    bottom: -8px;
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    z-index: -2;
-    opacity: 0.5;
+  .group-indicator{
+    position:absolute;
+    top:10px;
+    right:10px;
+    background:rgba(15,23,42,.85);
+    color:#fff;
+    font-size:.75rem;
+    padding:4px 8px;
+    border-radius:6px;
+    z-index:10;
+    font-weight:500;
+    backdrop-filter:blur(4px);
+    box-shadow:0 2px 4px rgba(0,0,0,.1);
   }
 
   /* Toolbar */
-  .toolbar-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 2rem;
+  .toolbar-container{
+    display:flex;
+    flex-wrap:wrap;
+    gap:1rem;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:2rem;
   }
+  .search-box{position:relative;max-width:340px;width:100%;}
 
-  .search-box {
-    position: relative;
-    max-width: 300px;
-    width: 100%;
+  /* ✅ Capsule search input */
+  .luxury-input{
+    border:1px solid var(--border-color);
+    border-radius:var(--ctrl-r);
+    height:var(--ctrl-h);
+    padding:0 44px 0 46px;
+    font-size:.95rem;
+    color:var(--text-primary);
+    background-color:var(--surface);
+    transition:all .2s;
+    width:100%;
   }
-
-  .luxury-input {
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 0.625rem 1rem 0.625rem 2.5rem;
-    font-size: 0.95rem;
-    color: var(--text-primary);
-    background-color: var(--surface);
-    transition: all 0.2s;
-    width: 100%;
+  .luxury-input:focus{
+    border-color:var(--primary-color);
+    box-shadow:0 0 0 3px rgba(15,23,42,.06);
+    outline:none;
   }
-
-  .luxury-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
-    outline: none;
+  .search-icon{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--text-tertiary);
+    pointer-events:none;
   }
-
-  .search-icon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-tertiary);
-    pointer-events: none;
+  .search-clear{
+    position:absolute;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    border:none;
+    background:transparent;
+    color:var(--text-secondary);
+    cursor:pointer;
+    display:none;
+    padding:0;
   }
-
-  .search-clear {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: none;
-    padding: 0;
-  }
-  
-  .luxury-input:not(:placeholder-shown) ~ .search-clear {
-    display: block;
-  }
+  .luxury-input:not(:placeholder-shown) ~ .search-clear{display:block;}
 
   /* Buttons */
-  .btn-luxury {
-    padding: 0.625rem 1.25rem;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    cursor: pointer;
+  .btn-luxury{
+    border-radius:var(--ctrl-r);
+    height:var(--ctrl-h);
+    padding:0 16px;
+    font-weight:600;
+    font-size:.9rem;
+    transition:all .2s;
+    border:1px solid transparent;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+    text-decoration:none;
+    cursor:pointer;
+    line-height:1;
+    white-space:nowrap;
   }
 
-  .btn-primary-luxury { background-color: var(--primary-color); color: white; }
-  .btn-primary-luxury:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); color: white; }
-  
-  .btn-secondary-luxury { background-color: white; border: 1px solid var(--border-color); color: var(--text-primary); }
-  .btn-secondary-luxury:hover { background-color: #f9fafb; border-color: #d1d5db; color: var(--text-primary); }
-  .btn-secondary-luxury.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-  .btn-danger-luxury { background-color: white; border: 1px solid #fee2e2; color: var(--danger-text); }
-  .btn-danger-luxury:hover { background-color: #fef2f2; border-color: #fca5a5; }
-
-  .btn-group-luxury {
-    display: flex;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    overflow: hidden;
+  .btn-primary-luxury{
+    background-color:var(--primary-color);
+    color:#fff;
+  }
+  .btn-primary-luxury:hover{
+    background-color:var(--primary-hover);
+    transform:translateY(-1px);
+    box-shadow:0 4px 6px -1px rgba(0,0,0,.1);
+    color:#fff;
   }
 
-  .btn-group-luxury .btn-view {
-    background: white;
-    border: none;
-    padding: 0.625rem 1rem;
-    color: var(--text-secondary);
-    border-right: 1px solid var(--border-color);
-    transition: all 0.2s;
+  .btn-secondary-luxury{
+    background:#fff;
+    border:1px solid var(--border-color);
+    color:var(--text-primary);
   }
-  .btn-group-luxury .btn-view:last-child { border-right: none; }
-  .btn-group-luxury .btn-view:hover { background: #f9fafb; }
-  .btn-group-luxury .btn-view.active { background: #f3f4f6; color: var(--primary-color); }
-
-  /* Dropdown */
-  .dropdown-menu { border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); padding: 0.5rem; }
-  .dropdown-item { border-radius: 4px; font-size: 0.9rem; padding: 0.5rem 1rem; color: var(--text-primary); }
-  .dropdown-item:hover { background-color: #f9fafb; color: var(--primary-color); }
-  .dropdown-item.active { background-color: var(--primary-color); color: white; }
-
-  /* Custom Variant Dropdown (Theme Consistent) */
-  .variant-dropdown-menu {
-    min-width: 340px;
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    padding: 0.5rem;
-    background-color: var(--surface);
-    box-shadow: var(--shadow-md);
-    z-index: 1050;
+  .btn-secondary-luxury:hover{
+    background:#f9fafb;
+    border-color:#d1d5db;
+    color:var(--text-primary);
+  }
+  .btn-secondary-luxury.active{
+    background:var(--primary-color);
+    color:#fff;
+    border-color:var(--primary-color);
   }
 
-  .variant-item {
-    padding: 0.75rem;
-    border-radius: var(--radius-md);
-    transition: background-color 0.2s, border-color 0.2s;
-    border: 1px solid transparent;
-    margin-bottom: 0.25rem;
-    list-style: none;
+  /* ✅ Icon-only capsule (toolbar export button) */
+  .btn-icon-pill{
+    width:var(--ctrl-h);
+    min-width:var(--ctrl-h);
+    padding:0;
   }
 
-  .variant-item:hover {
-    background-color: var(--bg-body);
-    border-color: var(--border-color);
+  .btn-success-luxury{
+    background:#fff;
+    border:1px solid var(--success-text);
+    color:var(--success-text);
+  }
+  .btn-success-luxury:hover{
+    background:var(--success-bg);
+    border-color:var(--success-text);
   }
 
-  /* Product Display */
-  .product-img-wrapper {
-    position: relative;
-    padding-top: 100%;
-    background: #f9fafb;
-    border-bottom: 1px solid var(--border-color);
-    overflow: hidden;
-    border-top-left-radius: var(--radius-lg);
-    border-top-right-radius: var(--radius-lg);
+  .btn-danger-luxury{
+    background:#fff;
+    border:1px solid #fee2e2;
+    color:var(--danger-text);
+  }
+  .btn-danger-luxury:hover{
+    background:#fef2f2;
+    border-color:#fca5a5;
   }
 
-  .product-img {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    object-fit: contain; padding: 1rem;
-    transition: transform 0.3s ease;
+  /* ✅ Capsule segmented view buttons */
+  .btn-group-luxury{
+    display:flex;
+    border:1px solid var(--border-color);
+    border-radius:var(--ctrl-r);
+    overflow:hidden;
+    height:var(--ctrl-h);
+    background:#fff;
+  }
+  .btn-group-luxury .btn-view{
+    background:transparent;
+    border:none;
+    padding:0 14px;
+    color:var(--text-secondary);
+    border-right:1px solid var(--border-color);
+    transition:all .2s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+    min-width:46px;
+  }
+  .btn-group-luxury .btn-view:last-child{border-right:none;}
+  .btn-group-luxury .btn-view:hover{background:#f9fafb;}
+  .btn-group-luxury .btn-view.active{background:#f3f4f6;color:var(--primary-color);}
+
+  /* Dropdown Luxury Style */
+  .dropdown-menu{
+    border:1px solid var(--border-color);
+    border-radius:14px;
+    box-shadow:var(--shadow-md);
+    padding:.5rem;
+  }
+  .dropdown-item{
+    border-radius:10px;
+    font-size:.9rem;
+    padding:.55rem .9rem;
+    color:var(--text-primary);
+  }
+  .dropdown-item:hover{background-color:#f9fafb;color:var(--primary-color);}
+  .dropdown-item.active,.dropdown-item:active{background-color:var(--primary-color);color:#fff;}
+
+  /* ✅ Make the SORT button capsule + match height */
+  .toolbar-actions .dropdown > button.dropdown-toggle{
+    height:var(--ctrl-h);
+    border-radius:var(--ctrl-r);
+    padding:0 16px;
+    font-weight:600;
+    font-size:.9rem;
+    line-height:1;
+    display:inline-flex;
+    align-items:center;
+    gap:.55rem;
   }
 
-  .luxury-card:hover .product-img { transform: scale(1.05); }
-
-  .card-body { 
-    padding: 1.25rem; 
-    flex-grow: 1; 
-    display: flex; 
-    flex-direction: column; 
-    background: var(--surface);
-    border-bottom-left-radius: var(--radius-lg);
-    border-bottom-right-radius: var(--radius-lg);
+  /* Grid View Styles */
+  .product-img-wrapper{
+    position:relative;
+    padding-top:100%;
+    background:#f9fafb;
+    border-bottom:1px solid var(--border-color);
+    overflow:hidden;
+    border-top-left-radius:var(--radius-lg);
+    border-top-right-radius:var(--radius-lg);
   }
-  
-  .product-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; line-height: 1.4; }
-  .product-sku { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-family: monospace; }
-  .product-price { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
-  .product-cost { font-size: 0.8rem; color: var(--text-tertiary); }
+  .product-img{
+    position:absolute;
+    top:0;left:0;
+    width:100%;height:100%;
+    object-fit:contain;
+    padding:1rem;
+    transition:transform .3s ease;
+  }
+  .luxury-card:hover .product-img{transform:scale(1.05);}
+
+  .card-body{
+    padding:1.25rem;
+    flex-grow:1;
+    display:flex;
+    flex-direction:column;
+    background:var(--surface);
+    border-bottom-left-radius:var(--radius-lg);
+    border-bottom-right-radius:var(--radius-lg);
+  }
+  .product-title{
+    font-size:.95rem;
+    font-weight:600;
+    color:var(--text-primary);
+    margin-bottom:.25rem;
+    line-height:1.4;
+  }
+  .product-sku{
+    font-size:.8rem;
+    color:var(--text-secondary);
+    margin-bottom:.75rem;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+  .product-price{font-size:1.1rem;font-weight:700;color:var(--text-primary);}
+  .product-cost{font-size:.8rem;color:var(--text-tertiary);}
 
   /* Stock Badges */
-  .stock-badge { padding: 0.25rem 0.625rem; border-radius: 100px; font-size: 0.75rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem; }
-  .stock-in { background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(5, 150, 105, 0.1); }
-  .stock-low { background: var(--warning-bg); color: var(--warning-text); border: 1px solid rgba(217, 119, 6, 0.1); }
-  .stock-out { background: var(--danger-bg); color: var(--danger-text); border: 1px solid rgba(220, 38, 38, 0.1); }
-
-  /* Action Buttons */
-  .action-btn-group { display: flex; gap: 0.5rem; margin-top: auto; padding-top: 1rem; }
-  .btn-icon {
-    width: 32px; height: 32px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--border-color); color: var(--text-secondary);
-    background: white; transition: all 0.2s;
+  .stock-badge{
+    padding:.25rem .625rem;
+    border-radius:999px;
+    font-size:.75rem;
+    font-weight:700;
+    display:inline-flex;
+    align-items:center;
+    gap:.25rem;
+    min-width:46px;
+    justify-content:center;
   }
-  .btn-icon:hover { background: #f9fafb; color: var(--primary-color); border-color: #d1d5db; }
-  .btn-icon.delete:hover { background: var(--danger-bg); color: var(--danger-text); border-color: #fca5a5; }
+  .stock-in{background:var(--success-bg);color:var(--success-text);border:1px solid rgba(5,150,105,.1);}
+  .stock-low{background:var(--warning-bg);color:var(--warning-text);border:1px solid rgba(217,119,6,.1);}
+  .stock-out{background:var(--danger-bg);color:var(--danger-text);border:1px solid rgba(220,38,38,.1);}
 
-  /* List View */
-  .table-container { background: var(--surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: visible; /* changed for dropdown */ }
-  .luxury-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-  .luxury-table thead { background: #f9fafb; }
-  .luxury-table th { padding: 1rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
-  .luxury-table td { padding: 1rem 1.5rem; vertical-align: middle; border-bottom: 1px solid #f3f4f6; color: var(--text-primary); font-size: 0.9rem; }
-  .luxury-table tr:hover { background-color: #fafafa; }
-  .list-img { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); background: #f9fafb; }
+  /* Action Buttons (Icon only style) */
+  .action-btn-group{
+    display:flex;
+    gap:.5rem;
+    margin-top:auto;
+    padding-top:1rem;
+    align-items:center;
+  }
+
+  /* ✅ Standard action button sizing */
+  .btn-icon{
+    width:var(--action-h);
+    height:var(--action-h);
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--border-color);
+    color:var(--text-secondary);
+    background:#fff;
+    transition:all .2s;
+    line-height:1;
+  }
+  .btn-icon:hover{
+    background:#f9fafb;
+    color:var(--primary-color);
+    border-color:#d1d5db;
+  }
+  .btn-icon.delete:hover{
+    background:var(--danger-bg);
+    color:var(--danger-text);
+    border-color:#fca5a5;
+  }
+
+  /* ===== List View (Table) - ✅ สมมาตร/นิ่ง ===== */
+  .table-container{
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    box-shadow:var(--shadow-sm);
+  }
+
+  /* ✅ กัน dropdown ถูกตัด (desktop) */
+  .table-responsive{
+    overflow-x:auto;
+    overflow-y:visible;
+    position:relative;
+  }
+
+  .luxury-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    table-layout:fixed;
+  }
+  .luxury-table thead{
+    background:#f8fafc;
+    border-bottom:1px solid var(--border-color);
+  }
+  .luxury-table th{
+    padding:1rem 1.15rem;
+    text-align:left;
+    font-size:.72rem;
+    font-weight:800;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    letter-spacing:.06em;
+    border-bottom:1px solid var(--border-color);
+    position:sticky;top:0;z-index:2;
+    background:#f8fafc;
+  }
+  .luxury-table td{
+    padding:1rem 1.15rem;
+    vertical-align:middle;
+    border-bottom:1px solid #f1f5f9;
+    color:var(--text-primary);
+    font-size:.92rem;
+  }
+  .luxury-table tr:last-child td{border-bottom:none;}
+  .luxury-table tbody tr:hover{background-color:#fbfdff;}
+
+  /* ✅ กำหนดความกว้างคอลัมน์ */
+  .luxury-table .col-img{width:92px;}
+  .luxury-table .col-product{width:auto;}
+  .luxury-table .col-sku{width:160px;text-align:right;}
+  .luxury-table .col-price{width:140px;}
+  .luxury-table .col-cost{width:140px;}
+  .luxury-table .col-stock{width:110px;}
+  .luxury-table .col-actions{width:190px;}
+
+  .list-img{
+    width:52px;height:52px;
+    border-radius:12px;
+    object-fit:cover;
+    border:1px solid var(--border-color);
+    background:#f9fafb;
+  }
+  .product-name-cell{font-weight:700;color:var(--text-primary);line-height:1.2;}
+  .sku-mono{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    font-size:.82rem;
+    color:var(--text-primary);
+    font-weight:650;
+  }
+  .sku-sub{color:var(--text-secondary);font-size:.85rem;}
+
+  /* ✅ Table actions sizing (ใช้ตัวแปรเพื่อคำนวณความกว้างให้เท่ากันเป๊ะ) */
+  .luxury-table{
+    --tbl-action: 36px;
+    --tbl-gap: 10px;
+    --tbl-actions3: calc((var(--tbl-action) * 3) + (var(--tbl-gap) * 2));
+  }
+
+  .actions-wrap{
+    display:flex;
+    justify-content:flex-end;
+    gap: var(--tbl-gap);
+    align-items: center;
+  }
+
+  .luxury-table .btn-icon{
+    width: var(--tbl-action);
+    height: var(--tbl-action);
+    border-radius: 12px;
+  }
+  .luxury-table .btn-icon i{ font-size: .95rem; }
+
+  .luxury-table .variant-toggle.variant-toggle--actions{
+    height: var(--tbl-action);
+    width: var(--tbl-actions3);
+    min-width: var(--tbl-actions3);
+    max-width: var(--tbl-actions3);
+    border-radius: 12px !important;
+    padding: 0 10px;
+    gap: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: none;
+  }
+  .luxury-table .variant-toggle.variant-toggle--actions:hover{
+    transform: none;
+    box-shadow: none;
+  }
+  .luxury-table .variant-toggle--actions .variant-label{
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+    font-size: .82rem;
+  }
 
   /* Compact View */
-  .compact-card .product-img-wrapper { padding-top: 75%; }
-  .compact-card .card-body { padding: 0.75rem; }
-  .compact-card .product-title { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .compact-card .product-img-wrapper{padding-top:75%;}
+  .compact-card .card-body{padding:.75rem;}
+  .compact-card .product-title{
+    font-size:.85rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
 
   /* Pagination */
-  .pagination { display: flex; justify-content: center; gap: 0.25rem; margin-top: 2rem; }
-  .page-link { min-width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: white; color: var(--text-primary); font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
-  .page-link:hover:not(.disabled) { background: #f9fafb; border-color: #d1d5db; }
-  .page-link.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-  .page-link.disabled { opacity: 0.5; cursor: default; background: #f3f4f6; }
+  .pagination{display:flex;justify-content:center;gap:.25rem;margin-top:2rem;}
+  .page-link{
+    min-width:36px;height:36px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:var(--radius-md);
+    border:1px solid var(--border-color);
+    background:#fff;
+    color:var(--text-primary);
+    font-size:.9rem;
+    text-decoration:none;
+    transition:all .2s;
+  }
+  .page-link:hover:not(.disabled){background:#f9fafb;border-color:#d1d5db;}
+  .page-link.active{background:var(--primary-color);color:#fff;border-color:var(--primary-color);}
+  .page-link.disabled{opacity:.5;cursor:default;background:#f3f4f6;}
 
   /* Empty State */
-  .empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-secondary); }
-  .empty-icon { font-size: 3rem; color: var(--text-tertiary); margin-bottom: 1rem; opacity: 0.5; }
+  .empty-state{text-align:center;padding:4rem 1rem;color:var(--text-secondary);}
+  .empty-icon{font-size:3rem;color:var(--text-tertiary);margin-bottom:1rem;opacity:.5;}
 
-  @media (max-width: 768px) {
-    .page-header h1 { font-size: 1.5rem; }
-    .toolbar-container { flex-direction: column; align-items: stretch; }
-    .search-box { max-width: 100%; }
-    .luxury-table th, .luxury-table td { padding: 0.75rem 1rem; }
-    .toolbar-actions { flex-direction: column; width: 100%; }
-    .toolbar-actions .btn-luxury, .toolbar-actions .btn-group-luxury { width: 100%; }
+  /* =========================
+     Variant dropdown (✅ CAPSULE + sizing fixes)
+     ========================= */
+
+  .variant-toggle{
+    border:1px solid var(--border-color);
+    background:#fff;
+    border-radius:var(--ctrl-r)!important;
+    height:var(--action-h);
+    padding:0 14px;
+    font-size:.88rem;
+    font-weight:600;
+    color:var(--text-primary);
+    box-shadow:0 1px 0 rgba(15,23,42,.03);
+    transition:all .2s ease;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    line-height:1;
+    white-space:nowrap;
   }
+  .variant-toggle .dots{
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+  .variant-toggle:hover{
+    border-color:#d1d5db;
+    transform:translateY(-1px);
+    box-shadow:0 10px 18px -16px rgba(15,23,42,.35);
+  }
+  .variant-toggle:focus{outline:none;box-shadow:0 0 0 3px rgba(15,23,42,.06);}
+
+  .luxury-table .variant-toggle:hover{ transform:none; box-shadow:none; }
+  .variant-dd.show .variant-toggle .dots{ opacity:.75; }
+
+  .variant-dropdown-menu{
+    min-width:360px;
+    max-height:420px;
+    overflow:hidden;
+    padding:0;
+    border-radius:16px;
+    border:1px solid var(--border-color);
+    box-shadow:0 18px 40px -22px rgba(15,23,42,.45);
+    background:#fff;
+  }
+
+  .variant-menu-head{
+    position:sticky;
+    top:0;
+    z-index:2;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid #eef2f7;
+    padding:10px 12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .variant-head-left{min-width:0;}
+  .variant-menu-title{
+    font-size:.8rem;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+  }
+  .variant-menu-sub{font-size:.8rem;color:var(--text-tertiary);margin-top:2px;}
+
+  /* ✅ ปุ่มปิด (ช่วยแก้ “กางแล้วหุบไม่ได้” บนมือถือ) */
+  .variant-close{
+    width:34px;height:34px;
+    border-radius:999px;
+    border:1px solid var(--border-color);
+    background:#fff;
+    color:var(--text-secondary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    transition:all .15s ease;
+  }
+  .variant-close:hover{
+    background:#f9fafb;
+    color:var(--primary-color);
+    border-color:#d1d5db;
+  }
+
+  .variant-menu-body{
+    max-height:calc(75vh - 110px)!important;
+    overflow:auto;
+    padding:12px;
+  }
+
+  .variant-item{
+    margin:0 0 10px 0;
+    padding:10px;
+    border-radius:14px;
+    border:1px solid #eef2f7;
+    background:#fff;
+    transition:all .15s ease;
+    list-style:none;
+  }
+  .variant-item:hover{
+    border-color:#dbe3ee;
+    background:#fbfcff;
+    transform:translateY(-1px);
+  }
+
+  .variant-meta{display:flex;gap:10px;align-items:center;}
+  .variant-thumb{
+    width:44px;height:44px;
+    border-radius:12px;
+    border:1px solid #eef2f7;
+    background:#f8fafc;
+    overflow:hidden;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .variant-thumb img{width:100%;height:100%;object-fit:cover;}
+  .variant-name{font-weight:800;color:var(--text-primary);line-height:1.1;}
+  .variant-sku{
+    font-size:.8rem;
+    color:var(--text-tertiary);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+  .variant-right{margin-left:auto;text-align:right;}
+  .variant-price{font-weight:900;color:var(--primary-color);}
+  .variant-stock{
+    font-size:.72rem;
+    padding:2px 8px;
+    border-radius:999px;
+    border:1px solid;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:4px;
+  }
+  .variant-stock.ok{background:var(--success-bg);color:var(--success-text);border-color:rgba(5,150,105,.18);}
+  .variant-stock.low{background:var(--warning-bg);color:var(--warning-text);border-color:rgba(217,119,6,.18);}
+  .variant-stock.out{background:var(--danger-bg);color:var(--danger-text);border-color:rgba(220,38,38,.18);}
+
+  .variant-actions{display:flex;gap:8px;margin-top:10px;}
+  .variant-actions .btn-luxury{border-radius:12px;padding:.45rem .8rem;height:auto;}
+  .btn-mini{width:40px;padding:.45rem 0!important;height:auto;}
+
+  /* Media Queries */
+  @media (max-width: 420px){
+    .variant-dropdown-menu{min-width:92vw;}
+  }
+
+  /* =========================
+     ✅ MOBILE CAPSULE FIX: Equal Height & Full Width
+     ========================= */
+  /* =========================
+     ✅ MOBILE CAPSULE FIX: Equal Height & Full Width
+     ========================= */
+  @media (max-width: 768px){
+    :root{
+      --mobile-capsule-h: 44px;  /* Unified height for all mobile capsules */
+    }
+
+    .page-header h1{font-size:1.5rem;}
+    .toolbar-container{flex-direction:column;align-items:stretch;gap:12px;}
+    .search-box{max-width:100%;}
+
+    /* ✅ All toolbar items in a column (Override .d-flex .flex-wrap) */
+    .toolbar-actions.d-flex{
+      display:flex !important;
+      flex-direction:column !important;
+      width:100% !important;
+      gap:10px !important;
+      align-items:stretch !important;
+    }
+
+    /* ✅ All buttons: unified height & full width */
+    .toolbar-actions .btn-luxury,
+    .toolbar-actions .btn-group-luxury,
+    .toolbar-actions .dropdown,
+    .toolbar-actions .dropdown > button.dropdown-toggle,
+    .toolbar-actions .btn-icon-pill{
+      width:100% !important;
+      min-width:100% !important;
+      max-width:none !important;
+      height:var(--mobile-capsule-h) !important;
+      border-radius:var(--ctrl-r);
+      flex:none !important; /* Stop flex shrinking */
+    }
+
+    /* ✅ FIX: Dropdown container must be full width */
+    .toolbar-actions .dropdown{
+      display:block !important; /* Force block to allow full width child */
+    }
+    .toolbar-actions .dropdown > button.dropdown-toggle{
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:8px;
+    }
+
+    /* ✅ View switcher - stretch buttons equally */
+    .toolbar-actions .btn-group-luxury{
+      display:flex;
+      overflow:hidden;
+    }
+    .toolbar-actions .btn-group-luxury .btn-view{
+      flex:1;
+      min-width:0;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:0;
+    }
+
+    /* ✅ Unified line-height for all capsules */
+    .toolbar-actions .btn-luxury,
+    .toolbar-actions .dropdown > button.dropdown-toggle{
+      line-height:1;
+    }
+
+    /* MOBILE LIST VIEW (table -> card layout) */
+    .container{padding-left:12px!important;padding-right:12px!important;}
+    #view-list .luxury-table thead{display:none!important;}
+    #view-list .luxury-table,
+    #view-list .luxury-table tbody,
+    #view-list .luxury-table tr,
+    #view-list .luxury-table td{
+      display:block!important;
+      width:100%!important;
+    }
+    #view-list .luxury-table tr{
+      background:#fff;
+      border:1px solid var(--border-color);
+      border-radius:14px;
+      box-shadow:var(--shadow-sm);
+      margin:10px 0 14px;
+      overflow:hidden;
+    }
+    #view-list .luxury-table td{
+      padding:10px 12px;
+      border-bottom:1px solid #f3f4f6;
+      display:grid!important;
+      grid-template-columns:110px minmax(0,1fr)!important;
+      gap:12px!important;
+      align-items:center!important;
+      justify-items:start!important;
+      text-align:initial!important;
+    }
+    #view-list .luxury-table td:last-child{border-bottom:none;}
+
+    #view-list .luxury-table td::before{
+      font-size:.7rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      color:var(--text-tertiary);
+      justify-self:start!important;
+      text-align:left!important;
+      line-height:1.1;
+    }
+
+    #view-list .luxury-table td:nth-child(1)::before{content:"Image";}
+    #view-list .luxury-table td:nth-child(2)::before{content:"Product";}
+    #view-list .luxury-table td:nth-child(3)::before{content:"SKU / Color";}
+    #view-list .luxury-table td:nth-child(4)::before{content:"Price";}
+    #view-list .luxury-table td:nth-child(5)::before{content:"Cost";}
+    #view-list .luxury-table td:nth-child(6)::before{content:"Stock";}
+    #view-list .luxury-table td:nth-child(7)::before{content:"Actions";}
+
+    #view-list .luxury-table td:nth-child(7) > div{
+      justify-self:end!important;
+      display:flex!important;
+      justify-content:flex-end!important;
+      gap:10px!important;
+      align-items:center!important;
+    }
+
+    #view-list .luxury-table td:nth-child(7) .variant-toggle{
+      height:var(--action-h-sm);
+      font-size:.85rem;
+    }
+
+    #view-list .table-responsive{overflow:visible;}
+  }
+
+  /* =========================
+     DARK MODE OVERRIDES (Products)
+     ========================= */
+  [data-bs-theme="dark"] body{
+    background:#0f1115 !important;
+    color:rgba(255,255,255,.92)!important;
+  }
+
+  [data-bs-theme="dark"] .page-header{border-bottom-color:rgba(255,255,255,.12)!important;}
+  [data-bs-theme="dark"] .page-header h1{color:#f8fafc!important;}
+  [data-bs-theme="dark"] .page-header .subtitle{color:rgba(255,255,255,.72)!important;}
+  [data-bs-theme="dark"] .page-header .badge{
+    background:rgba(255,255,255,.08)!important;
+    color:rgba(255,255,255,.75)!important;
+    border-color:rgba(255,255,255,.14)!important;
+  }
+
+  [data-bs-theme="dark"] .luxury-card{
+    background:rgba(15,23,42,.65)!important;
+    border-color:rgba(255,255,255,.12)!important;
+    box-shadow:0 0 0 1px rgba(255,255,255,.06) inset, 0 10px 30px rgba(0,0,0,.45)!important;
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+
+  [data-bs-theme="dark"] .product-img-wrapper{
+    background:rgba(2,6,23,.18)!important;
+    border-bottom-color:rgba(255,255,255,.10)!important;
+  }
+  [data-bs-theme="dark"] .card-body{background:transparent!important;}
+  [data-bs-theme="dark"] .product-title{color:#f8fafc!important;}
+  [data-bs-theme="dark"] .product-sku{color:rgba(255,255,255,.55)!important;}
+  [data-bs-theme="dark"] .product-price{color:#f8fafc!important;}
+  [data-bs-theme="dark"] .product-cost{color:rgba(255,255,255,.55)!important;}
+
+  [data-bs-theme="dark"] .luxury-input{
+    background:rgba(15,23,42,.78)!important;
+    border-color:rgba(255,255,255,.14)!important;
+    color:#f8fafc!important;
+  }
+
+  [data-bs-theme="dark"] .btn-secondary-luxury,
+  [data-bs-theme="dark"] .btn-group-luxury{
+    background:rgba(255,255,255,.08)!important;
+    border-color:rgba(255,255,255,.14)!important;
+    color:rgba(255,255,255,.82)!important;
+  }
+  [data-bs-theme="dark"] .btn-group-luxury .btn-view{color:rgba(255,255,255,.72)!important;}
+  [data-bs-theme="dark"] .btn-group-luxury .btn-view.active{
+    background:rgba(165,180,252,.18)!important;
+    color:#f8fafc!important;
+  }
+
+  [data-bs-theme="dark"] .btn-icon{
+    background:rgba(255,255,255,.08)!important;
+    border-color:rgba(255,255,255,.14)!important;
+    color:rgba(255,255,255,.72)!important;
+  }
+
+  [data-bs-theme="dark"] .variant-toggle{
+    background:rgba(255,255,255,.08)!important;
+    border-color:rgba(255,255,255,.14)!important;
+    color:rgba(255,255,255,.88)!important;
+  }
+  [data-bs-theme="dark"] .dropdown-menu{
+    background:rgba(15,23,42,.92)!important;
+    border-color:rgba(255,255,255,.14)!important;
+  }
+
+  [data-bs-theme="dark"] .table-container{
+    background:rgba(15,23,42,.65)!important;
+    border-color:rgba(255,255,255,.12)!important;
+  }
+  [data-bs-theme="dark"] .luxury-table thead,
+  [data-bs-theme="dark"] .luxury-table th{background:rgba(15,23,42,.85)!important;}
+  [data-bs-theme="dark"] .luxury-table td{border-bottom-color:rgba(255,255,255,.08)!important;color:rgba(255,255,255,.88)!important;}
+  [data-bs-theme="dark"] .product-name-cell{color:#f8fafc!important;}
+  [data-bs-theme="dark"] .sku-mono{color:rgba(255,255,255,.88)!important;}
+  [data-bs-theme="dark"] .sku-sub{color:rgba(255,255,255,.62)!important;}
+
+  [data-bs-theme="dark"] .variant-menu-head{
+    background:rgba(15,23,42,.92)!important;
+    border-bottom-color:rgba(255,255,255,.12)!important;
+  }
+  [data-bs-theme="dark"] .variant-item{
+    background:rgba(255,255,255,.06)!important;
+    border-color:rgba(255,255,255,.12)!important;
+  }
+  [data-bs-theme="dark"] .variant-name{color:#f8fafc!important;}
+  [data-bs-theme="dark"] .variant-sku{color:rgba(255,255,255,.55)!important;}
+
+  [data-bs-theme="dark"] .variant-close{
+    background:rgba(255,255,255,.08)!important;
+    border-color:rgba(255,255,255,.14)!important;
+    color:rgba(255,255,255,.85)!important;
+  }
+
+  @media (max-width: 768px){
+    [data-bs-theme="dark"] .variant-sheet-backdrop{
+      background:rgba(0,0,0,.55);
+    }
+  }
+
+  /* ✅ FINAL FIX: Mobile List View double frame */
+  @media (max-width: 768px){
+    #view-list .table-container,
+    #view-list .table-responsive{
+      background:transparent!important;
+      border:0!important;
+      box-shadow:none!important;
+    }
+    [data-bs-theme="dark"] #view-list .luxury-table tr{
+      background:rgba(15,23,42,.72)!important;
+      border-color:rgba(255,255,255,.12)!important;
+      box-shadow:0 10px 26px rgba(0,0,0,.40)!important;
+    }
+  }
+
+  /* ===== List View (Table) - Align Right ===== */
+  .luxury-table th.cell-right,
+  .luxury-table td.cell-right{ text-align:right!important; }
+
+  .luxury-table th.col-stock,
+  .luxury-table td.col-stock{ text-align:right!important; }
+  .luxury-table td.col-stock .stock-badge{ margin-left:auto; }
+
+  .luxury-table th.col-actions,
+  .luxury-table td.col-actions{ text-align:right!important; }
+  .luxury-table td.col-actions .actions-wrap{ justify-content:flex-end!important; }
 </style>
 
-<div class="container py-4">
-  <!-- Header -->
+{# --- 2. MAIN STRUCTURE --- #}
+<div class="container py-4 pt-1 pb-4">
+
+  {# --- Page Header --- #}
   <div class="page-header">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div>
@@ -373,7 +1036,7 @@
         <div class="subtitle">
           Manage your inventory catalog
           <span class="badge rounded-pill bg-light text-secondary border ms-2 fw-normal">
-            {{ page_obj.paginator.count }} items
+            {% if page_obj %}{{ page_obj.paginator.count }}{% else %}{{ products|length }}{% endif %} items
           </span>
           {% if q %}
           <span class="badge rounded-pill bg-light text-primary border ms-1 fw-normal">
@@ -388,580 +1051,729 @@
     </div>
   </div>
 
-  <!-- Toolbar -->
+  {# --- Toolbar --- #}
   <div class="toolbar-container">
     <form method="get" class="search-box" role="search">
       <i class="bi bi-search search-icon"></i>
       <input type="search" name="q" value="{{ q|default:'' }}" class="luxury-input" placeholder="Search name, SKU, color..." autocomplete="off">
-      <button type="button" class="search-clear" aria-label="Clear search"><i class="bi bi-x-circle-fill"></i></button>
+      <button type="button" class="search-clear" aria-label="Clear search">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+
       {% if request.GET.sort %}<input type="hidden" name="sort" value="{{ request.GET.sort }}">{% endif %}
-      {% if request.GET.all %}<input type="hidden" name="all" value="true">{% endif %}
       {% if request.GET.grouping %}<input type="hidden" name="grouping" value="{{ request.GET.grouping }}">{% endif %}
+      {% if request.GET.view %}<input type="hidden" name="view" value="{{ request.GET.view }}">{% endif %}
     </form>
 
     <div class="d-flex gap-2 flex-wrap toolbar-actions">
-      <!-- Sort -->
+
+      {# ================== SORT DROPDOWN (✅ keep view) ================== #}
       <div class="dropdown">
         <button class="btn btn-luxury btn-secondary-luxury dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-sort-down"></i> 
-          {% if request.GET.sort == 'name' %} Name (A-Z) {% elif request.GET.sort == 'stock_asc' %} Low Stock First {% else %} Default {% endif %}
+          <i class="bi bi-sort-down"></i>
+          {% if request.GET.sort == 'name' %} Name (A-Z)
+          {% elif request.GET.sort == 'stock_asc' %} Low Stock First
+          {% else %} Default
+          {% endif %}
         </button>
         <ul class="dropdown-menu border-0 shadow-lg">
-           <li><a class="dropdown-item" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.all %}all=true{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}">Default</a></li>
-           <li><a class="dropdown-item" href="?sort=name{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.all %}&all=true{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}"><i class="bi bi-alpha-down me-2"></i>Name (A-Z)</a></li>
-           <li><a class="dropdown-item" href="?sort=stock_asc{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.all %}&all=true{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}"><i class="bi bi-sort-numeric-down-alt me-2"></i>Stock (Low to High)</a></li>
+          <li>
+            <a class="dropdown-item {% if not request.GET.sort %}active{% endif %}"
+               href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}&{% endif %}{% if request.GET.view %}view={{ request.GET.view }}&{% endif %}">
+              Default
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a class="dropdown-item {% if request.GET.sort == 'name' %}active{% endif %}"
+               href="?sort=name{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}{% if request.GET.view %}&view={{ request.GET.view }}{% endif %}">
+              <i class="bi bi-alpha-down me-2"></i>Name (A-Z)
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item {% if request.GET.sort == 'stock_asc' %}active{% endif %}"
+               href="?sort=stock_asc{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}{% if request.GET.view %}&view={{ request.GET.view }}{% endif %}">
+              <i class="bi bi-sort-numeric-down-alt me-2"></i>Stock (Low to High)
+            </a>
+          </li>
         </ul>
       </div>
 
-      <!-- Grouping Toggle -->
+      {# Export CSV (✅ keep view) #}
+      <a href="?export=csv{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}{% if request.GET.view %}&view={{ request.GET.view }}{% endif %}"
+         class="btn-luxury btn-success-luxury btn-icon-pill" title="Export CSV" aria-label="Export CSV">
+         <i class="bi bi-file-earmark-spreadsheet"></i>
+      </a>
+
+      {# Grouping toggle (✅ keep view) #}
       {% if request.GET.grouping == 'off' %}
-      <a href="?grouping=on{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.all %}&all={{ request.GET.all }}{% endif %}" 
-         class="btn btn-luxury btn-secondary-luxury" 
-         title="Enable Grouping">
+      <a href="?grouping=on{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.view %}&view={{ request.GET.view }}{% endif %}"
+         class="btn-luxury btn-secondary-luxury" title="Enable Grouping">
          <i class="bi bi-layers"></i> Group
       </a>
       {% else %}
-      <a href="?grouping=off{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.all %}&all={{ request.GET.all }}{% endif %}" 
-         class="btn btn-luxury btn-secondary-luxury active" 
-         title="Disable Grouping">
+      <a href="?grouping=off{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.view %}&view={{ request.GET.view }}{% endif %}"
+         class="btn-luxury btn-secondary-luxury active" title="Disable Grouping">
          <i class="bi bi-layers-fill"></i> Grouped
       </a>
       {% endif %}
 
-      <!-- Show All -->
-      {% if request.GET.all == 'true' %}
-      <a href="?{% if q %}q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}" class="btn btn-luxury btn-secondary-luxury active"><i class="bi bi-layout-sidebar"></i> Paginate</a>
-      {% else %}
-      <a href="?all=true{% if q %}&q={{ q|urlencode }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.grouping %}&grouping={{ request.GET.grouping }}{% endif %}" class="btn btn-luxury btn-secondary-luxury"><i class="bi bi-collection"></i> Show All</a>
-      {% endif %}
-
-      <!-- View Modes -->
-      <div class="btn-group-luxury" role="group">
-        <button type="button" class="btn-view active" data-view="grid"><i class="bi bi-grid"></i></button>
-        <button type="button" class="btn-view" data-view="list"><i class="bi bi-list-ul"></i></button>
-        <button type="button" class="btn-view" data-view="compact"><i class="bi bi-grid-3x3"></i></button>
+      {# View buttons (✅ click will reload) #}
+      <div class="btn-group-luxury" role="group" aria-label="View mode">
+        <button type="button"
+                class="btn-view {% if request.GET.view|default:'grid' == 'grid' %}active{% endif %}"
+                data-view="grid" title="Grid View" aria-label="Grid View">
+          <i class="bi bi-grid"></i>
+        </button>
+        <button type="button"
+                class="btn-view {% if request.GET.view == 'list' %}active{% endif %}"
+                data-view="list" title="List View" aria-label="List View">
+          <i class="bi bi-list-ul"></i>
+        </button>
+        <button type="button"
+                class="btn-view {% if request.GET.view == 'compact' %}active{% endif %}"
+                data-view="compact" title="Compact View" aria-label="Compact View">
+          <i class="bi bi-grid-3x3"></i>
+        </button>
       </div>
     </div>
   </div>
 
+  {# --- Main Content Area --- #}
   {% if products %}
-  
-  {% if request.GET.grouping == 'off' %}
-    {# --- UNGROUPED VIEW (Default) --- #}
-    
-    <!-- Grid View (Ungrouped) -->
-    <div id="view-grid" class="view-mode">
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
-        {% for p in products %}
-        <div class="col">
-          <div class="luxury-card">
-            <div class="product-img-wrapper">
-              {% if p.image %}
-                <img src="{{ p.image.url }}" class="product-img" loading="lazy">
-              {% else %}
-                <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image fs-1"></i></div>
-              {% endif %}
-            </div>
-            <div class="card-body">
-              <div class="product-title text-truncate" title="{{ p.name }}">{{ p.name }}</div>
-              <div class="product-sku">{{ p.sku|default:"-" }}</div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="d-flex flex-column">
-                  <span class="product-price">฿{{ p.price|floatformat:2 }}</span>
-                  <span class="product-cost">Cost: ฿{{ p.cost|floatformat:0 }}</span>
-                </div>
-                {% if p.stock == 0 %} <span class="stock-badge stock-out">Out</span>
-                {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }} left</span>
-                {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
+
+    {# ✅ server-side view selection #}
+    {% with current_view=request.GET.view|default:'grid' %}
+
+    {# ================= UNGROUPED VIEW ================= #}
+    {% if request.GET.grouping == 'off' %}
+
+      <div id="view-grid" class="view-mode {% if current_view != 'grid' %}d-none{% endif %}">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+          {% for p in products %}
+          <div class="col">
+            <div class="luxury-card">
+              <div class="product-img-wrapper">
+                {% if p.image %}
+                  <img src="{{ p.image.url }}" class="product-img" loading="lazy" decoding="async" alt="{{ p.name }}">
+                {% else %}
+                  <div class="product-img d-flex align-items-center justify-content-center text-tertiary">
+                    <i class="bi bi-image fs-1"></i>
+                  </div>
                 {% endif %}
               </div>
-              <div class="action-btn-group">
-                <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color: var(--success-text); border-color: var(--success-text);" title="Sell"><i class="bi bi-cart-plus"></i></a>
-                <a href="{% url 'product_edit' p.pk %}" class="btn-icon flex-grow-1" title="Edit"><i class="bi bi-pencil"></i></a>
-                <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
-                  {% csrf_token %}
-                  <button type="submit" class="btn-icon delete"><i class="bi bi-trash"></i></button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
+              <div class="card-body">
+                <div class="product-title text-truncate" title="{{ p.name }}">{{ p.name }}</div>
+                <div class="product-sku">{{ p.sku|default:"-" }}</div>
 
-    <!-- List View (Ungrouped) -->
-    <div id="view-list" class="view-mode d-none">
-      <div class="table-container">
-        <div class="table-responsive">
-          <table class="luxury-table">
-            <thead>
-              <tr>
-                <th style="width: 80px;">Image</th>
-                <th>Product</th>
-                <th>SKU / Colors</th>
-                <th class="text-end">Price</th>
-                <th class="text-end">Cost</th>
-                <th class="text-center">Stock</th>
-                <th class="text-end" style="width: 140px;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for p in products %}
-              <tr>
-                <td>
-                  {% if p.image %}<img src="{{ p.image.url }}" class="list-img">
-                  {% else %}<div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-image"></i></div>
-                  {% endif %}
-                </td>
-                <td><div class="fw-medium text-dark">{{ p.name }}</div></td>
-                <td>
+                <div class="d-flex justify-content-between align-items-center mb-2">
                   <div class="d-flex flex-column">
-                    <span class="text-dark small font-monospace">{{ p.sku|default:"-" }}</span>
-                    <span class="text-secondary small">{{ p.colors|default:"-" }}</span>
+                    <span class="product-price num">฿{{ p.price|floatformat:2 }}</span>
+                    <span class="product-cost num">Cost: ฿{{ p.cost|floatformat:0 }}</span>
                   </div>
-                </td>
-                <td class="text-end fw-medium text-dark">฿{{ p.price|floatformat:2 }}</td>
-                <td class="text-end text-secondary">฿{{ p.cost|floatformat:2 }}</td>
-                <td class="text-center">
-                  {% if p.stock == 0 %} <span class="stock-badge stock-out">0</span>
-                  {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }}</span>
-                  {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
-                  {% endif %}
-                </td>
-                <td class="text-end">
-                  <div class="d-flex justify-content-end gap-1">
-                    <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color:var(--success-text); border-color:var(--success-text); width:28px; height:28px;"><i class="bi bi-cart-plus" style="font-size:0.8rem"></i></a>
-                    <a href="{% url 'product_edit' p.pk %}" class="btn-icon" style="width:28px; height:28px;"><i class="bi bi-pencil" style="font-size:0.8rem"></i></a>
-                    <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
-                      {% csrf_token %}
-                      <button type="submit" class="btn-icon delete" style="width:28px; height:28px;"><i class="bi bi-trash" style="font-size:0.8rem"></i></button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-    <!-- Compact View (Ungrouped) -->
-    <div id="view-compact" class="view-mode d-none">
-      <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3">
-        {% for p in products %}
-        <div class="col">
-          <div class="luxury-card compact-card">
-            <div class="product-img-wrapper">
-              {% if p.image %}<img src="{{ p.image.url }}" class="product-img" loading="lazy">
-              {% else %}<div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image"></i></div>
-              {% endif %}
-            </div>
-            <div class="card-body">
-              <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="small fw-semibold">฿{{ p.price|floatformat:0 }}</span>
-                {% if p.stock == 0 %} <span class="badge bg-danger rounded-pill" style="font-size:0.6rem">Out</span>
-                {% else %} <span class="badge bg-light text-secondary border rounded-pill" style="font-size:0.6rem">{{ p.stock }}</span>
-                {% endif %}
-              </div>
-              <div class="d-flex gap-1">
-                 <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-cart-plus"></i></a>
-                 <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-pencil"></i></a>
+                  {% if p.stock == 0 %}
+                    <span class="stock-badge stock-out num">Out</span>
+                  {% elif p.stock <= 5 %}
+                    <span class="stock-badge stock-low num">{{ p.stock }} left</span>
+                  {% else %}
+                    <span class="stock-badge stock-in num">{{ p.stock }}</span>
+                  {% endif %}
+                </div>
+
+                <div class="action-btn-group">
+                  <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" title="Sell This Item" style="color: var(--success-text); border-color: var(--success-text);">
+                    <i class="bi bi-cart-plus"></i>
+                  </a>
+                  <a href="{% url 'product_edit' p.pk %}" class="btn-icon flex-grow-1" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-icon delete" title="Delete">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
+          {% endfor %}
         </div>
-        {% endfor %}
       </div>
-    </div>
 
-  {% else %}
-    {# --- GROUPED VIEW (Prioritized Logic) --- #}
-    {% regroup products|dictsort:"name" by name as product_groups %}
+      <div id="view-list" class="view-mode {% if current_view != 'list' %}d-none{% endif %}">
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th class="col-img">Image</th>
+                  <th class="col-product">Product</th>
+                  <th class="col-sku cell-right">SKU / Colors</th>
+                  <th class="col-price cell-right">Price</th>
+                  <th class="col-cost cell-right">Cost</th>
+                  <th class="col-stock cell-right">Stock</th>
+                  <th class="col-actions cell-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for p in products %}
+                <tr>
+                  <td class="col-img">
+                    {% if p.image %}
+                      <img src="{{ p.image.url }}" class="list-img" loading="lazy" decoding="async" alt="{{ p.name }}">
+                    {% else %}
+                      <div class="list-img d-flex align-items-center justify-content-center text-secondary">
+                        <i class="bi bi-image"></i>
+                      </div>
+                    {% endif %}
+                  </td>
 
-    <!-- Grid View (Grouped) -->
-    <div id="view-grid" class="view-mode">
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
-        {# --- 1. SINGLE ITEMS FIRST --- #}
-        {% for group in product_groups %}
-          {% if group.list|length == 1 %}
-            {% with p=group.list.0 %}
-            <div class="col">
-              <div class="luxury-card">
-                <div class="product-img-wrapper">
-                  {% if p.image %}
-                    <img src="{{ p.image.url }}" class="product-img" loading="lazy">
+                  <td class="col-product">
+                    <div class="product-name-cell">{{ p.name }}</div>
+                  </td>
+
+                  <td class="col-sku cell-right">
+                    <div class="d-flex flex-column align-items-end">
+                      <span class="sku-mono">{{ p.sku|default:"-" }}</span>
+                      <span class="sku-sub">{{ p.colors|default:"-" }}</span>
+                    </div>
+                  </td>
+
+                  <td class="col-price cell-right num fw-semibold">฿{{ p.price|floatformat:2 }}</td>
+                  <td class="col-cost cell-right num" style="color: var(--text-secondary);">฿{{ p.cost|floatformat:2 }}</td>
+
+                  <td class="col-stock cell-right num">
+                    {% if p.stock == 0 %}
+                      <span class="stock-badge stock-out">0</span>
+                    {% elif p.stock <= 5 %}
+                      <span class="stock-badge stock-low">{{ p.stock }}</span>
+                    {% else %}
+                      <span class="stock-badge stock-in">{{ p.stock }}</span>
+                    {% endif %}
+                  </td>
+
+                  <td class="col-actions cell-right">
+                    <div class="actions-wrap">
+                      <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color:var(--success-text); border-color:var(--success-text);" title="Sell">
+                        <i class="bi bi-cart-plus"></i>
+                      </a>
+                      <a href="{% url 'product_edit' p.pk %}" class="btn-icon" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon delete" title="Delete">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-compact" class="view-mode {% if current_view != 'compact' %}d-none{% endif %}">
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3">
+          {% for p in products %}
+          <div class="col">
+            <div class="luxury-card compact-card">
+              <div class="product-img-wrapper">
+                {% if p.image %}
+                  <img src="{{ p.image.url }}" class="product-img" loading="lazy" decoding="async" alt="{{ p.name }}">
+                {% else %}
+                  <div class="product-img d-flex align-items-center justify-content-center text-tertiary">
+                    <i class="bi bi-image"></i>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="card-body">
+                <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small fw-semibold num">฿{{ p.price|floatformat:0 }}</span>
+                  {% if p.stock == 0 %}
+                    <span class="badge bg-danger rounded-pill" style="font-size:0.6rem">Out</span>
                   {% else %}
-                    <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image fs-1"></i></div>
+                    <span class="badge bg-light text-secondary border rounded-pill num" style="font-size:0.6rem">{{ p.stock }}</span>
                   {% endif %}
                 </div>
-                <div class="card-body">
-                  <div class="product-title text-truncate" title="{{ p.name }}">{{ p.name }}</div>
-                  <div class="product-sku">{{ p.sku|default:"-" }}</div>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="d-flex flex-column">
-                      <span class="product-price">฿{{ p.price|floatformat:2 }}</span>
-                      <span class="product-cost">Cost: ฿{{ p.cost|floatformat:0 }}</span>
-                    </div>
-                    {% if p.stock == 0 %} <span class="stock-badge stock-out">Out</span>
-                    {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }} left</span>
-                    {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
+                <div class="d-flex gap-1">
+                    <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem; height: 34px;"><i class="bi bi-cart-plus"></i></a>
+                    <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem; height: 34px;"><i class="bi bi-pencil"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    {# ================= GROUPED VIEW ================= #}
+    {% else %}
+      {% regroup products|dictsort:"name" by name as product_groups %}
+
+      <div id="view-grid" class="view-mode {% if current_view != 'grid' %}d-none{% endif %}">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+
+          {# --- 1. SINGLE ITEMS FIRST --- #}
+          {% for group in product_groups %}
+            {% if group.list|length == 1 %}
+              {% with p=group.list.0 %}
+              <div class="col">
+                <div class="luxury-card">
+                  <div class="product-img-wrapper">
+                    {% if p.image %}
+                      <img src="{{ p.image.url }}" class="product-img" loading="lazy" decoding="async" alt="{{ p.name }}">
+                    {% else %}
+                      <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image fs-1"></i></div>
                     {% endif %}
                   </div>
-                  <div class="action-btn-group">
-                    <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color: var(--success-text); border-color: var(--success-text);" title="Sell"><i class="bi bi-cart-plus"></i></a>
-                    <a href="{% url 'product_edit' p.pk %}" class="btn-icon flex-grow-1" title="Edit"><i class="bi bi-pencil"></i></a>
-                    <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
-                      {% csrf_token %}
-                      <button type="submit" class="btn-icon delete"><i class="bi bi-trash"></i></button>
-                    </form>
+                  <div class="card-body">
+                    <div class="product-title text-truncate" title="{{ p.name }}">{{ p.name }}</div>
+                    <div class="product-sku">{{ p.sku|default:"-" }}</div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <div class="d-flex flex-column">
+                        <span class="product-price num">฿{{ p.price|floatformat:2 }}</span>
+                        <span class="product-cost num">Cost: ฿{{ p.cost|floatformat:0 }}</span>
+                      </div>
+                      {% if p.stock == 0 %} <span class="stock-badge stock-out num">Out</span>
+                      {% elif p.stock <= 5 %} <span class="stock-badge stock-low num">{{ p.stock }} left</span>
+                      {% else %} <span class="stock-badge stock-in num">{{ p.stock }}</span>
+                      {% endif %}
+                    </div>
+                    <div class="action-btn-group">
+                      <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color: var(--success-text); border-color: var(--success-text);" title="Sell"><i class="bi bi-cart-plus"></i></a>
+                      <a href="{% url 'product_edit' p.pk %}" class="btn-icon flex-grow-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                      <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-icon delete" title="Delete"><i class="bi bi-trash"></i></button>
+                      </form>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {% endwith %}
-          {% endif %}
-        {% endfor %}
+              {% endwith %}
+            {% endif %}
+          {% endfor %}
 
-        {# --- 2. GROUPED ITEMS AFTER --- #}
-        {% for group in product_groups %}
-          {% if group.list|length > 1 %}
-            <div class="col">
-              <div class="luxury-card is-group">
-                <div class="group-indicator">
-                  <i class="bi bi-layers-fill me-1"></i> {{ group.list|length }} Variants
-                </div>
-                <div class="product-img-wrapper">
-                  {% if group.list.0.image %}
-                    <img src="{{ group.list.0.image.url }}" class="product-img" loading="lazy">
-                  {% else %}
-                    <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image fs-1"></i></div>
-                  {% endif %}
-                </div>
-                <div class="card-body">
-                  <div class="product-title text-truncate" title="{{ group.grouper }}">{{ group.grouper }}</div>
-                  <div class="text-secondary small mb-3">{{ group.list.0.sku|default:"-" }} ...</div>
-                  
-                  <div class="mt-auto dropdown">
-                    <button class="btn-luxury btn-secondary-luxury w-100 dropdown-toggle d-flex justify-content-between align-items-center" 
-                            type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                      <span>Select Variant</span>
-                    </button>
-                    <ul class="dropdown-menu variant-dropdown-menu shadow-lg p-0">
-                      {% for p in group.list %}
-                        <li class="variant-item">
-                          <div class="d-flex align-items-center mb-2">
-                            <!-- Image Thumbnail -->
-                            <div class="me-3" style="width: 48px; height: 48px; flex-shrink: 0;">
-                              {% if p.image %}
-                                <img src="{{ p.image.url }}" class="rounded border" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
-                              {% else %}
-                                <div class="rounded border bg-light d-flex align-items-center justify-content-center h-100 w-100">
-                                  <i class="bi bi-image text-muted"></i>
+          {# --- 2. GROUPED ITEMS AFTER --- #}
+          {% for group in product_groups %}
+            {% if group.list|length > 1 %}
+              <div class="col">
+                <div class="luxury-card is-group">
+                  <div class="group-indicator">
+                    <i class="bi bi-layers-fill me-1"></i> {{ group.list|length }} Variants
+                  </div>
+                  <div class="product-img-wrapper">
+                    {% if group.list.0.image %}
+                      <img src="{{ group.list.0.image.url }}" class="product-img" loading="lazy" decoding="async" alt="{{ group.grouper }}">
+                    {% else %}
+                      <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-layers-fill"></i></div>
+                    {% endif %}
+                  </div>
+
+                  <div class="card-body">
+                    <div class="product-title text-truncate" title="{{ group.grouper }}">{{ group.grouper }}</div>
+                    <div class="text-secondary small mb-3">{{ group.list.0.sku|default:"-" }} ...</div>
+
+                    <div class="mt-auto pt-3 dropdown variant-dd">
+                      <button class="variant-toggle variant-toggle--actions" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                          <span class="variant-label">Select variant</span>
+                          <i class="bi bi-three-dots-vertical dots"></i>
+                      </button>
+
+                      <div class="dropdown-menu variant-dropdown-menu dropdown-menu-end">
+                        <div class="variant-menu-head">
+                          <div class="variant-head-left">
+                            <div class="variant-menu-title">Variants</div>
+                            <div class="variant-menu-sub"><span class="num">{{ group.list|length }}</span> options</div>
+                          </div>
+                          <button type="button" class="variant-close" data-variant-close aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                          </button>
+                        </div>
+
+                        <div class="variant-menu-body">
+                          {% for p in group.list %}
+                            <div class="variant-item" data-variant-item data-variant-text="{{ p.colors|default:'standard' }} {{ p.sku|default:'' }}">
+                              <div class="variant-meta">
+                                <div class="variant-thumb">
+                                  {% if p.image %}
+                                    <img src="{{ p.image.url }}" loading="lazy" decoding="async" alt="{{ p.name }}">
+                                  {% else %}
+                                    <i class="bi bi-image text-muted"></i>
+                                  {% endif %}
                                 </div>
-                              {% endif %}
-                            </div>
-                            
-                            <!-- Info -->
-                            <div class="flex-grow-1">
-                              <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                  <div class="fw-bold text-dark">{{ p.colors|default:"Standard" }}</div>
-                                  <div class="small text-secondary">{{ p.sku|default:"-" }}</div>
+                                  <div class="variant-name">{{ p.colors|default:"Standard" }}</div>
+                                  <div class="variant-sku">{{ p.sku|default:"-" }}</div>
                                 </div>
-                                <div class="text-end">
-                                  <div class="fw-bold text-primary">฿{{ p.price|floatformat:0 }}</div>
-                                  {% if p.stock == 0 %} <span class="badge bg-danger py-1" style="font-size:0.6rem">Out</span>
-                                  {% elif p.stock <= 5 %} <span class="badge bg-warning text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
-                                  {% else %} <span class="badge bg-light text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
+                                <div class="variant-right">
+                                  <div class="variant-price num">฿{{ p.price|floatformat:0 }}</div>
+                                  {% if p.stock == 0 %}
+                                    <span class="variant-stock out"><i class="bi bi-x-circle"></i> Out</span>
+                                  {% elif p.stock <= 5 %}
+                                    <span class="variant-stock low"><i class="bi bi-exclamation-circle"></i> <span class="num">{{ p.stock }}</span> left</span>
+                                  {% else %}
+                                    <span class="variant-stock ok"><i class="bi bi-check-circle"></i> <span class="num">{{ p.stock }}</span></span>
                                   {% endif %}
                                 </div>
                               </div>
+                              <div class="variant-actions">
+                                <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury flex-grow-1 d-flex justify-content-center" style="font-size:.85rem;height:38px;">
+                                  <i class="bi bi-cart-plus me-1"></i> Sell
+                                </a>
+                                <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury btn-mini d-flex justify-content-center" title="Edit">
+                                  <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn-luxury btn-danger-luxury btn-mini d-flex justify-content-center" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                  </button>
+                                </form>
+                              </div>
                             </div>
-                          </div>
-                          
-                          <!-- Actions -->
-                          <div class="d-flex gap-2">
-                             <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 flex-grow-1 d-flex justify-content-center" title="Sell" style="font-size:0.8rem"><i class="bi bi-cart-plus me-1"></i> Sell</a>
-                             <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-3 d-flex justify-content-center" title="Edit"><i class="bi bi-pencil"></i></a>
-                             <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
-                               {% csrf_token %}
-                               <button type="submit" class="btn-luxury btn-danger-luxury py-1 px-3 d-flex justify-content-center" title="Delete"><i class="bi bi-trash"></i></button>
-                             </form>
-                          </div>
-                        </li>
-                      {% endfor %}
-                    </ul>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          {% endif %}
-        {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
       </div>
-    </div>
 
-    <!-- List View (Grouped) -->
-    <div id="view-list" class="view-mode d-none">
-      <div class="table-container">
-        <div class="table-responsive">
-          <table class="luxury-table">
-            <thead>
-              <tr>
-                <th style="width: 80px;">Image</th>
-                <th>Product</th>
-                <th>SKU / Colors</th>
-                <th class="text-end">Price</th>
-                <th class="text-end">Cost</th>
-                <th class="text-center">Stock</th>
-                <th class="text-end" style="width: 140px;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {# --- 1. SINGLE ITEMS --- #}
-              {% for group in product_groups %}
-                {% if group.list|length == 1 %}
-                  {% with p=group.list.0 %}
-                  <tr>
-                    <td>
-                      {% if p.image %}<img src="{{ p.image.url }}" class="list-img">
-                      {% else %}<div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-image"></i></div>
-                      {% endif %}
-                    </td>
-                    <td><div class="fw-medium text-dark">{{ p.name }}</div></td>
-                    <td>
-                      <div class="d-flex flex-column">
-                        <span class="text-dark small font-monospace">{{ p.sku|default:"-" }}</span>
-                        <span class="text-secondary small">{{ p.colors|default:"-" }}</span>
-                      </div>
-                    </td>
-                    <td class="text-end fw-medium text-dark">฿{{ p.price|floatformat:2 }}</td>
-                    <td class="text-end text-secondary">฿{{ p.cost|floatformat:2 }}</td>
-                    <td class="text-center">
-                      {% if p.stock == 0 %} <span class="stock-badge stock-out">0</span>
-                      {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }}</span>
-                      {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
-                      {% endif %}
-                    </td>
-                    <td class="text-end">
-                      <div class="d-flex justify-content-end gap-1">
-                        <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color:var(--success-text); border-color:var(--success-text); width:28px; height:28px;"><i class="bi bi-cart-plus" style="font-size:0.8rem"></i></a>
-                        <a href="{% url 'product_edit' p.pk %}" class="btn-icon" style="width:28px; height:28px;"><i class="bi bi-pencil" style="font-size:0.8rem"></i></a>
-                        <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
-                          {% csrf_token %}
-                          <button type="submit" class="btn-icon delete" style="width:28px; height:28px;"><i class="bi bi-trash" style="font-size:0.8rem"></i></button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endwith %}
-                {% endif %}
-              {% endfor %}
+      <div id="view-list" class="view-mode {% if current_view != 'list' %}d-none{% endif %}">
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="luxury-table">
+              <thead>
+                <tr>
+                  <th class="col-img">Image</th>
+                  <th class="col-product">Product</th>
+                  <th class="col-sku cell-right">SKU / Colors</th>
+                  <th class="col-price cell-right">Price</th>
+                  <th class="col-cost cell-right">Cost</th>
+                  <th class="col-stock cell-right">Stock</th>
+                  <th class="col-actions cell-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {# --- 1. SINGLE ITEMS --- #}
+                {% for group in product_groups %}
+                  {% if group.list|length == 1 %}
+                    {% with p=group.list.0 %}
+                    <tr>
+                      <td class="col-img">
+                        {% if p.image %}
+                          <img src="{{ p.image.url }}" class="list-img" loading="lazy" decoding="async" alt="{{ p.name }}">
+                        {% else %}
+                          <div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-image"></i></div>
+                        {% endif %}
+                      </td>
 
-              {# --- 2. GROUPED ITEMS --- #}
-              {% for group in product_groups %}
-                {% if group.list|length > 1 %}
-                  <tr>
-                    <td>
-                      {% if group.list.0.image %}<img src="{{ group.list.0.image.url }}" class="list-img">
-                      {% else %}<div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-layers-fill"></i></div>
-                      {% endif %}
-                    </td>
-                    <td>
-                      <div class="fw-medium text-dark">{{ group.grouper }}</div>
-                      <span class="badge bg-secondary rounded-pill" style="font-size:0.65rem">{{ group.list|length }} Variants</span>
-                    </td>
-                    <td colspan="4" class="text-secondary small fst-italic">Multiple variants available...</td>
-                    <td class="text-end">
-                      <div class="dropdown">
-                        <button class="btn-luxury btn-secondary-luxury w-100 py-1 px-2 d-flex justify-content-between align-items-center" 
-                                type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside" style="font-size:0.8rem">
-                          <span>Select Variant</span>
-                          <i class="bi bi-chevron-down small text-secondary"></i>
-                        </button>
-                        <ul class="dropdown-menu variant-dropdown-menu shadow-lg p-0 dropdown-menu-end">
-                          {% for p in group.list %}
-                            <li class="variant-item">
-                              <div class="d-flex align-items-center mb-2">
-                                <!-- Image Thumbnail -->
-                                <div class="me-3" style="width: 48px; height: 48px; flex-shrink: 0;">
-                                  {% if p.image %}
-                                    <img src="{{ p.image.url }}" class="rounded border" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
-                                  {% else %}
-                                    <div class="rounded border bg-light d-flex align-items-center justify-content-center h-100 w-100">
-                                      <i class="bi bi-image text-muted"></i>
-                                    </div>
-                                  {% endif %}
+                      <td class="col-product">
+                        <div class="product-name-cell">{{ p.name }}</div>
+                      </td>
+
+                      <td class="col-sku cell-right">
+                        <div class="d-flex flex-column align-items-end">
+                          <span class="sku-mono">{{ p.sku|default:"-" }}</span>
+                          <span class="sku-sub">{{ p.colors|default:"-" }}</span>
+                        </div>
+                      </td>
+
+                      <td class="col-price cell-right num fw-semibold">฿{{ p.price|floatformat:2 }}</td>
+                      <td class="col-cost cell-right num" style="color: var(--text-secondary);">฿{{ p.cost|floatformat:2 }}</td>
+
+                      <td class="col-stock cell-right num">
+                        {% if p.stock == 0 %} <span class="stock-badge stock-out">0</span>
+                        {% elif p.stock <= 5 %} <span class="stock-badge stock-low">{{ p.stock }}</span>
+                        {% else %} <span class="stock-badge stock-in">{{ p.stock }}</span>
+                        {% endif %}
+                      </td>
+
+                      <td class="col-actions cell-right">
+                        <div class="actions-wrap">
+                          <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-icon" style="color:var(--success-text); border-color:var(--success-text);" title="Sell">
+                            <i class="bi bi-cart-plus"></i>
+                          </a>
+                          <a href="{% url 'product_edit' p.pk %}" class="btn-icon" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                          </a>
+                          <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-icon delete" title="Delete">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endwith %}
+                  {% endif %}
+                {% endfor %}
+
+                {# --- 2. GROUPED ITEMS --- #}
+                {% for group in product_groups %}
+                  {% if group.list|length > 1 %}
+                    <tr>
+                      <td class="col-img">
+                        {% if group.list.0.image %}
+                          <img src="{{ group.list.0.image.url }}" class="list-img" loading="lazy" decoding="async" alt="{{ group.grouper }}">
+                        {% else %}
+                          <div class="list-img d-flex align-items-center justify-content-center text-secondary"><i class="bi bi-layers-fill"></i></div>
+                        {% endif %}
+                      </td>
+
+                      <td class="col-product">
+                        <div class="product-name-cell">{{ group.grouper }}</div>
+                        <span class="badge bg-secondary rounded-pill num" style="font-size:0.65rem">{{ group.list|length }} Variants</span>
+                      </td>
+
+                      <td class="col-sku cell-right">
+                        <div class="sku-sub fst-italic">—</div>
+                      </td>
+
+                      <td class="col-price cell-right num" style="color: var(--text-tertiary);">—</td>
+                      <td class="col-cost cell-right num" style="color: var(--text-tertiary);">—</td>
+
+                      <td class="col-stock cell-right">
+                        <span class="stock-badge stock-in num">{{ group.list|length }}</span>
+                      </td>
+
+                      <td class="col-actions cell-right">
+                        <div class="actions-wrap">
+                          <div class="dropdown d-inline-block variant-dd">
+                            <button class="variant-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                              <span>Select variant</span>
+                              <i class="bi bi-three-dots-vertical dots"></i>
+                            </button>
+                            <div class="dropdown-menu variant-dropdown-menu dropdown-menu-end">
+                              <div class="variant-menu-head">
+                                <div class="variant-head-left">
+                                  <div class="variant-menu-title">Variants</div>
+                                  <div class="variant-menu-sub"><span class="num">{{ group.list|length }}</span> options</div>
                                 </div>
-                                
-                                <!-- Info -->
-                                <div class="flex-grow-1">
-                                  <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                      <div class="fw-bold text-dark">{{ p.colors|default:"Standard" }}</div>
-                                      <div class="small text-secondary">{{ p.sku|default:"-" }}</div>
+                                <button type="button" class="variant-close" data-variant-close aria-label="Close">
+                                  <i class="bi bi-x-lg"></i>
+                                </button>
+                              </div>
+                              <div class="variant-menu-body">
+                                {% for p in group.list %}
+                                  <div class="variant-item" data-variant-item data-variant-text="{{ p.colors|default:'standard' }} {{ p.sku|default:'' }}">
+                                    <div class="variant-meta">
+                                      <div class="variant-thumb">
+                                        {% if p.image %}
+                                          <img src="{{ p.image.url }}" loading="lazy" decoding="async" alt="{{ p.name }}">
+                                        {% else %}
+                                          <i class="bi bi-image text-muted"></i>
+                                        {% endif %}
+                                      </div>
+                                      <div>
+                                        <div class="variant-name">{{ p.colors|default:"Standard" }}</div>
+                                        <div class="variant-sku">{{ p.sku|default:"-" }}</div>
+                                      </div>
+                                      <div class="variant-right">
+                                        <div class="variant-price num">฿{{ p.price|floatformat:0 }}</div>
+                                        {% if p.stock == 0 %}
+                                          <span class="variant-stock out"><i class="bi bi-x-circle"></i> Out</span>
+                                        {% elif p.stock <= 5 %}
+                                          <span class="variant-stock low"><i class="bi bi-exclamation-circle"></i> <span class="num">{{ p.stock }}</span> left</span>
+                                        {% else %}
+                                          <span class="variant-stock ok"><i class="bi bi-check-circle"></i> <span class="num">{{ p.stock }}</span></span>
+                                        {% endif %}
+                                      </div>
                                     </div>
-                                    <div class="text-end">
-                                      <div class="fw-bold text-primary">฿{{ p.price|floatformat:0 }}</div>
-                                      {% if p.stock == 0 %} <span class="badge bg-danger py-1" style="font-size:0.6rem">Out</span>
-                                      {% elif p.stock <= 5 %} <span class="badge bg-warning text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
-                                      {% else %} <span class="badge bg-light text-dark border py-1" style="font-size:0.6rem">{{ p.stock }}</span>
-                                      {% endif %}
+                                    <div class="variant-actions">
+                                      <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury flex-grow-1 d-flex justify-content-center" style="font-size:.82rem;height:38px;">
+                                        <i class="bi bi-cart-plus me-1"></i> Sell
+                                      </a>
+                                      <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury btn-mini d-flex justify-content-center" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                      </a>
+                                      <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-luxury btn-secondary-luxury btn-mini d-flex justify-content-center" title="Delete">
+                                          <i class="bi bi-trash"></i>
+                                        </button>
+                                      </form>
                                     </div>
                                   </div>
-                                </div>
+                                {% endfor %}
                               </div>
-                              
-                              <!-- Actions -->
-                              <div class="d-flex gap-2">
-                                 <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 flex-grow-1 d-flex justify-content-center" title="Sell" style="font-size:0.8rem"><i class="bi bi-cart-plus me-1"></i> Sell</a>
-                                 <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-3 d-flex justify-content-center" title="Edit"><i class="bi bi-pencil"></i></a>
-                                 <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
-                                   {% csrf_token %}
-                                   <button type="submit" class="btn-luxury btn-danger-luxury py-1 px-3 d-flex justify-content-center" title="Delete"><i class="bi bi-trash"></i></button>
-                                 </form>
-                              </div>
-                            </li>
-                          {% endfor %}
-                        </ul>
-                      </div>
-                    </td>
-                  </tr>
-                {% endif %}
-              {% endfor %}
-            </tbody>
-          </table>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Compact View (Grouped) -->
-    <div id="view-compact" class="view-mode d-none">
-      <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3">
-        {# --- 1. SINGLE ITEMS --- #}
-        {% for group in product_groups %}
-          {% if group.list|length == 1 %}
-            {% with p=group.list.0 %}
-            <div class="col">
-              <div class="luxury-card compact-card">
-                <div class="product-img-wrapper">
-                  {% if p.image %}<img src="{{ p.image.url }}" class="product-img" loading="lazy">
-                  {% else %}<div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-image"></i></div>
-                  {% endif %}
-                </div>
-                <div class="card-body">
-                  <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="small fw-semibold">฿{{ p.price|floatformat:0 }}</span>
-                    {% if p.stock == 0 %} <span class="badge bg-danger rounded-pill" style="font-size:0.6rem">Out</span>
-                    {% else %} <span class="badge bg-light text-secondary border rounded-pill" style="font-size:0.6rem">{{ p.stock }}</span>
+      <div id="view-compact" class="view-mode {% if current_view != 'compact' %}d-none{% endif %}">
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-lg-6 g-3">
+          {# --- 1. SINGLE ITEMS --- #}
+          {% for group in product_groups %}
+            {% if group.list|length == 1 %}
+              {% with p=group.list.0 %}
+              <div class="col">
+                <div class="luxury-card compact-card">
+                  <div class="product-img-wrapper">
+                    {% if p.image %}
+                      <img src="{{ p.image.url }}" class="product-img" loading="lazy" decoding="async" alt="{{ p.name }}">
+                    {% else %}
+                      <div class="product-img d-flex align-items-center justify-content-center text-tertiary">
+                        <i class="bi bi-image"></i>
+                      </div>
                     {% endif %}
                   </div>
-                  <div class="d-flex gap-1">
-                     <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-cart-plus"></i></a>
-                     <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem;"><i class="bi bi-pencil"></i></a>
+                  <div class="card-body">
+                    <div class="product-title" title="{{ p.name }}">{{ p.name }}</div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span class="small fw-semibold num">฿{{ p.price|floatformat:0 }}</span>
+                      {% if p.stock == 0 %} <span class="badge bg-danger rounded-pill" style="font-size:0.6rem">Out</span>
+                      {% else %} <span class="badge bg-light text-secondary border rounded-pill num" style="font-size:0.6rem">{{ p.stock }}</span>
+                      {% endif %}
+                    </div>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem; height: 34px;"><i class="bi bi-cart-plus"></i></a>
+                        <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-1 px-0 flex-grow-1 d-flex justify-content-center align-items-center" style="font-size: 0.75rem; height: 34px;"><i class="bi bi-pencil"></i></a>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {% endwith %}
-          {% endif %}
-        {% endfor %}
+              {% endwith %}
+            {% endif %}
+          {% endfor %}
 
-        {# --- 2. GROUPED ITEMS --- #}
-        {% for group in product_groups %}
-          {% if group.list|length > 1 %}
-            <div class="col">
-              <div class="luxury-card compact-card is-group">
-                <div class="product-img-wrapper">
-                  <div class="group-indicator" style="top:5px; right:5px; font-size:0.6rem; padding:2px 4px;">{{ group.list|length }}</div>
-                  {% if group.list.0.image %}<img src="{{ group.list.0.image.url }}" class="product-img" loading="lazy">
-                  {% else %}<div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-layers-fill"></i></div>
-                  {% endif %}
-                </div>
-                <div class="card-body">
-                  <div class="product-title text-truncate" title="{{ group.grouper }}">{{ group.grouper }}</div>
-                  
-                  <div class="mt-2 dropdown">
-                    <button class="btn-luxury btn-secondary-luxury w-100 py-1 px-0 dropdown-toggle" style="font-size: 0.75rem;"
-                            type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                      Variants
-                    </button>
-                    <ul class="dropdown-menu variant-dropdown-menu shadow-lg p-0 dropdown-menu-end" style="min-width: 260px;">
-                      {% for p in group.list %}
-                        <li class="variant-item p-2">
-                          <div class="d-flex align-items-center mb-2">
-                            <!-- Image Thumbnail -->
-                            <div class="me-2" style="width: 40px; height: 40px; flex-shrink: 0;">
-                              {% if p.image %}
-                                <img src="{{ p.image.url }}" class="rounded border" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
-                              {% else %}
-                                <div class="rounded border bg-light d-flex align-items-center justify-content-center h-100 w-100">
-                                  <i class="bi bi-image text-muted" style="font-size: 0.8rem;"></i>
+          {# --- 2. GROUPED ITEMS --- #}
+          {% for group in product_groups %}
+            {% if group.list|length > 1 %}
+              <div class="col">
+                <div class="luxury-card compact-card is-group">
+                  <div class="product-img-wrapper">
+                    <div class="group-indicator" style="top:5px; right:5px; font-size:0.6rem; padding:2px 6px;"><span class="num">{{ group.list|length }}</span></div>
+                    {% if group.list.0.image %}
+                      <img src="{{ group.list.0.image.url }}" class="product-img" loading="lazy" decoding="async" alt="{{ group.grouper }}">
+                    {% else %}
+                      <div class="product-img d-flex align-items-center justify-content-center text-tertiary"><i class="bi bi-layers-fill"></i></div>
+                    {% endif %}
+                  </div>
+                  <div class="card-body">
+                    <div class="product-title text-truncate" title="{{ group.grouper }}">{{ group.grouper }}</div>
+                    <div class="mt-2 dropdown variant-dd">
+                      <button class="variant-toggle w-100" style="height:34px;font-size:.82rem" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+                        <span>Variants</span>
+                        <i class="bi bi-three-dots-vertical dots"></i>
+                      </button>
+                      <div class="dropdown-menu variant-dropdown-menu dropdown-menu-end" style="min-width: 320px;">
+                        <div class="variant-menu-head">
+                          <div class="variant-head-left">
+                            <div class="variant-menu-title">Variants</div>
+                            <div class="variant-menu-sub"><span class="num">{{ group.list|length }}</span> options</div>
+                          </div>
+                          <button type="button" class="variant-close" data-variant-close aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                          </button>
+                        </div>
+                        <div class="variant-menu-body">
+                          {% for p in group.list %}
+                            <div class="variant-item" data-variant-item data-variant-text="{{ p.colors|default:'standard' }} {{ p.sku|default:'' }}">
+                              <div class="variant-meta">
+                                <div class="variant-thumb">
+                                  {% if p.image %}
+                                    <img src="{{ p.image.url }}" loading="lazy" decoding="async" alt="{{ p.name }}">
+                                  {% else %}
+                                    <i class="bi bi-image text-muted"></i>
+                                  {% endif %}
                                 </div>
-                              {% endif %}
+                                <div>
+                                  <div class="variant-name" style="font-size:.9rem">{{ p.colors|default:"Std" }}</div>
+                                  <div class="variant-sku" style="font-size:.75rem">{{ p.sku|default:"-" }}</div>
+                                </div>
+                                <div class="variant-right">
+                                  <div class="variant-price num">฿{{ p.price|floatformat:0 }}</div>
+                                  {% if p.stock == 0 %}
+                                    <span class="variant-stock out"><i class="bi bi-x-circle"></i> Out</span>
+                                  {% elif p.stock <= 5 %}
+                                    <span class="variant-stock low"><i class="bi bi-exclamation-circle"></i> <span class="num">{{ p.stock }}</span> left</span>
+                                  {% else %}
+                                    <span class="variant-stock ok"><i class="bi bi-check-circle"></i> <span class="num">{{ p.stock }}</span></span>
+                                  {% endif %}
+                                </div>
+                              </div>
+                              <div class="variant-actions">
+                                <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury flex-grow-1 d-flex justify-content-center" style="font-size:.82rem;height:38px;">
+                                  <i class="bi bi-cart-plus me-1"></i> Sell
+                                </a>
+                                <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury btn-mini d-flex justify-content-center" title="Edit">
+                                  <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete {{ p.name|escapejs }}?');" class="d-inline">
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn-luxury btn-secondary-luxury btn-mini d-flex justify-content-center" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                  </button>
+                                </form>
+                              </div>
                             </div>
-                            <div class="flex-grow-1">
-                               <div class="d-flex justify-content-between align-items-center">
-                                 <div class="small fw-bold">{{ p.colors|default:"Std" }}</div>
-                                 <div class="small">฿{{ p.price|floatformat:0 }}</div>
-                               </div>
-                               <div class="d-flex justify-content-between align-items-center">
-                                  <span class="text-muted" style="font-size:0.7rem">Stock: {{ p.stock }}</span>
-                               </div>
-                            </div>
-                          </div>
-                          
-                          <div class="d-flex gap-1 mt-1">
-                             <a href="{% url 'sale_create' %}?product={{ p.pk }}" class="btn-luxury btn-primary-luxury py-0 px-2 flex-grow-1 d-flex justify-content-center" style="font-size:0.75rem">Sell</a>
-                             <a href="{% url 'product_edit' p.pk %}" class="btn-luxury btn-secondary-luxury py-0 px-2" style="font-size:0.75rem"><i class="bi bi-pencil"></i></a>
-                             <form method="post" action="{% url 'product_delete' p.pk %}" onsubmit="return confirm('Delete?');" class="d-inline">
-                               {% csrf_token %}
-                               <button type="submit" class="btn-luxury btn-danger-luxury py-0 px-2" style="font-size:0.75rem"><i class="bi bi-trash"></i></button>
-                             </form>
-                          </div>
-                        </li>
-                      {% endfor %}
-                    </ul>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          {% endif %}
-        {% endfor %}
+            {% endif %}
+          {% endfor %}
+        </div>
       </div>
-    </div>
+    {% endif %}
 
-  {% endif %}
+    {% endwith %} {# current_view #}
 
   {% else %}
-  <div class="empty-state">
-    <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
-    <h4>No products found</h4>
-    <p class="mb-4">Try adjusting your search or add a new item.</p>
-    {% if not q %}
-    <a href="{% url 'product_create' %}" class="btn-luxury btn-primary-luxury">Create Product</a>
-    {% endif %}
-  </div>
+    {# --- Empty State --- #}
+    <div class="empty-state">
+      <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
+      <h4>No products found</h4>
+      <p class="mb-4">Try adjusting your search or add a new item.</p>
+      {% if not q %}
+      <a href="{% url 'product_create' %}" class="btn-luxury btn-primary-luxury">Create Product</a>
+      {% endif %}
+    </div>
   {% endif %}
 
-  <!-- Pagination -->
-  {% if page_obj.has_other_pages %}
+  {# --- Pagination (✅ keep view) --- #}
+  {% if page_obj and page_obj.has_other_pages %}
   <nav aria-label="Pagination">
     <div class="pagination">
       {% if page_obj.has_previous %}
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page=1"><i class="bi bi-chevron-double-left"></i></a>
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}&{% endif %}{% if request.GET.view %}view={{ request.GET.view }}&{% endif %}page=1"><i class="bi bi-chevron-double-left"></i></a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}&{% endif %}{% if request.GET.view %}view={{ request.GET.view }}&{% endif %}page={{ page_obj.previous_page_number }}"><i class="bi bi-chevron-left"></i></a>
       {% else %}
       <span class="page-link disabled"><i class="bi bi-chevron-double-left"></i></span>
       <span class="page-link disabled"><i class="bi bi-chevron-left"></i></span>
       {% endif %}
+
       <span class="page-link active">{{ page_obj.number }}</span>
+
       {% if page_obj.has_next %}
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a>
-      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.all %}all={{ request.GET.all }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}{% endif %}page={{ page_obj.paginator.num_pages }}"><i class="bi bi-chevron-double-right"></i></a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}&{% endif %}{% if request.GET.view %}view={{ request.GET.view }}&{% endif %}page={{ page_obj.next_page_number }}"><i class="bi bi-chevron-right"></i></a>
+      <a class="page-link" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if request.GET.sort %}sort={{ request.GET.sort }}&{% endif %}{% if request.GET.grouping %}grouping={{ request.GET.grouping }}&{% endif %}{% if request.GET.view %}view={{ request.GET.view }}&{% endif %}page={{ page_obj.paginator.num_pages }}"><i class="bi bi-chevron-double-right"></i></a>
       {% else %}
       <span class="page-link disabled"><i class="bi bi-chevron-right"></i></span>
       <span class="page-link disabled"><i class="bi bi-chevron-double-right"></i></span>
@@ -969,12 +1781,23 @@
     </div>
   </nav>
   {% endif %}
-
 </div>
 
+{# --- 3. SCRIPTS --- #}
 <script>
+  // Notification Logic
+  {% if messages %}
+  (function() {
+    {% for m in messages %}
+    notify("{{ m|escapejs }}", "{{ m.tags|default:'info' }}");
+    {% endfor %}
+  })();
+  {% endif %}
+
+  // Main UI Logic (✅ click view -> reload with ?view=...)
   (function() {
     'use strict';
+
     const VIEW_STORAGE_KEY = 'baanpaw_products_view_luxury';
     const viewButtons = document.querySelectorAll('[data-view]');
     const viewModes = {
@@ -987,36 +1810,170 @@
       if (!viewModes[viewName]) viewName = 'grid';
       Object.values(viewModes).forEach(el => { if (el) el.classList.add('d-none'); });
       if (viewModes[viewName]) viewModes[viewName].classList.remove('d-none');
+
       viewButtons.forEach(btn => {
-        if (btn.dataset.view === viewName) { btn.classList.add('active'); } else { btn.classList.remove('active'); }
+        btn.classList.toggle('active', btn.dataset.view === viewName);
       });
+
       try { localStorage.setItem(VIEW_STORAGE_KEY, viewName); } catch (e) {}
     }
 
+    // init: URL param > localStorage > default
     let initialView = 'grid';
     try {
-      const saved = localStorage.getItem(VIEW_STORAGE_KEY);
-      if (saved && viewModes[saved]) initialView = saved;
+      const url = new URL(window.location.href);
+      const v = url.searchParams.get('view');
+      if (v && viewModes[v]) initialView = v;
+      else {
+        const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+        if (saved && viewModes[saved]) initialView = saved;
+      }
     } catch (e) {}
+
     setActiveView(initialView);
 
+    // ✅ click -> reload page with view param (and reset page)
     viewButtons.forEach(btn => {
-      btn.addEventListener('click', () => setActiveView(btn.dataset.view));
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const view = btn.dataset.view;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('view', view);
+        url.searchParams.delete('page'); // กัน pagination ค้าง
+        window.location.href = url.toString();
+      });
     });
 
+    // Clear ONLY q (and page), keep sort/grouping/view
     const searchInput = document.querySelector('input[name="q"]');
     const clearBtn = document.querySelector('.search-clear');
     if (searchInput && clearBtn) {
       clearBtn.addEventListener('click', () => {
-        searchInput.value = ''; searchInput.focus(); window.location.href = window.location.pathname;
+        const url = new URL(window.location.href);
+        url.searchParams.delete('q');
+        url.searchParams.delete('page');
+        window.location.href = url.toString();
       });
     }
+
     document.querySelectorAll('form[action*="delete"]').forEach(form => {
-      form.addEventListener('submit', function(e) {
+      form.addEventListener('submit', function() {
         const btn = this.querySelector('button[type="submit"]');
         if (btn) { btn.style.opacity = '0.7'; btn.style.pointerEvents = 'none'; }
       });
     });
+
+    // ==========================
+    // ✅ Variant dropdown fixes
+    // - แก้ bottom-sheet “กางแล้วหุบไม่ได้” ด้วย backdrop + ปุ่มปิด
+    // - แก้ iOS lazy-load รูปใน dropdown
+    // - ยก z-index เฉพาะ variant dropdown
+    // ==========================
+
+    const isMobileSheet = () => window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+
+    let sheetBackdropEl = null;
+    let sheetOwnerToggle = null;
+
+    function getVariantCtx(toggleEl){
+      const dd = toggleEl && toggleEl.closest ? toggleEl.closest('.dropdown') : null;
+      if (!dd) return null;
+      const menu = dd.querySelector('.variant-dropdown-menu');
+      if (!menu) return null; // ไม่ใช่ variant dropdown
+      return { dropdown: dd, menu, toggle: toggleEl };
+    }
+
+    function ensureBackdropFor(toggleEl){
+      // สร้างเป็น singleton (เปิดอันใหม่ -> ลบอันเก่า)
+      cleanupBackdrop();
+
+      sheetBackdropEl = document.createElement('div');
+      sheetBackdropEl.className = 'variant-sheet-backdrop';
+      sheetBackdropEl.addEventListener('click', () => hideDropdown(toggleEl));
+
+      document.body.appendChild(sheetBackdropEl);
+      document.body.classList.add('variant-sheet-open');
+      sheetOwnerToggle = toggleEl;
+    }
+
+    function cleanupBackdrop(){
+      if (sheetBackdropEl) {
+        sheetBackdropEl.remove();
+        sheetBackdropEl = null;
+      }
+      document.body.classList.remove('variant-sheet-open');
+      sheetOwnerToggle = null;
+    }
+
+    function hideDropdown(toggleEl){
+      try{
+        const inst = bootstrap.Dropdown.getInstance(toggleEl) || new bootstrap.Dropdown(toggleEl);
+        inst.hide();
+      }catch(err){
+        // fallback
+        try { toggleEl && toggleEl.click && toggleEl.click(); } catch(e){}
+      }
+    }
+
+    // Elevate card only for variant dropdown
+    document.addEventListener('show.bs.dropdown', (e) => {
+      const ctx = getVariantCtx(e.target);
+      if (!ctx) return;
+
+      const card = ctx.dropdown.closest('.luxury-card');
+      if (card) card.classList.add('dropdown-elevated');
+
+      // ทำให้ dropdown wrapper อยู่เหนือเพื่อน (เฉพาะ variant)
+      ctx.dropdown.classList.add('variant-dd');
+    });
+
+    document.addEventListener('shown.bs.dropdown', (e) => {
+      const ctx = getVariantCtx(e.target);
+      if (!ctx) return;
+
+      // ✅ Mobile: add backdrop so user can tap outside to close
+      if (isMobileSheet()) ensureBackdropFor(ctx.toggle);
+
+      // ✅ iOS: force eager-load images in dropdown (fixed/scroll container)
+      requestAnimationFrame(() => {
+        ctx.menu.querySelectorAll('img').forEach(img => {
+          img.setAttribute('loading', 'eager');
+          const src = img.getAttribute('src');
+          if (src) img.setAttribute('src', src);
+        });
+      });
+    });
+
+    document.addEventListener('hidden.bs.dropdown', (e) => {
+      const ctx = getVariantCtx(e.target);
+      if (!ctx) return;
+
+      const card = ctx.dropdown.closest('.luxury-card');
+      if (card) card.classList.remove('dropdown-elevated');
+
+      if (sheetOwnerToggle === ctx.toggle) cleanupBackdrop();
+    });
+
+    // ✅ Close button inside menu
+    document.addEventListener('click', (e) => {
+      const closeBtn = e.target.closest('[data-variant-close]');
+      if (!closeBtn) return;
+
+      const dd = closeBtn.closest('.dropdown');
+      if (!dd) return;
+
+      const toggle = dd.querySelector('[data-bs-toggle="dropdown"]');
+      if (toggle) hideDropdown(toggle);
+    });
+
+    // ✅ ESC close (mobile sheet)
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      if (!sheetOwnerToggle) return;
+      hideDropdown(sheetOwnerToggle);
+    });
+
   })();
 </script>
 

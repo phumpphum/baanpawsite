@@ -1,0 +1,954 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Expenses Management{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+  /* ===================== FONTS ===================== */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  /* ==========================================================
+     TOKENS
+     ========================================================== */
+  :root{
+    --bg-body:#f3f4f6;
+    --surface:#ffffff;
+    --surface-2:#f9fafb;
+
+    --text-primary:#0f172a;
+    --text-secondary:#64748b;
+    --text-tertiary:#94a3b8;
+
+    --primary-color:#0f172a;
+    --primary-hover:#1e293b;
+    --accent:#6366f1;
+
+    --success-bg:#ecfdf5;
+    --success-text:#059669;
+    --success-border:#a7f3d0;
+
+    --danger-bg:#fef2f2;
+    --danger-text:#dc2626;
+    --danger-border:#fecaca;
+
+    --warning-bg:#fffbeb;
+    --warning-text:#d97706;
+    --warning-border:#fde68a;
+
+    --info-bg:#eff6ff;
+    --info-text:#2563eb;
+    --info-border:#bfdbfe;
+
+    --border-color:#e5e7eb;
+
+    --radius-xl:18px;
+    --radius-lg:14px;
+    --radius-md:12px;
+
+    --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
+    --shadow-md: 0 12px 26px -20px rgba(15,23,42,.35);
+
+    /* CAPSULE SYSTEM */
+    --ctrl-h:44px;
+    --ctrl-r:999px;
+    --ctrl-pad:14px;
+
+    --focus-ring: 0 0 0 4px rgba(99,102,241,.18);
+
+    --hover-overlay: rgba(2,6,23,.03);
+    --row-hover: rgba(2,6,23,.03);
+  }
+
+  /* DARK */
+  [data-bs-theme="dark"]{
+    --bg-body: #0f1115;
+    --surface:#0b1220;
+    --surface-2:#0f172a;
+
+    --text-primary:#e5e7eb;
+    --text-secondary:#9aa7bd;
+    --text-tertiary:#64748b;
+
+    --border-color: rgba(148,163,184,.18);
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.35);
+    --shadow-md: 0 18px 34px -26px rgba(0,0,0,.75);
+
+    --focus-ring: 0 0 0 4px rgba(99,102,241,.28);
+
+    --hover-overlay: rgba(226,232,240,.06);
+    --row-hover: rgba(226,232,240,.05);
+  }
+
+  /* BASE */
+  body{
+    font-family:'Inter',sans-serif;
+    color:var(--text-primary);
+    background: var(--bg-body) !important;
+  }
+  .num-font{
+    font-family:'JetBrains Mono','Segoe UI Mono',monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight:700;
+    letter-spacing:-.35px;
+  }
+  .text-tertiary{ color:var(--text-tertiary)!important; }
+  .text-secondary{ color:var(--text-secondary)!important; }
+  .text-dark{ color:var(--text-primary)!important; }
+
+  .badge.bg-light{
+    background: rgba(148,163,184,.14) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+  }
+
+  /* SURFACES */
+  .filter-section,
+  .table-container,
+  .stat-card,
+  .expense-card,
+  .kpi-box{
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ==========================================================
+     ✅ HEADER (เหมือน History/Reports) + ❌ เอาเส้นคั่นออก
+     ========================================================== */
+  .page-header{
+    background:transparent;
+    padding: .25rem 0 0 0;
+    margin-bottom: 1rem;
+    border-bottom: none;                 /* ✅ เอาเส้นก่อน cards ออก */
+  }
+
+  .page-header h1{
+    font-size: 1.75rem;
+    font-weight: 800;
+    color:var(--text-primary);
+    letter-spacing:-.03em;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+
+  .page-header .subtitle{
+    font-size:.88rem;
+    color:var(--text-secondary);
+    margin-top:.15rem;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    flex-wrap:wrap;
+  }
+
+  /* header badge แบบนุ่มๆ เหมือนหน้า history/reports */
+  .meta-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 700;
+    border: 1px solid var(--border-color);
+    background: rgba(148,163,184,.12);
+    color: var(--text-secondary);
+  }
+  [data-bs-theme="dark"] .meta-pill{
+    background: rgba(148,163,184,.10);
+  }
+
+  /* Chips */
+  .chips{ display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.65rem; }
+  .chip{
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.22rem .55rem; border-radius:999px;
+    border:1px solid var(--border-color);
+    background: rgba(148,163,184,.10);
+    color:var(--text-secondary);
+    font-size:.78rem; font-weight:800;
+  }
+
+  /* KPI */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+    gap:.85rem;
+    margin-bottom:1.15rem;               /* ✅ ชิดขึ้นเหมือน history/reports */
+  }
+  .stat-card{
+    padding:.9rem 1rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    min-height:92px;
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    overflow:hidden;
+    position:relative;
+  }
+  .stat-card:hover{
+    transform:translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(99,102,241,.35);
+  }
+  .stat-card.is-active{
+    border-color: rgba(99,102,241,.55)!important;
+    box-shadow: var(--focus-ring), var(--shadow-sm);
+  }
+  .stat-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:.6rem;
+    margin-bottom:.25rem;
+    color:var(--text-secondary);
+    font-weight:800;
+  }
+  .stat-icon{ font-size:1rem; opacity:.9; }
+  .stat-value{
+    font-size:1.28rem;
+    font-weight:900;
+    color:var(--text-primary);
+    line-height:1.15;
+  }
+  .stat-card.danger{ border-left:4px solid var(--danger-text); }
+  @media (min-width: 992px){ .stat-card.wide{ grid-column:span 2; } }
+
+  .card-label{ display:flex; flex-direction:column; line-height:1.1; min-width:0; }
+  .card-label .en{
+    font-size:.68rem; font-weight:900;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-primary);
+    white-space:nowrap;
+  }
+  .card-label .th{
+    font-size:.82rem; font-weight:700;
+    color:var(--text-secondary);
+    margin-top:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  /* FILTER */
+  .filter-section{ overflow:hidden; margin-bottom:1.1rem; }
+  .filter-header{
+    padding:.85rem 1.25rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    user-select:none;
+    background:transparent;
+    transition: background .16s ease, border-color .16s ease;
+  }
+  .filter-header[aria-expanded="true"]{
+    border-bottom:1px solid var(--border-color);
+    background: var(--hover-overlay);
+  }
+  .filter-body{
+    padding:1.05rem 1.25rem;
+    background: var(--surface-2);
+  }
+
+  .icon-box-soft{
+    width:30px; height:30px;
+    border-radius:12px;
+    background: rgba(148,163,184,.14);
+    color: var(--text-primary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.95rem;
+    border: 1px solid var(--border-color);
+  }
+
+  .luxury-input, .form-select{
+    width:100%;
+    min-height:var(--ctrl-h);
+    border:1px solid var(--border-color);
+    border-radius:var(--ctrl-r);
+    padding:0 var(--ctrl-pad);
+    background:var(--surface);
+    font-size:.92rem;
+    font-weight:800;
+    color:var(--text-primary);
+    transition:border-color .14s, box-shadow .14s, background .14s;
+    outline:none;
+  }
+  [data-bs-theme="dark"] .luxury-input,
+  [data-bs-theme="dark"] .form-select{
+    background: rgba(2,6,23,.22);
+  }
+  .luxury-input::placeholder{ color:var(--text-tertiary); font-weight:700; }
+  .luxury-input:focus, .form-select:focus{
+    border-color: rgba(99,102,241,.75);
+    box-shadow: var(--focus-ring);
+  }
+
+  .input-icon-wrapper{ position:relative; }
+  .input-icon-wrapper i{
+    position:absolute;
+    left:.9rem;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--text-tertiary);
+    pointer-events:none;
+    font-size:.95rem;
+  }
+  .luxury-input-with-icon{ padding-left:2.45rem!important; }
+
+  .btn-luxury{
+    height:var(--ctrl-h);
+    border-radius:var(--ctrl-r);
+    padding:0 16px;
+    font-weight:900;
+    transition:transform .15s ease, box-shadow .16s ease, background .16s ease, border-color .16s ease;
+    border:1px solid transparent;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.55rem;
+    text-decoration:none;
+    font-size:.92rem;
+    cursor:pointer;
+    line-height:1;
+    white-space:nowrap;
+    user-select:none;
+  }
+  .btn-primary-luxury{
+    background:linear-gradient(180deg, var(--primary-color), #0b1224);
+    color:#fff;
+  }
+  .btn-primary-luxury:hover{
+    background:linear-gradient(180deg, var(--primary-hover), #0b1224);
+    transform:translateY(-1px);
+    box-shadow:var(--shadow-md);
+    color:#fff;
+  }
+  .btn-secondary-luxury{
+    background:transparent;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+  .btn-secondary-luxury:hover{
+    background: var(--hover-overlay);
+    border-color: rgba(99,102,241,.35);
+    transform:translateY(-1px);
+    color: var(--text-primary);
+  }
+  .btn-danger-luxury{
+    background:transparent;
+    border-color: rgba(220,38,38,.32);
+    color: var(--danger-text);
+  }
+  .btn-danger-luxury:hover{
+    background: rgba(220,38,38,.10);
+    border-color: rgba(220,38,38,.55);
+    transform:translateY(-1px);
+    color: var(--danger-text);
+  }
+
+  /* TABLE */
+  .table-container{ overflow:hidden; }
+  .table-responsive{ max-height:72vh; overflow:auto; }
+
+  .luxury-table{ width:100%; border-collapse:separate; border-spacing:0; }
+  :root{
+    --thead-glass: rgba(255,255,255,.72);
+    --thead-border: rgba(15,23,42,.12);
+    --thead-blur: blur(14px) saturate(160%);
+  }
+  [data-bs-theme="dark"]{
+    --thead-glass: rgba(255,255,255,.12);
+    --thead-border: rgba(255,255,255,.18);
+  }
+  .luxury-table thead{
+    background: var(--thead-glass) !important;
+    border-bottom: 1px solid var(--thead-border) !important;
+    backdrop-filter: var(--thead-blur);
+    -webkit-backdrop-filter: var(--thead-blur);
+    position:sticky; top:0; z-index:5;
+  }
+  .luxury-table thead th{ background: transparent !important; }
+
+  .luxury-table th{
+    padding:.78rem 1rem;
+    text-align:left;
+    font-size:.74rem;
+    font-weight:900;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    letter-spacing:.08em;
+    white-space:nowrap;
+    vertical-align:top;
+  }
+  .luxury-table td{
+    padding:.68rem 1rem;
+    vertical-align:middle;
+    border-bottom:1px solid var(--border-color);
+    color:var(--text-primary);
+    font-size:.9rem;
+  }
+  .luxury-table tr:last-child td{ border-bottom:none; }
+  .luxury-table tbody tr:hover{ background:var(--row-hover); }
+
+  .receipt-img-box{
+    width:62px; height:62px;
+    border-radius:16px;
+    border:1px solid var(--border-color);
+    overflow:hidden;
+    background: rgba(148,163,184,.10);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform .18s ease, box-shadow .2s ease;
+  }
+  .receipt-img-box:hover{
+    transform:scale(1.02);
+    box-shadow:0 10px 18px -16px rgba(0,0,0,.35);
+  }
+  .receipt-img-box img{ width:100%; height:100%; object-fit:cover; }
+  .receipt-img-box.no-img{ color:var(--text-tertiary); font-size:1.5rem; }
+
+  .badge-frame{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:3px 10px;
+    border-radius:999px;
+    font-size:.74rem;
+    font-weight:900;
+    border:1px solid var(--border-color);
+    background: rgba(148,163,184,.10);
+    color:var(--text-secondary);
+    white-space:nowrap;
+  }
+
+  .icon-btn{
+    width:38px; height:38px;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid transparent;
+    background:transparent;
+    color:var(--text-secondary);
+    transition:all .16s;
+    font-size:1rem;
+  }
+  .icon-btn:hover{
+    background: var(--hover-overlay);
+    color: var(--text-primary);
+    transform:translateY(-1px);
+    border-color: rgba(99,102,241,.25);
+  }
+  .icon-btn.delete:hover{
+    background: rgba(220,38,38,.12);
+    color: var(--danger-text);
+    border-color: rgba(220,38,38,.35);
+  }
+
+  .clamp-2{
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+    overflow:hidden;
+  }
+
+  /* MOBILE CARD VIEW */
+  .expense-card{ padding:12px; }
+  .expense-top{ display:flex; gap:10px; align-items:flex-start; }
+  .expense-img{
+    width:68px; height:68px;
+    border-radius:18px;
+    overflow:hidden;
+    border:1px solid var(--border-color);
+    flex:0 0 auto;
+    background: rgba(148,163,184,.10);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .expense-img img{ width:100%; height:100%; object-fit:cover; }
+  .expense-title{ font-weight:900; font-size:1.02rem; line-height:1.25; margin-bottom:2px; color:var(--text-primary); }
+  .expense-meta{
+    font-size:.80rem;
+    color:var(--text-secondary);
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:2px;
+    align-items:center;
+  }
+  .expense-kpi{ display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px; }
+  .kpi-box{ border-radius:18px; padding:10px 12px; background: rgba(148,163,184,.08); }
+  [data-bs-theme="dark"] .kpi-box{ background: rgba(148,163,184,.06); }
+  .kpi-label{
+    font-size:.72rem;
+    color:var(--text-secondary);
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .kpi-value{ font-size:1.08rem; font-weight:1000; margin-top:2px; color:var(--text-primary); }
+
+  .expense-actions{ display:flex; gap:10px; margin-top:12px; }
+  .expense-actions .btn-luxury{ flex:1; }
+
+  .transition-icon{ transition:transform .2s ease; }
+  .pagination .page-link{
+    border-radius:999px !important;
+    height:36px;
+    min-width:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:800;
+  }
+
+  @media (max-width: 768px){
+    .container-fluid.px-4{ padding-left:1rem!important; padding-right:1rem!important; }
+    .page-header h1{ font-size: 1.38rem; }
+    .stats-grid{ grid-template-columns:repeat(2, 1fr); }
+    .stat-value{ font-size:1.08rem; }
+    .filter-body{ padding:.95rem 1rem; }
+    .filter-body .d-flex.gap-2.align-items-center{ flex-direction:column; align-items:stretch!important; }
+    .filter-body .text-tertiary.fw-medium{ display:none; }
+    .table-responsive{ max-height:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none!important; animation:none!important; scroll-behavior:auto!important; }
+  }
+</style>
+
+<div class="container-fluid px-4 pt-1 pb-4">
+
+  <!-- ✅ HEADER (เหมือน History/Reports) -->
+  <div class="page-header">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <h1 class="h3 fw-bold mb-1" style="color:var(--text-primary);">
+          Expenses
+        </h1>
+
+        <div class="subtitle">
+          Manage operational costs
+          <span class="meta-pill">
+            <i class="bi bi-list-ul"></i>
+            {{ expenses.paginator.count|default:0 }} record(s)
+          </span>
+        </div>
+
+        {% if start or end or q or category %}
+        <div class="chips">
+          {% if start %}<span class="chip"><i class="bi bi-calendar-event"></i>From {{ start }}</span>{% endif %}
+          {% if end %}<span class="chip"><i class="bi bi-calendar-check"></i>To {{ end }}</span>{% endif %}
+          {% if category %}<span class="chip"><i class="bi bi-tags"></i>{{ category }}</span>{% endif %}
+          {% if q %}<span class="chip"><i class="bi bi-search"></i>{{ q }}</span>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <a href="{% url 'expense_create' %}" class="btn-luxury btn-primary-luxury">
+        <i class="bi bi-plus-lg"></i> Add Expense
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="stats-grid mb-4">
+    <a href="?category=&start={{ start }}&end={{ end }}" class="text-decoration-none">
+      <div class="stat-card danger wide h-100 {% if not category %}is-active{% endif %}">
+        <div class="stat-header">
+          <div class="card-label">
+            <span class="en">TOTAL EXPENSES</span>
+            <span class="th">ค่าใช้จ่ายรวม</span>
+          </div>
+
+          {% if not category %}
+            <i class="bi bi-check-circle-fill text-danger small"></i>
+          {% else %}
+            <i class="bi bi-wallet2 stat-icon"></i>
+          {% endif %}
+        </div>
+
+        <div class="stat-value num-font mt-1" style="color:var(--danger-text);">
+          ฿{{ summary.total_amount|floatformat:2|intcomma|default:"0.00" }}
+        </div>
+      </div>
+    </a>
+
+    {% for cat in category_stats %}
+    <a href="?category={{ cat.code }}&start={{ start }}&end={{ end }}" class="text-decoration-none">
+      <div class="stat-card h-100 {% if category == cat.code %}is-active{% endif %}">
+        <div class="stat-header">
+          <div class="card-label text-truncate" style="max-width: 160px;">
+            <span class="en">{{ cat.code }}</span>
+            <span class="th">{{ cat.name }}</span>
+          </div>
+
+          <div class="d-flex align-items-center gap-1">
+            {% if category == cat.code %}
+              <i class="bi bi-check-circle-fill" style="color:var(--info-text);"></i>
+            {% endif %}
+            <i class="bi {{ cat.icon }} stat-icon"></i>
+          </div>
+        </div>
+
+        <div class="stat-value num-font mt-1 {% if cat.has_value %}text-dark{% else %}text-secondary opacity-50{% endif %}">
+          ฿{{ cat.amount|floatformat:0|intcomma }}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-section">
+    <div class="filter-header"
+         data-bs-toggle="collapse"
+         data-bs-target="#filterCollapse"
+         aria-expanded="{% if start or end or q or category %}true{% else %}false{% endif %}">
+      <div class="d-flex align-items-center gap-2">
+        <div class="icon-box-soft"><i class="bi bi-sliders2"></i></div>
+        <div>
+          <h5 class="mb-0 fw-bold" style="font-size: 0.9rem; color: var(--text-primary);">
+            Filter Options
+          </h5>
+          <div class="text-secondary small" style="font-size:.78rem;">Refine by date, category, and keyword</div>
+        </div>
+      </div>
+      <i class="bi bi-chevron-down text-secondary transition-icon" style="font-size: 0.9rem;"></i>
+    </div>
+
+    <div class="collapse {% if start or end or q or category %}show{% endif %}" id="filterCollapse">
+      <div class="filter-body">
+        <form class="row g-3" method="get">
+          <input type="hidden" name="category" value="{{ category }}">
+
+          <div class="col-lg-4 col-md-12">
+            <label class="form-label text-secondary small text-uppercase fw-bold mb-1">Date Range</label>
+            <div class="d-flex gap-2 align-items-center">
+              <div class="input-icon-wrapper w-100">
+                <i class="bi bi-calendar-event"></i>
+                <input type="date" name="start" value="{{ start|default:'' }}" class="luxury-input luxury-input-with-icon">
+              </div>
+              <span class="text-tertiary fw-medium">-</span>
+              <div class="input-icon-wrapper w-100">
+                <i class="bi bi-calendar-check"></i>
+                <input type="date" name="end" value="{{ end|default:'' }}" class="luxury-input luxury-input-with-icon">
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label text-secondary small text-uppercase fw-bold mb-1">Category</label>
+            <div class="input-icon-wrapper">
+              <i class="bi bi-tags"></i>
+              <select name="category" class="form-select luxury-input luxury-input-with-icon" style="cursor:pointer;">
+                <option value="">All Categories</option>
+                {% for code, name in category_choices %}
+                  <option value="{{ code }}" {% if category == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label text-secondary small text-uppercase fw-bold mb-1">Search</label>
+            <div class="input-icon-wrapper">
+              <i class="bi bi-search"></i>
+              <input type="text" name="q" class="luxury-input luxury-input-with-icon" placeholder="Title or Note..." value="{{ q }}">
+            </div>
+          </div>
+
+          <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2">
+            <button type="submit" class="btn-luxury btn-primary-luxury flex-grow-1">
+              <i class="bi bi-funnel"></i> Apply
+            </button>
+            <a href="{% url 'expense_list' %}" class="btn-luxury btn-secondary-luxury" title="Reset" style="width: var(--ctrl-h); padding: 0;">
+              <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESKTOP TABLE -->
+  <div class="table-container d-none d-md-block">
+    <div class="table-responsive">
+      <table class="luxury-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th class="text-end">Amount</th>
+            <th style="width:90px;" class="text-center">Receipt</th>
+            <th>Note</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for expense in expenses %}
+          <tr>
+            <td>
+              <div class="fw-semibold text-dark" style="font-size:.9rem">
+                {{ expense.paid_at|date:"d M Y" }}
+              </div>
+            </td>
+
+            <td>
+              <div class="fw-bold" style="color:var(--text-primary);">
+                {{ expense.title }}
+              </div>
+            </td>
+
+            <td>
+              <span class="badge-frame">{{ expense.get_category_display }}</span>
+            </td>
+
+            <td class="text-end">
+              <span class="num-font fw-bold" style="color:var(--danger-text);">
+                -{{ expense.amount|floatformat:0|intcomma }}
+              </span>
+            </td>
+
+            <td class="text-center">
+              {% if expense.receipt_image %}
+                <div class="receipt-img-box mx-auto"
+                     data-bs-toggle="modal"
+                     data-bs-target="#imageModal"
+                     data-img-url="{{ expense.receipt_image.url }}"
+                     style="cursor:pointer"
+                     title="View receipt">
+                  <img src="{{ expense.receipt_image.url }}" alt="receipt" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.onerror=null; this.closest('.receipt-img-box,.expense-img')?.classList.add('no-img'); this.remove();"/>
+                </div>
+              {% else %}
+                <div class="receipt-img-box no-img mx-auto" title="No receipt">
+                  <i class="bi bi-slash-circle"></i>
+                </div>
+              {% endif %}
+            </td>
+
+            <td style="max-width:260px;">
+              <div class="text-secondary small clamp-2">
+                {{ expense.note|default:"-" }}
+              </div>
+            </td>
+
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'expense_edit' expense.pk %}" class="icon-btn" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <form method="post" action="{% url 'expense_delete' expense.pk %}" onsubmit="return confirm('Move to trash?');" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="icon-btn delete" title="Soft Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-5 text-secondary">
+              <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
+              No expense records found.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center p-3 border-top"
+         style="border-top-color: var(--border-color)!important;">
+      <div class="d-flex justify-content-center flex-grow-1">
+        {% if expenses.has_other_pages %}
+        <nav>
+          <ul class="pagination pagination-sm mb-0 gap-1">
+            {% if expenses.has_previous %}
+            <li class="page-item">
+              <a class="page-link border-0 text-secondary" href="?page={{ expenses.previous_page_number }}&start={{ start }}&end={{ end }}&category={{ category }}&q={{ q }}">
+                <i class="bi bi-chevron-left"></i>
+              </a>
+            </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+              <span class="page-link border-0 fw-bold" style="color:var(--info-text);">
+                {{ expenses.number }} / {{ expenses.paginator.num_pages }}
+              </span>
+            </li>
+
+            {% if expenses.has_next %}
+            <li class="page-item">
+              <a class="page-link border-0 text-secondary" href="?page={{ expenses.next_page_number }}&start={{ start }}&end={{ end }}&category={{ category }}&q={{ q }}">
+                <i class="bi bi-chevron-right"></i>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      </div>
+
+      <a href="{% url 'expense_deleted' %}" class="btn-luxury btn-danger-luxury ms-3" style="font-size: .85rem;">
+        <i class="bi bi-trash-fill me-1"></i> Deleted History
+      </a>
+    </div>
+  </div>
+
+  <!-- MOBILE -->
+  <div class="d-block d-md-none">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="text-secondary small">Card view</div>
+      <a href="{% url 'expense_deleted' %}" class="btn-luxury btn-danger-luxury" style="font-size:.9rem; padding:0 14px;">
+        <i class="bi bi-trash"></i>
+      </a>
+    </div>
+
+    <div class="d-grid gap-3">
+      {% for expense in expenses %}
+      <div class="expense-card">
+        <div class="expense-top">
+          {% if expense.receipt_image %}
+            <div class="expense-img"
+                 data-bs-toggle="modal"
+                 data-bs-target="#imageModal"
+                 data-img-url="{{ expense.receipt_image.url }}"
+                 style="cursor:pointer">
+              <img src="{{ expense.receipt_image.url }}" alt="receipt" loading="lazy" decoding="async">
+            </div>
+          {% else %}
+            <div class="expense-img">
+              <i class="bi bi-receipt text-tertiary" style="font-size:1.45rem;"></i>
+            </div>
+          {% endif %}
+
+          <div class="flex-grow-1">
+            <div class="expense-title">{{ expense.title }}</div>
+            <div class="expense-meta">
+              <span class="num-font"><i class="bi bi-calendar3 me-1"></i>{{ expense.paid_at|date:"d M" }}</span>
+              <span class="badge-frame">{{ expense.get_category_display }}</span>
+            </div>
+
+            {% if expense.note %}
+            <div class="text-secondary small mt-2 clamp-2">
+              <i class="bi bi-pen me-1"></i>{{ expense.note }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="expense-kpi">
+          <div class="kpi-box d-flex justify-content-between align-items-center">
+            <div class="kpi-label">AMOUNT</div>
+            <div class="kpi-value num-font" style="color:var(--danger-text);">
+              -{{ expense.amount|floatformat:0|intcomma }}
+            </div>
+          </div>
+        </div>
+
+        <div class="expense-actions">
+          <a href="{% url 'expense_edit' expense.pk %}" class="btn-luxury btn-secondary-luxury">
+            <i class="bi bi-pencil"></i> Edit
+          </a>
+
+          <form method="post" action="{% url 'expense_delete' expense.pk %}" onsubmit="return confirm('Move to trash?');" class="m-0 flex-grow-1">
+            {% csrf_token %}
+            <button type="submit" class="btn-luxury btn-danger-luxury w-100">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="expense-card text-center py-5 text-secondary">
+        <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
+        No records found.
+      </div>
+      {% endfor %}
+
+      {% if expenses.has_other_pages %}
+        <div class="d-flex justify-content-center mt-2">
+          <nav>
+            <ul class="pagination pagination-sm gap-1">
+              {% if expenses.has_previous %}
+              <li class="page-item">
+                <a class="page-link border-0 text-secondary" href="?page={{ expenses.previous_page_number }}&start={{ start }}&end={{ end }}&category={{ category }}&q={{ q }}">
+                  <i class="bi bi-chevron-left"></i>
+                </a>
+              </li>
+              {% endif %}
+              <li class="page-item disabled">
+                <span class="page-link border-0 fw-bold" style="color:var(--info-text);">{{ expenses.number }}</span>
+              </li>
+              {% if expenses.has_next %}
+              <li class="page-item">
+                <a class="page-link border-0 text-secondary" href="?page={{ expenses.next_page_number }}&start={{ start }}&end={{ end }}&category={{ category }}&q={{ q }}">
+                  <i class="bi bi-chevron-right"></i>
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- IMAGE MODAL -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="background:var(--surface);">
+      <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="min-height: 200px;">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
+                data-bs-dismiss="modal" aria-label="Close"></button>
+        <img id="modalImage" src="" class="img-fluid" style="max-height: 85vh; border-radius: 12px;" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Receipt preview">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal image preview
+  const imageModal = document.getElementById('imageModal');
+  if (imageModal) {
+    imageModal.addEventListener('show.bs.modal', e => {
+      const btn = e.relatedTarget;
+      const url = btn?.getAttribute('data-img-url') || '';
+      imageModal.querySelector('#modalImage').src = url;
+    });
+    imageModal.addEventListener('hidden.bs.modal', () => {
+      imageModal.querySelector('#modalImage').src = '';
+    });
+  }
+
+  // Filter chevron rotate
+  const filterCollapse = document.getElementById('filterCollapse');
+  if (filterCollapse) {
+    const icon = document.querySelector('.filter-header .bi-chevron-down');
+    const setIcon = (open) => icon && (icon.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)');
+    setIcon(filterCollapse.classList.contains('show'));
+    filterCollapse.addEventListener('show.bs.collapse', () => setIcon(true));
+    filterCollapse.addEventListener('hide.bs.collapse', () => setIcon(false));
+  }
+</script>
+
+{% endblock %}
