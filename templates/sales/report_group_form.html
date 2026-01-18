@@ -386,30 +386,51 @@
 </div>
 
 <script>
-  // Storage keys
-  const SALES_KEY = 'reportGroup_selectedSales';
-  const EXPENSES_KEY = 'reportGroup_selectedExpenses';
+  // Storage keys - use unique keys per group/session
+  const PAGE_KEY = '{{ action }}_{% if group %}{{ group.pk }}{% else %}new{% endif %}';
+  const SALES_KEY = 'reportGroup_selectedSales_' + PAGE_KEY;
+  const EXPENSES_KEY = 'reportGroup_selectedExpenses_' + PAGE_KEY;
+  
+  // Check if this is a fresh page load (not pagination)
+  const isFromPagination = document.referrer.includes('{{ request.path }}');
   
   // Initialize from localStorage or server data
   function initSelections() {
-    // Get existing selections from localStorage or initialize from server
-    let selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
-    let selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
+    let selectedSales = [];
+    let selectedExpenses = [];
     
-    // For edit mode: merge with server-side selected IDs
     {% if action == 'edit' %}
+    // For edit mode: 
     const serverSales = [{% for id in selected_sale_ids %}{{ id }},{% endfor %}];
     const serverExpenses = [{% for id in selected_expense_ids %}{{ id }},{% endfor %}];
     
-    // On first load of edit page, use server data
-    if (!sessionStorage.getItem('editInitialized_{{ group.pk }}')) {
+    // If coming from pagination, use localStorage; otherwise use server data
+    if (isFromPagination) {
+      selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
+      selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
+      // Merge with server data (keep selection from other pages)
+      if (selectedSales.length === 0) selectedSales = serverSales;
+      if (selectedExpenses.length === 0) selectedExpenses = serverExpenses;
+    } else {
+      // Fresh load from detail page - use server data
       selectedSales = serverSales;
       selectedExpenses = serverExpenses;
-      localStorage.setItem(SALES_KEY, JSON.stringify(selectedSales));
-      localStorage.setItem(EXPENSES_KEY, JSON.stringify(selectedExpenses));
-      sessionStorage.setItem('editInitialized_{{ group.pk }}', 'true');
+    }
+    {% else %}
+    // For create mode: check if from pagination
+    if (isFromPagination) {
+      selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
+      selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
+    } else {
+      // Fresh load - clear any old data
+      localStorage.removeItem(SALES_KEY);
+      localStorage.removeItem(EXPENSES_KEY);
     }
     {% endif %}
+    
+    // Save to localStorage
+    localStorage.setItem(SALES_KEY, JSON.stringify(selectedSales));
+    localStorage.setItem(EXPENSES_KEY, JSON.stringify(selectedExpenses));
     
     // Apply selections to visible checkboxes
     document.querySelectorAll('.sale-checkbox').forEach(cb => {
