@@ -347,6 +347,25 @@
     .kpi-value { font-size: 1.35rem; }
     .kpi-icon-box { width: 36px; height: 36px; font-size: 1rem; }
     .kpi-label { font-size: 0.75rem; }
+    
+    /* ✅ Mobile: Center header */
+    .container-fluid > .d-flex.justify-content-between.align-items-end {
+      flex-direction: column !important;
+      align-items: center !important;
+      text-align: center !important;
+    }
+    .container-fluid > .d-flex.justify-content-between.align-items-end > div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container-fluid > .d-flex.justify-content-between.align-items-end h1 {
+      text-align: center;
+    }
+    .container-fluid > .d-flex.justify-content-between.align-items-end .text-secondary.small {
+      justify-content: center !important;
+      text-align: center;
+    }
   }
   @media (max-width: 420px) {
     .stats-grid { grid-template-columns: 1fr; }

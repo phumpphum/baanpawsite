@@ -770,7 +770,22 @@
       --mobile-capsule-h: 44px;  /* Unified height for all mobile capsules */
     }
 
-    .page-header h1{font-size:1.5rem;}
+    /* ✅ Mobile: Center page header */
+    .page-header .d-flex{
+      flex-direction:column !important;
+      align-items:center !important;
+      text-align:center !important;
+      gap:1rem !important;
+    }
+    .page-header h1{font-size:1.5rem;justify-content:center;}
+    .page-header .subtitle{justify-content:center;text-align:center;}
+    .page-header > .d-flex > div:first-child{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .page-header .btn-luxury{width:100%;}
+
     .toolbar-container{flex-direction:column;align-items:stretch;gap:12px;}
     .search-box{max-width:100%;}
 

@@ -642,7 +642,32 @@
   /* Mobile tweaks */
   @media (max-width:768px){
     .container-fluid.px-4{ padding-left:1rem!important; padding-right:1rem!important; }
-    .header-wrap{ margin-bottom:.95rem; }
+    
+    /* ✅ Mobile: Center header */
+    .header-wrap{
+      margin-bottom:.95rem;
+      flex-direction:column !important;
+      align-items:center !important;
+      text-align:center !important;
+    }
+    .header-wrap > div:first-child{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .header-wrap h1,
+    .header-wrap .h3{
+      justify-content:center;
+      text-align:center;
+    }
+    .header-wrap .subtitle{
+      justify-content:center !important;
+      text-align:center;
+    }
+    .header-wrap .chips{
+      justify-content:center;
+    }
+    
     .page-title{ font-size:1.18rem; }
     .stats-grid{ grid-template-columns:repeat(2, 1fr); }
     .stat-value{ font-size:1.08rem; }

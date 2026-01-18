@@ -517,7 +517,34 @@
 
   @media (max-width: 768px){
     .container-fluid.px-4{ padding-left:1rem!important; padding-right:1rem!important; }
-    .page-header h1{ font-size: 1.38rem; }
+    
+    /* ✅ Mobile: Center header */
+    .page-header .d-flex{
+      flex-direction:column !important;
+      align-items:center !important;
+      text-align:center !important;
+      gap:1rem !important;
+    }
+    .page-header .d-flex > div:first-child{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .page-header h1{
+      font-size: 1.38rem;
+      justify-content:center;
+    }
+    .page-header .subtitle{
+      justify-content:center;
+      text-align:center;
+    }
+    .page-header .chips{
+      justify-content:center;
+    }
+    .page-header .btn-luxury{
+      width:100%;
+    }
+    
     .stats-grid{ grid-template-columns:repeat(2, 1fr); }
     .stat-value{ font-size:1.08rem; }
     .filter-body{ padding:.95rem 1rem; }

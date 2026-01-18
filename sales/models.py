@@ -174,3 +174,70 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.amount}"
+
+
+# ============================================================================
+#  ReportGroup - Named groups with selected Sales and Expenses
+# ============================================================================
+
+class ReportGroup(models.Model):
+    """A named group containing selected Sales and Expenses for combined reporting."""
+    name = models.CharField(max_length=200, verbose_name="ชื่อกลุ่ม")
+    description = models.TextField(blank=True, verbose_name="รายละเอียด")
+    sales = models.ManyToManyField(Sale, blank=True, related_name='report_groups', verbose_name="ยอดขาย")
+    expenses = models.ManyToManyField(Expense, blank=True, related_name='report_groups', verbose_name="รายจ่าย")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Report Group"
+        verbose_name_plural = "Report Groups"
+
+    def __str__(self):
+        return self.name
+
+    def get_sales_count(self):
+        return self.sales.filter(is_deleted=False).count()
+
+    def get_expenses_count(self):
+        return self.expenses.filter(is_deleted=False).count()
+
+    def get_total_sales(self):
+        """Total received amount from sales."""
+        from decimal import Decimal
+        return sum(
+            (s.actual_received * s.quantity) 
+            for s in self.sales.filter(is_deleted=False)
+        ) or Decimal('0')
+
+    def get_total_expenses(self):
+        """Total expenses amount."""
+        from decimal import Decimal
+        return sum(
+            e.amount for e in self.expenses.filter(is_deleted=False)
+        ) or Decimal('0')
+
+    def get_total_cost(self):
+        """Total cost of products sold."""
+        from decimal import Decimal
+        return sum(
+            (s.product.cost * s.quantity) 
+            for s in self.sales.filter(is_deleted=False)
+        ) or Decimal('0')
+
+    def get_total_discount(self):
+        """Total discount given on sales."""
+        from decimal import Decimal
+        total = Decimal('0')
+        for s in self.sales.filter(is_deleted=False):
+            if s.discount_percent and s.discount_percent > 0:
+                # Calculate original price before discount
+                original = s.price_at_sale * 100 / (100 - s.discount_percent)
+                discount = (original - s.price_at_sale) * s.quantity
+                total += discount
+        return total
+
+    def get_net_profit(self):
+        """Net profit = Sales - Expenses - Cost."""
+        return self.get_total_sales() - self.get_total_expenses() - self.get_total_cost()

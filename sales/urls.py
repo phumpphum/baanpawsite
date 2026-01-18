@@ -24,6 +24,9 @@ urlpatterns = [
     path("api/sales/series/", views.api_sales_series, name="api_sales_series"),
     path("api/sales/export/csv/", views.api_sales_export_csv, name="api_sales_export_csv"),
 
+    # Combined Report
+    path("combined-report/", views.combined_report, name="combined_report"),
+
     # Expenses
     path('expenses/', views.expense_list, name='expense_list'),
     path('expenses/add/', views.expense_create, name='expense_create'),
@@ -32,4 +35,11 @@ urlpatterns = [
     path('expenses/trash/', views.expense_deleted, name='expense_deleted'),
     path('expenses/restore/<int:pk>/', views.expense_restore, name='expense_restore'),
     path('expenses/hard-delete/<int:pk>/', views.expense_hard_delete, name='expense_hard_delete'),
+
+    # Report Groups
+    path('groups/', views.report_group_list, name='report_group_list'),
+    path('groups/new/', views.report_group_create, name='report_group_create'),
+    path('groups/<int:pk>/', views.report_group_detail, name='report_group_detail'),
+    path('groups/<int:pk>/edit/', views.report_group_edit, name='report_group_edit'),
+    path('groups/<int:pk>/delete/', views.report_group_delete, name='report_group_delete'),
 ]

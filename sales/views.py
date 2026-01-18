@@ -20,7 +20,7 @@ from django.utils.timezone import get_current_timezone, make_aware
 from django.utils.dateparse import parse_date
 from django.db.models.functions import TruncDate, TruncMonth
 
-from .models import Product, Sale, Expense
+from .models import Product, Sale, Expense, ReportGroup
 from .forms import ProductForm, SaleForm,  ExpenseForm
 
 # ============================================================================
@@ -1151,3 +1151,338 @@ def api_sales_export_csv(request):
         ])
 
     return resp
+
+
+# ============================================================================
+#  COMBINED REPORT (Sales + Expenses)
+# ============================================================================
+
+@login_required
+def combined_report(request):
+    """Display combined report of Sales and Expenses with filtering options."""
+    start_str = request.GET.get('start')
+    end_str = request.GET.get('end')
+    show_sales = request.GET.get('show_sales', 'on')
+    show_expenses = request.GET.get('show_expenses', 'on')
+    export_fmt = request.GET.get('export', '')
+
+    # Parse dates
+    start_dt, end_dt = parse_date_range(start_str, end_str)
+
+    # Prepare combined data list
+    combined_items = []
+
+    # === SALES DATA ===
+    if show_sales == 'on':
+        sales_qs = Sale.objects.select_related('product').filter(is_deleted=False)
+        if start_dt:
+            sales_qs = sales_qs.filter(sold_at__gte=start_dt)
+        if end_dt:
+            sales_qs = sales_qs.filter(sold_at__lte=end_dt)
+
+        # Annotate profit for sales
+        profit_expr, _ = get_profit_expressions()
+        sales_qs = sales_qs.annotate(profit=profit_expr)
+
+        for sale in sales_qs:
+            combined_items.append({
+                'date': sale.sold_at,
+                'type': 'sale',
+                'type_display': 'ยอดขาย',
+                'description': f"{sale.product.name} x{sale.quantity}",
+                'amount': sale.actual_received * sale.quantity,
+                'note': sale.note or '',
+                'profit': getattr(sale, 'profit', 0) or 0,
+            })
+
+    # === EXPENSES DATA ===
+    if show_expenses == 'on':
+        expenses_qs = Expense.objects.filter(is_deleted=False)
+        if start_dt:
+            expenses_qs = expenses_qs.filter(paid_at__gte=start_dt)
+        if end_dt:
+            expenses_qs = expenses_qs.filter(paid_at__lte=end_dt)
+
+        for exp in expenses_qs:
+            combined_items.append({
+                'date': exp.paid_at,
+                'type': 'expense',
+                'type_display': 'รายจ่าย',
+                'description': f"{exp.title} ({exp.get_category_display()})",
+                'amount': -exp.amount,  # Negative for expenses
+                'note': exp.note or '',
+                'profit': -exp.amount,  # Expense = negative profit
+            })
+
+    # Sort by date descending
+    combined_items.sort(key=lambda x: x['date'] if x['date'] else timezone.now(), reverse=True)
+
+    # === EXPORT CSV ===
+    if export_fmt == 'csv':
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="combined_report_{datetime.now().strftime("%Y%m%d_%H%M")}.csv"'
+        response.write("\ufeff")  # BOM for Excel Thai support
+
+        writer = csv.writer(response)
+        writer.writerow(['Date', 'Type', 'Description', 'Amount', 'Note'])
+
+        for item in combined_items:
+            writer.writerow([
+                timezone.localtime(item['date']).strftime('%Y-%m-%d %H:%M') if item['date'] else '',
+                item['type_display'],
+                item['description'],
+                f"{item['amount']:.2f}",
+                item['note'],
+            ])
+        return response
+
+    # === SUMMARY CALCULATIONS ===
+    total_sales = sum(item['amount'] for item in combined_items if item['type'] == 'sale')
+    total_expenses = sum(abs(item['amount']) for item in combined_items if item['type'] == 'expense')
+    net_profit = total_sales - total_expenses
+    sales_count = sum(1 for item in combined_items if item['type'] == 'sale')
+    expenses_count = sum(1 for item in combined_items if item['type'] == 'expense')
+
+    summary = {
+        'total_sales': total_sales,
+        'total_expenses': total_expenses,
+        'net_profit': net_profit,
+        'sales_count': sales_count,
+        'expenses_count': expenses_count,
+        'total_items': len(combined_items),
+    }
+
+    # === PAGINATION ===
+    paginator = Paginator(combined_items, 25)
+    page_number = request.GET.get('page', 1)
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(request, 'sales/combined_report.html', {
+        'items': page_obj,
+        'summary': summary,
+        'start': start_str or '',
+        'end': end_str or '',
+        'show_sales': show_sales,
+        'show_expenses': show_expenses,
+    })
+
+
+# ============================================================================
+#  REPORT GROUPS
+# ============================================================================
+
+@login_required
+def report_group_list(request):
+    """Display list of all report groups."""
+    groups = ReportGroup.objects.all()
+    return render(request, 'sales/report_group_list.html', {'groups': groups})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def report_group_create(request):
+    """Create a new report group with selected sales and expenses."""
+    # Search parameters
+    expense_q = request.GET.get('expense_q', '').strip()
+    expense_cat = request.GET.get('expense_cat', '').strip()
+    sale_q = request.GET.get('sale_q', '').strip()
+    
+    # Get available expenses (not deleted)
+    expenses = Expense.objects.filter(is_deleted=False).order_by('-paid_at')
+    if expense_q:
+        expenses = expenses.filter(
+            Q(title__icontains=expense_q) | Q(note__icontains=expense_q)
+        )
+    if expense_cat:
+        expenses = expenses.filter(category=expense_cat)
+    
+    # Get available sales (not deleted)
+    sales = Sale.objects.select_related('product').filter(is_deleted=False).order_by('-sold_at')
+    if sale_q:
+        sales = sales.filter(
+            Q(note__icontains=sale_q) | 
+            Q(product__name__icontains=sale_q)
+        )
+    
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        selected_sales = request.POST.getlist('selected_sales')
+        selected_expenses = request.POST.getlist('selected_expenses')
+        
+        if not name:
+            messages.error(request, 'กรุณาใส่ชื่อกลุ่ม')
+        else:
+            group = ReportGroup.objects.create(
+                name=name,
+                description=description
+            )
+            
+            # Add selected sales
+            if selected_sales:
+                sales_to_add = Sale.objects.filter(id__in=selected_sales, is_deleted=False)
+                group.sales.set(sales_to_add)
+            
+            # Add selected expenses
+            if selected_expenses:
+                expenses_to_add = Expense.objects.filter(id__in=selected_expenses, is_deleted=False)
+                group.expenses.set(expenses_to_add)
+            
+            messages.success(request, f'สร้างกลุ่ม "{name}" เรียบร้อย')
+            return redirect('report_group_detail', pk=group.pk)
+    
+    # Pagination for expenses
+    expense_paginator = Paginator(expenses, 10)
+    expense_page = request.GET.get('exp_page', 1)
+    try:
+        expenses_page = expense_paginator.page(expense_page)
+    except (PageNotAnInteger, EmptyPage):
+        expenses_page = expense_paginator.page(1)
+    
+    # Pagination for sales
+    sale_paginator = Paginator(sales, 10)
+    sale_page = request.GET.get('sale_page', 1)
+    try:
+        sales_page = sale_paginator.page(sale_page)
+    except (PageNotAnInteger, EmptyPage):
+        sales_page = sale_paginator.page(1)
+    
+    return render(request, 'sales/report_group_form.html', {
+        'action': 'create',
+        'expenses': expenses_page,
+        'sales': sales_page,
+        'expense_q': expense_q,
+        'expense_cat': expense_cat,
+        'sale_q': sale_q,
+        'expense_categories': Expense.CATEGORY_CHOICES,
+    })
+
+
+@login_required
+def report_group_detail(request, pk):
+    """Display detail view of a report group with calculated totals."""
+    group = get_object_or_404(ReportGroup, pk=pk)
+    
+    # Get related sales and expenses
+    sales = group.sales.filter(is_deleted=False).select_related('product').order_by('-sold_at')
+    expenses = group.expenses.filter(is_deleted=False).order_by('-paid_at')
+    
+    # Calculate totals using model methods
+    summary = {
+        'total_sales': group.get_total_sales(),
+        'total_expenses': group.get_total_expenses(),
+        'total_cost': group.get_total_cost(),
+        'total_discount': group.get_total_discount(),
+        'net_profit': group.get_net_profit(),
+        'sales_count': group.get_sales_count(),
+        'expenses_count': group.get_expenses_count(),
+    }
+    
+    return render(request, 'sales/report_group_detail.html', {
+        'group': group,
+        'sales': sales,
+        'expenses': expenses,
+        'summary': summary,
+    })
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def report_group_edit(request, pk):
+    """Edit an existing report group."""
+    group = get_object_or_404(ReportGroup, pk=pk)
+    
+    # Search parameters
+    expense_q = request.GET.get('expense_q', '').strip()
+    expense_cat = request.GET.get('expense_cat', '').strip()
+    sale_q = request.GET.get('sale_q', '').strip()
+    
+    # Get available expenses
+    expenses = Expense.objects.filter(is_deleted=False).order_by('-paid_at')
+    if expense_q:
+        expenses = expenses.filter(
+            Q(title__icontains=expense_q) | Q(note__icontains=expense_q)
+        )
+    if expense_cat:
+        expenses = expenses.filter(category=expense_cat)
+    
+    # Get available sales
+    sales = Sale.objects.select_related('product').filter(is_deleted=False).order_by('-sold_at')
+    if sale_q:
+        sales = sales.filter(
+            Q(note__icontains=sale_q) | 
+            Q(product__name__icontains=sale_q)
+        )
+    
+    # Current selected IDs
+    selected_sale_ids = set(group.sales.values_list('id', flat=True))
+    selected_expense_ids = set(group.expenses.values_list('id', flat=True))
+    
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        selected_sales = request.POST.getlist('selected_sales')
+        selected_expenses = request.POST.getlist('selected_expenses')
+        
+        if not name:
+            messages.error(request, 'กรุณาใส่ชื่อกลุ่ม')
+        else:
+            group.name = name
+            group.description = description
+            group.save()
+            
+            # Update selected sales
+            sales_to_add = Sale.objects.filter(id__in=selected_sales, is_deleted=False)
+            group.sales.set(sales_to_add)
+            
+            # Update selected expenses
+            expenses_to_add = Expense.objects.filter(id__in=selected_expenses, is_deleted=False)
+            group.expenses.set(expenses_to_add)
+            
+            messages.success(request, f'อัปเดตกลุ่ม "{name}" เรียบร้อย')
+            return redirect('report_group_detail', pk=group.pk)
+    
+    # Pagination for expenses
+    expense_paginator = Paginator(expenses, 10)
+    expense_page = request.GET.get('exp_page', 1)
+    try:
+        expenses_page = expense_paginator.page(expense_page)
+    except (PageNotAnInteger, EmptyPage):
+        expenses_page = expense_paginator.page(1)
+    
+    # Pagination for sales
+    sale_paginator = Paginator(sales, 10)
+    sale_page = request.GET.get('sale_page', 1)
+    try:
+        sales_page = sale_paginator.page(sale_page)
+    except (PageNotAnInteger, EmptyPage):
+        sales_page = sale_paginator.page(1)
+    
+    return render(request, 'sales/report_group_form.html', {
+        'action': 'edit',
+        'group': group,
+        'expenses': expenses_page,
+        'sales': sales_page,
+        'expense_q': expense_q,
+        'expense_cat': expense_cat,
+        'sale_q': sale_q,
+        'expense_categories': Expense.CATEGORY_CHOICES,
+        'selected_sale_ids': selected_sale_ids,
+        'selected_expense_ids': selected_expense_ids,
+    })
+
+
+@login_required
+@require_POST
+def report_group_delete(request, pk):
+    """Delete a report group."""
+    group = get_object_or_404(ReportGroup, pk=pk)
+    name = group.name
+    group.delete()
+    messages.success(request, f'ลบกลุ่ม "{name}" เรียบร้อย')
+    return redirect('report_group_list')

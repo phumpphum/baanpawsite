@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#0f1115">
   <title>{% block title %}Baanpaw Shop{% endblock %}</title>
 
-  <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}?v=final">
+  <link rel="icon" type="image/png" id="favicon" href="{% static 'img/favicon.png' %}?v=final">
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon.png' %}?v=final">
 
   <script>
@@ -17,6 +17,16 @@
       try {
         const savedTheme = localStorage.getItem('baanpaw-theme') || 'dark';
         document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        
+        // ✅ Set favicon based on theme on initial load
+        const faviconEl = document.getElementById('favicon');
+        if (faviconEl) {
+          const currentHref = faviconEl.href;
+          const basePath = currentHref.substring(0, currentHref.lastIndexOf('/') + 1);
+          faviconEl.href = (savedTheme === 'dark') 
+            ? basePath + 'favicon_white.png?v=final'
+            : basePath + 'favicon.png?v=final';
+        }
       } catch (e) {
         console.warn('Theme preference not available:', e);
       }
@@ -824,7 +834,7 @@
 
         <!-- LEFT: Brand pill -->
         <a class="brand-chip" href="{% url 'admin_home' %}">
-          <img src="{% static 'img/favicon.png' %}" class="brand-logo" alt="Baanpaw">
+          <img src="{% static 'img/favicon.png' %}" class="brand-logo" id="brandLogo" alt="Baanpaw">
           <span class="brand-text">Baanpaw</span>
         </a>
 
@@ -877,6 +887,13 @@
               <a class="modern-nav-link {% if request.resolver_match.url_name == 'sales_report' %}active{% endif %}"
                  href="{% url 'sales_report' %}">
                 Reports
+              </a>
+            </li>
+
+            <li class="nav-item">
+              <a class="modern-nav-link {% if 'report_group' in request.resolver_match.url_name %}active{% endif %}"
+                 href="{% url 'report_group_list' %}">
+                Groups
               </a>
             </li>
           </ul>
@@ -957,6 +974,24 @@
       document.documentElement.setAttribute('data-bs-theme', theme);
       localStorage.setItem(THEME_KEY, theme);
       setIcon(theme);
+
+      // ✅ Switch favicon for dark/light mode
+      const faviconEl = document.getElementById('favicon');
+      if (faviconEl) {
+        const basePath = faviconEl.href.split('/img/')[0] + '/img/';
+        faviconEl.href = (theme === 'dark') 
+          ? basePath + 'favicon_white.png?v=final'
+          : basePath + 'favicon.png?v=final';
+      }
+
+      // ✅ Switch brand logo in navbar for dark/light mode
+      const brandLogoEl = document.getElementById('brandLogo');
+      if (brandLogoEl) {
+        const basePath = brandLogoEl.src.split('/img/')[0] + '/img/';
+        brandLogoEl.src = (theme === 'dark') 
+          ? basePath + 'favicon_white.png'
+          : basePath + 'favicon.png';
+      }
 
       const navbarTogglerIcon = document.querySelector('.navbar-toggler-icon');
       if (navbarTogglerIcon) {
