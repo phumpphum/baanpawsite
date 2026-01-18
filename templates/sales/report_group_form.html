@@ -106,9 +106,10 @@
     font-size:.72rem;
     font-weight:800;
     text-transform:uppercase;
-    color:var(--text-secondary);
+    color:var(--text-primary);
     letter-spacing:.06em;
     white-space:nowrap;
+    opacity:1;
   }
   .data-table td{
     padding:.55rem .75rem;
@@ -234,7 +235,7 @@
 
     <!-- Sales Selection -->
     <div class="form-section">
-      <div class="section-title"><i class="bi bi-graph-up-arrow"></i> เลือกยอดขาย (Sales History)</div>
+      <div class="section-title"><i class="bi bi-graph-up-arrow"></i> เลือกยอดขาย (Sales History) <span id="salesCounter" class="ms-2 text-secondary"></span></div>
       
       <div class="search-box">
         <input type="text" name="sale_q" class="form-control luxury-input" 
@@ -297,7 +298,7 @@
 
     <!-- Expenses Selection -->
     <div class="form-section">
-      <div class="section-title"><i class="bi bi-graph-down-arrow"></i> เลือกรายจ่าย (Expenses)</div>
+      <div class="section-title"><i class="bi bi-graph-down-arrow"></i> เลือกรายจ่าย (Expenses) <span id="expensesCounter" class="ms-2 text-secondary"></span></div>
       
       <div class="search-box">
         <input type="text" name="expense_q" class="form-control luxury-input" 
@@ -370,23 +371,173 @@
         {% if action == 'edit' %}บันทึกการแก้ไข{% else %}สร้างกลุ่ม{% endif %}
       </button>
     </div>
+</form>
+
+  <!-- Hidden inputs container for selected IDs -->
+  <form method="post" id="mainForm" style="display:none;"
+        {% if action == 'edit' %}action="{% url 'report_group_edit' group.pk %}"{% endif %}>
+    {% csrf_token %}
+    <input type="hidden" name="name" id="hiddenName">
+    <input type="hidden" name="description" id="hiddenDesc">
+    <div id="hiddenSalesContainer"></div>
+    <div id="hiddenExpensesContainer"></div>
   </form>
 
 </div>
 
 <script>
-  // Select All Sales
+  // Storage keys
+  const SALES_KEY = 'reportGroup_selectedSales';
+  const EXPENSES_KEY = 'reportGroup_selectedExpenses';
+  
+  // Initialize from localStorage or server data
+  function initSelections() {
+    // Get existing selections from localStorage or initialize from server
+    let selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
+    let selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
+    
+    // For edit mode: merge with server-side selected IDs
+    {% if action == 'edit' %}
+    const serverSales = [{% for id in selected_sale_ids %}{{ id }},{% endfor %}];
+    const serverExpenses = [{% for id in selected_expense_ids %}{{ id }},{% endfor %}];
+    
+    // On first load of edit page, use server data
+    if (!sessionStorage.getItem('editInitialized_{{ group.pk }}')) {
+      selectedSales = serverSales;
+      selectedExpenses = serverExpenses;
+      localStorage.setItem(SALES_KEY, JSON.stringify(selectedSales));
+      localStorage.setItem(EXPENSES_KEY, JSON.stringify(selectedExpenses));
+      sessionStorage.setItem('editInitialized_{{ group.pk }}', 'true');
+    }
+    {% endif %}
+    
+    // Apply selections to visible checkboxes
+    document.querySelectorAll('.sale-checkbox').forEach(cb => {
+      if (selectedSales.includes(parseInt(cb.value))) {
+        cb.checked = true;
+      }
+    });
+    
+    document.querySelectorAll('.expense-checkbox').forEach(cb => {
+      if (selectedExpenses.includes(parseInt(cb.value))) {
+        cb.checked = true;
+      }
+    });
+    
+    updateCounters();
+  }
+  
+  // Save selection to localStorage
+  function saveSelection(type) {
+    const key = type === 'sales' ? SALES_KEY : EXPENSES_KEY;
+    const checkboxClass = type === 'sales' ? '.sale-checkbox' : '.expense-checkbox';
+    
+    let selected = JSON.parse(localStorage.getItem(key) || '[]');
+    
+    document.querySelectorAll(checkboxClass).forEach(cb => {
+      const id = parseInt(cb.value);
+      if (cb.checked && !selected.includes(id)) {
+        selected.push(id);
+      } else if (!cb.checked && selected.includes(id)) {
+        selected = selected.filter(x => x !== id);
+      }
+    });
+    
+    localStorage.setItem(key, JSON.stringify(selected));
+    updateCounters();
+  }
+  
+  // Update selection counters
+  function updateCounters() {
+    const salesCount = JSON.parse(localStorage.getItem(SALES_KEY) || '[]').length;
+    const expensesCount = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]').length;
+    
+    const salesCounter = document.getElementById('salesCounter');
+    const expensesCounter = document.getElementById('expensesCounter');
+    
+    if (salesCounter) salesCounter.textContent = salesCount > 0 ? `(${salesCount} selected)` : '';
+    if (expensesCounter) expensesCounter.textContent = expensesCount > 0 ? `(${expensesCount} selected)` : '';
+  }
+  
+  // Clear all selections
+  function clearSelections() {
+    localStorage.removeItem(SALES_KEY);
+    localStorage.removeItem(EXPENSES_KEY);
+    document.querySelectorAll('.sale-checkbox, .expense-checkbox').forEach(cb => cb.checked = false);
+    updateCounters();
+  }
+  
+  // Event listeners for checkboxes
+  document.querySelectorAll('.sale-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => saveSelection('sales'));
+  });
+  
+  document.querySelectorAll('.expense-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => saveSelection('expenses'));
+  });
+  
+  // Select All handlers
   document.getElementById('selectAllSales')?.addEventListener('change', function() {
     document.querySelectorAll('.sale-checkbox').forEach(cb => cb.checked = this.checked);
+    saveSelection('sales');
   });
-
-  // Select All Expenses
+  
   document.getElementById('selectAllExpenses')?.addEventListener('change', function() {
     document.querySelectorAll('.expense-checkbox').forEach(cb => cb.checked = this.checked);
+    saveSelection('expenses');
   });
-
-  // Search functions
+  
+  // Override form submission
+  document.querySelector('form[method="post"]:not(#mainForm)')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const name = document.querySelector('input[name="name"]').value;
+    const desc = document.querySelector('input[name="description"]').value;
+    
+    if (!name.trim()) {
+      alert('กรุณาใส่ชื่อกลุ่ม');
+      return;
+    }
+    
+    // Populate hidden form
+    document.getElementById('hiddenName').value = name;
+    document.getElementById('hiddenDesc').value = desc;
+    
+    // Add selected sales
+    const salesContainer = document.getElementById('hiddenSalesContainer');
+    salesContainer.innerHTML = '';
+    const selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
+    selectedSales.forEach(id => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'selected_sales';
+      input.value = id;
+      salesContainer.appendChild(input);
+    });
+    
+    // Add selected expenses
+    const expensesContainer = document.getElementById('hiddenExpensesContainer');
+    expensesContainer.innerHTML = '';
+    const selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
+    selectedExpenses.forEach(id => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'selected_expenses';
+      input.value = id;
+      expensesContainer.appendChild(input);
+    });
+    
+    // Clear localStorage after submit
+    localStorage.removeItem(SALES_KEY);
+    localStorage.removeItem(EXPENSES_KEY);
+    
+    // Submit hidden form
+    document.getElementById('mainForm').submit();
+  });
+  
+  // Search functions - preserve selections when navigating
   function searchSales() {
+    saveSelection('sales');
     const q = document.getElementById('saleSearch').value;
     const expQ = document.getElementById('expenseSearch').value;
     const expCat = document.getElementById('expenseCat').value;
@@ -394,11 +545,20 @@
   }
 
   function searchExpenses() {
+    saveSelection('expenses');
     const q = document.getElementById('expenseSearch').value;
     const cat = document.getElementById('expenseCat').value;
     const saleQ = document.getElementById('saleSearch').value;
     window.location.href = `?expense_q=${encodeURIComponent(q)}&expense_cat=${encodeURIComponent(cat)}&sale_q=${encodeURIComponent(saleQ)}`;
   }
+  
+  // Save before pagination
+  document.querySelectorAll('.pagination-mini a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      saveSelection('sales');
+      saveSelection('expenses');
+    });
+  });
 
   // Allow Enter key to search
   document.getElementById('saleSearch')?.addEventListener('keypress', function(e) {
@@ -407,6 +567,10 @@
   document.getElementById('expenseSearch')?.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') { e.preventDefault(); searchExpenses(); }
   });
+  
+  // Initialize on page load
+  initSelections();
 </script>
 
 {% endblock %}
+
