@@ -371,6 +371,10 @@ def sales_history(request):
         if preset == "today":
             start_str = today.strftime("%Y-%m-%d")
             end_str = today.strftime("%Y-%m-%d")
+        elif preset == "yesterday":
+            yesterday = today - timedelta(days=1)
+            start_str = yesterday.strftime("%Y-%m-%d")
+            end_str = yesterday.strftime("%Y-%m-%d")
         elif preset == "7d":
             start_str = (today - timedelta(days=6)).strftime("%Y-%m-%d")
             end_str = today.strftime("%Y-%m-%d")
@@ -669,8 +673,19 @@ def sales_report(request):
     tz = get_current_timezone()
     start_val = request.GET.get('start')
     end_val = request.GET.get('end')
+    note_val = (request.GET.get('note') or '').strip()
     
     products = Product.objects.order_by('name').values('id', 'name')
+    
+    # Fetch all distinct notes for the dropdown
+    all_notes = list(
+        Sale.objects.filter(is_deleted=False)
+        .exclude(note__isnull=True)
+        .exclude(note__exact='')
+        .values_list('note', flat=True)
+        .distinct()
+        .order_by('note')
+    )
     
     context = {
         'start': start_val if start_val else '',
@@ -678,6 +693,8 @@ def sales_report(request):
         'granularity': request.GET.get('g', 'day'),
         'products': products,
         'selected_product': request.GET.get('product', ''),
+        'note': note_val,
+        'all_notes': all_notes,
     }
     
     return render(request, 'sales/sales_report.html', context)
@@ -690,6 +707,7 @@ def api_sales_series(request):
     start_str = request.GET.get('start')
     end_str = request.GET.get('end')
     product_id = request.GET.get('product', '').strip()
+    note_q = (request.GET.get('note') or '').strip()
     
     # Base queryset - only non-deleted sales
     qs = Sale.objects.select_related('product').filter(is_deleted=False)
@@ -697,6 +715,10 @@ def api_sales_series(request):
     # Filter by product
     if product_id and product_id.isdigit():
         qs = qs.filter(product_id=int(product_id))
+    
+    # Filter by note
+    if note_q:
+        qs = qs.filter(note=note_q)
     
     # Filter by date range
     start_dt, end_dt = parse_date_range(start_str, end_str)
@@ -1106,47 +1128,62 @@ def api_sales_export_csv(request):
         "Product",
         "SKU",
         "Qty",
-        "Price At Sale",
-        "Gross",
+        "Product Price",
+        "Final (per unit)",
+        "Gross (Qty × Final)",
         "Discount %",
         "Discount Amount",
-        "Net After Discount",
-        "Actual Received",
+        "Commission %",
+        "Commission Amount",
+        "Received (per unit)",
+        "Total Received",
         "Cost (per unit)",
         "Total Cost",
-        "Profit (Received - Total Cost)",
+        "Profit",
+        "Profit %",
         "Note",
     ])
 
     for s in qs:
         qty = Decimal(s.quantity or 0)
-        price = Decimal(s.price_at_sale or 0)
-        gross = qty * price
+        product_price = Decimal(getattr(s.product, "price", 0) or 0)
+        final_price = Decimal(s.price_at_sale or 0)
+        gross = qty * final_price
 
         disc_pct = Decimal(s.discount_percent or 0)
-        disc_amt = (gross * disc_pct / Decimal("100")) if disc_pct else Decimal("0")
-        net_after_disc = gross - disc_amt
+        disc_amt = (product_price - final_price) * qty if product_price > final_price else Decimal("0")
 
-        received = Decimal(s.actual_received or 0)
+        received_unit = Decimal(s.actual_received or 0)
+        total_received = qty * received_unit
+
+        # Commission = price_at_sale - actual_received
+        commission_unit = final_price - received_unit if final_price > received_unit else Decimal("0")
+        commission_total = commission_unit * qty
+        commission_pct = (commission_unit / final_price * Decimal("100")) if final_price > 0 else Decimal("0")
 
         unit_cost = Decimal(getattr(s.product, "cost", 0) or 0)
         total_cost = qty * unit_cost
-        profit = received - total_cost
+        profit = total_received - total_cost
+        profit_pct = (profit / total_received * Decimal("100")) if total_received > 0 else Decimal("0")
 
         w.writerow([
             timezone.localtime(s.sold_at).strftime("%Y-%m-%d %H:%M"),
             s.product.name if s.product else "",
             s.product.sku if (s.product and s.product.sku) else "",
             int(s.quantity),
-            f"{price:.2f}",
+            f"{product_price:.2f}",
+            f"{final_price:.2f}",
             f"{gross:.2f}",
             f"{disc_pct:.2f}",
             f"{disc_amt:.2f}",
-            f"{net_after_disc:.2f}",
-            f"{received:.2f}",
+            f"{commission_pct:.2f}",
+            f"{commission_total:.2f}",
+            f"{received_unit:.2f}",
+            f"{total_received:.2f}",
             f"{unit_cost:.2f}",
             f"{total_cost:.2f}",
             f"{profit:.2f}",
+            f"{profit_pct:.2f}",
             s.note or "",
         ])
 
@@ -1280,7 +1317,7 @@ def combined_report(request):
 def report_group_list(request):
     """Display list of all report groups."""
     groups = ReportGroup.objects.all()
-    return render(request, 'sales/report_group_list.html', {'groups': groups})
+    return render(request, 'reportgroups/report_group_list.html', {'groups': groups})
 
 
 @login_required
@@ -1291,6 +1328,8 @@ def report_group_create(request):
     expense_q = request.GET.get('expense_q', '').strip()
     expense_cat = request.GET.get('expense_cat', '').strip()
     sale_q = request.GET.get('sale_q', '').strip()
+    sale_start = request.GET.get('sale_start', '').strip()
+    sale_end = request.GET.get('sale_end', '').strip()
     
     # Get available expenses (not deleted)
     expenses = Expense.objects.filter(is_deleted=False).order_by('-paid_at')
@@ -1308,6 +1347,13 @@ def report_group_create(request):
             Q(note__icontains=sale_q) | 
             Q(product__name__icontains=sale_q)
         )
+    
+    # Date range filter for sales
+    sale_start_dt, sale_end_dt = parse_date_range(sale_start, sale_end)
+    if sale_start_dt:
+        sales = sales.filter(sold_at__gte=sale_start_dt)
+    if sale_end_dt:
+        sales = sales.filter(sold_at__lte=sale_end_dt)
     
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -1336,29 +1382,15 @@ def report_group_create(request):
             messages.success(request, f'สร้างกลุ่ม "{name}" เรียบร้อย')
             return redirect('report_group_detail', pk=group.pk)
     
-    # Pagination for expenses
-    expense_paginator = Paginator(expenses, 10)
-    expense_page = request.GET.get('exp_page', 1)
-    try:
-        expenses_page = expense_paginator.page(expense_page)
-    except (PageNotAnInteger, EmptyPage):
-        expenses_page = expense_paginator.page(1)
-    
-    # Pagination for sales
-    sale_paginator = Paginator(sales, 10)
-    sale_page = request.GET.get('sale_page', 1)
-    try:
-        sales_page = sale_paginator.page(sale_page)
-    except (PageNotAnInteger, EmptyPage):
-        sales_page = sale_paginator.page(1)
-    
-    return render(request, 'sales/report_group_form.html', {
+    return render(request, 'reportgroups/report_group_form.html', {
         'action': 'create',
-        'expenses': expenses_page,
-        'sales': sales_page,
+        'expenses': expenses,
+        'sales': sales,
         'expense_q': expense_q,
         'expense_cat': expense_cat,
         'sale_q': sale_q,
+        'sale_start': sale_start,
+        'sale_end': sale_end,
         'expense_categories': Expense.CATEGORY_CHOICES,
     })
 
@@ -1367,23 +1399,94 @@ def report_group_create(request):
 def report_group_detail(request, pk):
     """Display detail view of a report group with calculated totals."""
     group = get_object_or_404(ReportGroup, pk=pk)
+    export_fmt = request.GET.get('export', '')
     
-    # Get related sales and expenses
-    sales = group.sales.filter(is_deleted=False).select_related('product').order_by('-sold_at')
-    expenses = group.expenses.filter(is_deleted=False).order_by('-paid_at')
+    # Get related sales with annotations for display (similar to sales_history)
+    commission_expr, commission_pct_expr = get_commission_expressions()
+    discount_amount_expr, discounted_price_expr, original_unit_price_expr = get_discount_expressions()
+    profit_expr, profit_pct_expr = get_profit_expressions()
+    
+    sales = list(group.sales.filter(is_deleted=False).select_related('product').order_by('-sold_at').annotate(
+        commission=commission_expr,
+        commission_pct=commission_pct_expr,
+        discount_amount=discount_amount_expr,
+        discounted_price=discounted_price_expr,
+        original_unit_price=original_unit_price_expr,
+        profit=profit_expr,
+        profit_pct=profit_pct_expr,
+    ))
+    
+    expenses = list(group.expenses.filter(is_deleted=False).order_by('-paid_at'))
     
     # Calculate totals using model methods
     summary = {
         'total_sales': group.get_total_sales(),
+        'gross_sales': group.get_gross_sales(),
         'total_expenses': group.get_total_expenses(),
         'total_cost': group.get_total_cost(),
         'total_discount': group.get_total_discount(),
+        'total_commission': group.get_total_commission(),
         'net_profit': group.get_net_profit(),
         'sales_count': group.get_sales_count(),
         'expenses_count': group.get_expenses_count(),
     }
     
-    return render(request, 'sales/report_group_detail.html', {
+    # === EXPORT CSV ===
+    if export_fmt == 'csv':
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="report_group_{group.pk}_{datetime.now().strftime("%Y%m%d_%H%M")}.csv"'
+        response.write("\ufeff")  # BOM for Excel Thai support
+        
+        writer = csv.writer(response)
+        
+        # Group info
+        writer.writerow(['Report Group:', group.name])
+        writer.writerow(['Description:', group.description or '-'])
+        writer.writerow([])
+        
+        # Summary
+        writer.writerow(['=== SUMMARY ==='])
+        writer.writerow(['Total Received', f'{summary["total_sales"]:.2f}'])
+        writer.writerow(['Total Expenses', f'{summary["total_expenses"]:.2f}'])
+        writer.writerow(['Total Cost', f'{summary["total_cost"]:.2f}'])
+        writer.writerow(['Total Discount', f'{summary["total_discount"]:.2f}'])
+        writer.writerow(['Net Profit', f'{summary["net_profit"]:.2f}'])
+        writer.writerow([])
+        
+        # Sales section
+        writer.writerow(['=== SALES ==='])
+        writer.writerow(['Date', 'Product', 'Qty', 'Cost', 'Price', 'Discount', 'Final', 'Received', 'Commission', 'Profit', 'Note'])
+        for s in sales:
+            writer.writerow([
+                timezone.localtime(s.sold_at).strftime('%Y-%m-%d %H:%M') if s.sold_at else '',
+                s.product.name if s.product else '',
+                s.quantity,
+                f'{s.product.cost:.2f}' if s.product else '0',
+                f'{s.product.price:.2f}' if s.product else '0',
+                f'{s.discount_amount:.2f}' if s.discount_amount else '0',
+                f'{s.price_at_sale:.2f}',
+                f'{s.actual_received:.2f}',
+                f'{s.commission:.2f}' if s.commission else '0',
+                f'{s.profit:.2f}' if s.profit else '0',
+                s.note or ''
+            ])
+        writer.writerow([])
+        
+        # Expenses section
+        writer.writerow(['=== EXPENSES ==='])
+        writer.writerow(['Date', 'Title', 'Category', 'Amount', 'Note'])
+        for e in expenses:
+            writer.writerow([
+                timezone.localtime(e.paid_at).strftime('%Y-%m-%d %H:%M') if e.paid_at else '',
+                e.title,
+                e.get_category_display(),
+                f'{e.amount:.2f}',
+                e.note or ''
+            ])
+        
+        return response
+    
+    return render(request, 'reportgroups/report_group_detail.html', {
         'group': group,
         'sales': sales,
         'expenses': expenses,
@@ -1401,6 +1504,8 @@ def report_group_edit(request, pk):
     expense_q = request.GET.get('expense_q', '').strip()
     expense_cat = request.GET.get('expense_cat', '').strip()
     sale_q = request.GET.get('sale_q', '').strip()
+    sale_start = request.GET.get('sale_start', '').strip()
+    sale_end = request.GET.get('sale_end', '').strip()
     
     # Get available expenses
     expenses = Expense.objects.filter(is_deleted=False).order_by('-paid_at')
@@ -1418,6 +1523,13 @@ def report_group_edit(request, pk):
             Q(note__icontains=sale_q) | 
             Q(product__name__icontains=sale_q)
         )
+    
+    # Date range filter for sales
+    sale_start_dt, sale_end_dt = parse_date_range(sale_start, sale_end)
+    if sale_start_dt:
+        sales = sales.filter(sold_at__gte=sale_start_dt)
+    if sale_end_dt:
+        sales = sales.filter(sold_at__lte=sale_end_dt)
     
     # Current selected IDs
     selected_sale_ids = set(group.sales.values_list('id', flat=True))
@@ -1447,30 +1559,17 @@ def report_group_edit(request, pk):
             messages.success(request, f'อัปเดตกลุ่ม "{name}" เรียบร้อย')
             return redirect('report_group_detail', pk=group.pk)
     
-    # Pagination for expenses
-    expense_paginator = Paginator(expenses, 10)
-    expense_page = request.GET.get('exp_page', 1)
-    try:
-        expenses_page = expense_paginator.page(expense_page)
-    except (PageNotAnInteger, EmptyPage):
-        expenses_page = expense_paginator.page(1)
     
-    # Pagination for sales
-    sale_paginator = Paginator(sales, 10)
-    sale_page = request.GET.get('sale_page', 1)
-    try:
-        sales_page = sale_paginator.page(sale_page)
-    except (PageNotAnInteger, EmptyPage):
-        sales_page = sale_paginator.page(1)
-    
-    return render(request, 'sales/report_group_form.html', {
+    return render(request, 'reportgroups/report_group_form.html', {
         'action': 'edit',
         'group': group,
-        'expenses': expenses_page,
-        'sales': sales_page,
+        'expenses': expenses,
+        'sales': sales,
         'expense_q': expense_q,
         'expense_cat': expense_cat,
         'sale_q': sale_q,
+        'sale_start': sale_start,
+        'sale_end': sale_end,
         'expense_categories': Expense.CATEGORY_CHOICES,
         'selected_sale_ids': selected_sale_ids,
         'selected_expense_ids': selected_expense_ids,

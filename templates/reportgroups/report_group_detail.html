@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }}{% endblock %}
+{% block content %}
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+  :root{
+    --bg-body:#f3f4f6;
+    --surface:#ffffff;
+    --text-primary:#0f172a;
+    --text-secondary:#64748b;
+    --border-color:#e5e7eb;
+    --radius-xl:18px;
+    --radius-lg:14px;
+    --shadow-md: 0 12px 26px -20px rgba(15,23,42,.35);
+    --accent:#6366f1;
+    --success-text:#059669;
+    --danger-text:#dc2626;
+    --info-text:#2563eb;
+    --warning-text:#d97706;
+  }
+
+  [data-bs-theme="dark"]{
+    --bg-body: #0f1115;
+    --surface:#0b1220;
+    --text-primary:#e5e7eb;
+    --text-secondary:#9aa7bd;
+    --border-color: rgba(148,163,184,.18);
+  }
+
+  body{ font-family:"Inter",sans-serif; background:var(--bg-body)!important; }
+
+  .num-font{
+    font-family:"JetBrains Mono",monospace;
+    font-variant-numeric:tabular-nums;
+    font-weight:700;
+  }
+
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:1rem;
+    margin-bottom:1.5rem;
+  }
+
+  .page-title{
+    font-size:1.35rem;
+    font-weight:900;
+    color:var(--text-primary);
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+    margin:0;
+  }
+
+  .page-meta{
+    font-size:.85rem;
+    color:var(--text-secondary);
+    margin-top:.35rem;
+  }
+
+  .header-actions{
+    display:flex;
+    gap:.75rem;
+    flex-wrap:wrap;
+  }
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+    gap:.85rem;
+    margin-bottom:1.5rem;
+  }
+
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-xl);
+    padding:.85rem 1rem;
+    min-height:90px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .stat-card:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-md);
+  }
+
+  .stat-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:.5rem;
+    color:var(--text-secondary);
+    font-weight:800;
+    font-size:.72rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:.25rem;
+  }
+  .stat-icon{ font-size:1rem; opacity:.8; }
+  .stat-value{
+    font-size:1.25rem;
+    font-weight:900;
+    color:var(--text-primary);
+  }
+
+  .stat-card.sales{ border-left:3px solid var(--info-text); }
+  .stat-card.expenses{ border-left:3px solid var(--danger-text); }
+  .stat-card.cost{ border-left:3px solid var(--text-secondary); }
+  .stat-card.discount{ border-left:3px solid var(--warning-text); }
+  .stat-card.commission{ border-left:3px solid var(--warning-text); }
+  .stat-card.profit{ border-left:3px solid var(--success-text); }
+
+  .data-section{
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-xl);
+    margin-bottom:1.5rem;
+    overflow:hidden;
+  }
+
+  .section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:1rem 1.25rem;
+    border-bottom:1px solid var(--border-color);
+    background:rgba(148,163,184,.05);
+  }
+  .section-title{
+    font-size:1rem;
+    font-weight:800;
+    color:var(--text-primary);
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    margin:0;
+  }
+  .section-count{
+    font-size:.85rem;
+    color:var(--text-secondary);
+    font-weight:600;
+  }
+
+  .data-table{
+    width:100%;
+    border-collapse:collapse;
+  }
+  .data-table th{
+    padding:.65rem 1rem;
+    text-align:left;
+    font-size:.72rem;
+    font-weight:800;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    letter-spacing:.06em;
+    background:rgba(148,163,184,.06);
+  }
+  .data-table td{
+    padding:.6rem 1rem;
+    border-bottom:1px solid var(--border-color);
+    font-size:.85rem;
+    color:var(--text-primary);
+  }
+  .data-table tr:last-child td{ border-bottom:none; }
+  .data-table tbody tr:hover{ background:rgba(99,102,241,.03); }
+
+  .empty-row{
+    text-align:center;
+    padding:2rem;
+    color:var(--text-secondary);
+  }
+
+  .btn-luxury{
+    height:44px;
+    border-radius:999px;
+    padding:0 20px;
+    font-weight:800;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+    text-decoration:none;
+    transition:all .15s ease;
+    border:1px solid transparent;
+    font-size:.9rem;
+    cursor:pointer;
+  }
+  .btn-primary-luxury{
+    background:linear-gradient(180deg, #0f172a, #0b1224);
+    color:#fff;
+  }
+  .btn-primary-luxury:hover{
+    transform:translateY(-1px);
+    box-shadow:var(--shadow-md);
+    color:#fff;
+  }
+  .btn-secondary-luxury{
+    background:transparent;
+    border-color:var(--border-color);
+    color:var(--text-primary);
+  }
+  .btn-secondary-luxury:hover{
+    background:rgba(99,102,241,.08);
+    border-color:rgba(99,102,241,.35);
+    color:var(--text-primary);
+  }
+  .btn-danger-luxury{
+    background:transparent;
+    border-color:rgba(220,38,38,.35);
+    color:var(--danger-text);
+  }
+  .btn-danger-luxury:hover{
+    background:rgba(220,38,38,.08);
+    border-color:rgba(220,38,38,.5);
+    color:var(--danger-text);
+  }
+
+  @media (max-width:768px){
+    .page-header{ 
+      flex-direction:column; 
+      align-items:center; 
+      text-align:center;
+    }
+    .page-title{ font-size:1.15rem; justify-content:center; }
+    .header-actions{ 
+      justify-content:center; 
+      width:100%;
+      margin-top:.5rem;
+    }
+    .header-actions .btn-luxury{
+      height:40px;
+      padding:0 14px;
+      font-size:.8rem;
+    }
+    .header-actions .btn-text{ display:none; }
+    .stats-grid{ 
+      grid-template-columns:repeat(2, 1fr); 
+      gap:.6rem;
+    }
+    .stat-card{
+      padding:.65rem .8rem;
+      min-height:75px;
+    }
+    .stat-header{ font-size:.65rem; }
+    .stat-value{ font-size:.95rem; }
+    .data-table th,
+    .data-table td{
+      padding:.5rem .6rem;
+      font-size:.75rem;
+    }
+    .section-header{
+      flex-direction:column;
+      align-items:flex-start;
+      gap:.5rem;
+      padding:.8rem 1rem;
+    }
+    .section-title{ font-size:.9rem; }
+  }
+</style>
+
+<div class="container-fluid px-3 px-md-4 pt-3 pb-5">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        <i class="bi bi-collection-fill"></i> {{ group.name }}
+      </h1>
+      {% if group.description %}
+      <p class="page-meta mb-0">{{ group.description }}</p>
+      {% endif %}
+      <p class="page-meta mb-0">
+        <i class="bi bi-calendar3 me-1"></i> Created on {{ group.created_at|date:"d M Y, H:i" }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <a href="?export=csv" class="btn btn-luxury btn-secondary-luxury" style="border-color:rgba(5,150,105,.45);color:var(--success-text);">
+        <i class="bi bi-file-earmark-spreadsheet"></i><span class="btn-text"> CSV</span>
+      </a>
+      <a href="{% url 'report_group_list' %}" class="btn btn-luxury btn-secondary-luxury">
+        <i class="bi bi-arrow-left"></i><span class="btn-text"> Back</span>
+      </a>
+      <a href="{% url 'report_group_edit' group.pk %}" class="btn btn-luxury btn-secondary-luxury">
+        <i class="bi bi-pencil"></i><span class="btn-text"> Edit</span>
+      </a>
+      <form method="post" action="{% url 'report_group_delete' group.pk %}" style="display:inline;" 
+            onsubmit="return confirm('ต้องการลบกลุ่มนี้หรือไม่?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-luxury btn-danger-luxury">
+          <i class="bi bi-trash3"></i><span class="btn-text"> Delete</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card expenses">
+      <div class="stat-header">
+        <span>Total Expenses</span>
+        <i class="bi bi-graph-down-arrow stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--danger-text);">
+        ฿{{ summary.total_expenses|floatformat:2 }}
+      </div>
+    </div>
+
+    <div class="stat-card sales">
+      <div class="stat-header">
+        <span>Gross Sales</span>
+        <i class="bi bi-graph-up-arrow stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--info-text);">
+        ฿{{ summary.gross_sales|floatformat:2 }}
+      </div>
+    </div>
+
+    <div class="stat-card discount">
+      <div class="stat-header">
+        <span>Discount</span>
+        <i class="bi bi-tag stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--warning-text);">
+        ฿{{ summary.total_discount|floatformat:2 }}
+      </div>
+    </div>
+
+    <div class="stat-card commission">
+      <div class="stat-header">
+        <span>Commission</span>
+        <i class="bi bi-percent stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--warning-text);">
+        ฿{{ summary.total_commission|floatformat:2 }}
+      </div>
+    </div>
+
+    <div class="stat-card sales">
+      <div class="stat-header">
+        <span>Received</span>
+        <i class="bi bi-wallet2 stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--info-text);">
+        ฿{{ summary.total_sales|floatformat:2 }}
+      </div>
+    </div>
+
+    <div class="stat-card cost">
+      <div class="stat-header">
+        <span>Cost</span>
+        <i class="bi bi-box-seam stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:var(--text-secondary);">
+        ฿{{ summary.total_cost|floatformat:2 }}
+      </div>
+    </div>
+
+    <div class="stat-card profit">
+      <div class="stat-header">
+        <span>Profit</span>
+        <i class="bi bi-cash-coin stat-icon"></i>
+      </div>
+      <div class="stat-value num-font" style="color:{% if summary.net_profit >= 0 %}var(--success-text){% else %}var(--danger-text){% endif %};">
+        ฿{{ summary.net_profit|floatformat:2 }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales Table -->
+  <div class="data-section">
+    <div class="section-header">
+      <h2 class="section-title"><i class="bi bi-cart-check"></i> ยอดขาย</h2>
+      <span class="section-count">{{ summary.sales_count }} รายการ</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th style="width:60px;">Img</th>
+            <th>Product / Stock / Note</th>
+            <th class="text-center">Qty</th>
+            <th class="text-end">Cost</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Discount</th>
+            <th class="text-end">Final</th>
+            <th class="text-end">Received</th>
+            <th class="text-end">Comm.</th>
+            <th class="text-end">Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sale in sales %}
+          <tr>
+            <td>
+              <div class="fw-semibold" style="font-size:.9rem;">{{ sale.sold_at|date:"d M" }}</div>
+              <div class="text-secondary small">{{ sale.sold_at|date:"H:i" }}</div>
+            </td>
+            <td>
+              {% if sale.product.image %}
+                <div style="width:50px;height:50px;border-radius:10px;overflow:hidden;border:1px solid var(--border-color);background:rgba(148,163,184,.1);">
+                  <img src="{{ sale.product.image.url }}" alt="img" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+              {% else %}
+                <div style="width:50px;height:50px;border-radius:10px;border:1px solid var(--border-color);background:rgba(148,163,184,.1);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);">
+                  <i class="bi bi-image"></i>
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="fw-bold" style="color:var(--text-primary);">{{ sale.product.name }}</div>
+              {% with stock=sale.product.stock %}
+                <span style="display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:900;padding:2px 8px;border-radius:999px;border:1px solid;margin-top:4px;white-space:nowrap;{% if stock == 0 %}background:rgba(220,38,38,.12);color:var(--danger-text);border-color:rgba(220,38,38,.28);{% elif stock <= 5 %}background:rgba(217,119,6,.12);color:var(--warning-text);border-color:rgba(217,119,6,.28);{% else %}background:rgba(5,150,105,.12);color:var(--success-text);border-color:rgba(5,150,105,.28);{% endif %}">
+                  Stock: {{ stock }}
+                </span>
+              {% endwith %}
+              {% if sale.note %}
+                <div class="text-secondary small mt-1" style="font-size:.78rem;">
+                  <i class="bi bi-pen" style="font-size:.75rem;"></i> {{ sale.note|truncatechars:18 }}
+                </div>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <span class="num-font" style="display:inline-flex;align-items:center;justify-content:center;padding:3px 10px;border-radius:999px;font-size:.74rem;font-weight:900;border:1px solid var(--border-color);background:rgba(148,163,184,.1);color:var(--text-secondary);">
+                x{{ sale.quantity }}
+              </span>
+            </td>
+            <td class="text-end num-font" style="color:var(--text-tertiary);">{{ sale.product.cost|floatformat:0 }}</td>
+            <td class="text-end num-font" style="color:var(--text-secondary);">{{ sale.product.price|floatformat:0 }}</td>
+            <td class="text-end">
+              {% if sale.discount_amount > 0 %}
+                <div class="num-font small" style="color:var(--danger-text);">-{{ sale.discount_amount|floatformat:0 }}</div>
+                <span style="display:inline-flex;align-items:center;justify-content:center;padding:3px 10px;border-radius:999px;font-size:.65rem;font-weight:900;border:1px solid rgba(220,38,38,.26);background:rgba(220,38,38,.14);color:var(--danger-text);">{{ sale.discount_percent|floatformat:0 }}%</span>
+              {% else %}
+                <span class="text-tertiary">-</span>
+              {% endif %}
+            </td>
+            <td class="text-end fw-medium num-font">{{ sale.price_at_sale|floatformat:0 }}</td>
+            <td class="text-end fw-bold num-font" style="color:var(--info-text);">{{ sale.actual_received|floatformat:0 }}</td>
+            <td class="text-end">
+              {% if sale.commission > 0 %}
+                <div class="d-flex flex-column align-items-end">
+                  <span class="num-font small" style="color:var(--warning-text);">{{ sale.commission|floatformat:0 }}</span>
+                  <span style="display:inline-flex;align-items:center;justify-content:center;padding:3px 6px;border-radius:999px;font-size:.65rem;font-weight:900;border:1px solid rgba(217,119,6,.26);background:rgba(217,119,6,.14);color:var(--warning-text);margin-top:2px;">{{ sale.commission_pct|floatformat:0 }}%</span>
+                </div>
+              {% else %}
+                <span class="text-tertiary">-</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <div class="d-flex flex-column align-items-end">
+                <span class="num-font fw-bold" style="color:{% if sale.profit >= 0 %}var(--success-text){% else %}var(--danger-text){% endif %};">
+                  {{ sale.profit|floatformat:0 }}
+                </span>
+                <span style="display:inline-flex;align-items:center;justify-content:center;padding:3px 6px;border-radius:999px;font-size:.65rem;font-weight:900;border:1px solid {% if sale.profit >= 0 %}rgba(5,150,105,.26){% else %}rgba(220,38,38,.26){% endif %};background:{% if sale.profit >= 0 %}rgba(5,150,105,.14){% else %}rgba(220,38,38,.14){% endif %};color:{% if sale.profit >= 0 %}var(--success-text){% else %}var(--danger-text){% endif %};margin-top:2px;">{{ sale.profit_pct|floatformat:0 }}%</span>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="11" class="empty-row">ไม่มียอดขายในกลุ่มนี้</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Expenses Table -->
+  <div class="data-section">
+    <div class="section-header">
+      <h2 class="section-title"><i class="bi bi-receipt"></i> รายจ่าย</h2>
+      <span class="section-count">{{ summary.expenses_count }} รายการ</span>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>วันที่</th>
+          <th>รายการ</th>
+          <th>หมวดหมู่</th>
+          <th>จำนวนเงิน</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in expenses %}
+        <tr>
+          <td class="text-nowrap">{{ exp.paid_at|date:"d/m/Y H:i" }}</td>
+          <td>{{ exp.title }}</td>
+          <td>{{ exp.get_category_display }}</td>
+          <td class="num-font">฿{{ exp.amount|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="empty-row">ไม่มีรายจ่ายในกลุ่มนี้</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+{% endblock %}

@@ -95,10 +95,17 @@
     border-spacing:0;
   }
   .data-table thead{
-    background:rgba(148,163,184,.08);
+    background: rgba(255,255,255,.72);
+    border-bottom: 1px solid rgba(15,23,42,.12);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
     position:sticky;
     top:0;
     z-index:5;
+  }
+  [data-bs-theme="dark"] .data-table thead{
+    background: rgba(255,255,255,.12);
+    border-bottom: 1px solid rgba(255,255,255,.18);
   }
   .data-table th{
     padding:.65rem .75rem;
@@ -241,6 +248,12 @@
         <input type="text" name="sale_q" class="form-control luxury-input" 
                placeholder="ค้นหา Note หรือชื่อสินค้า..."
                value="{{ sale_q }}" id="saleSearch">
+        <input type="date" name="sale_start" class="form-control luxury-input" 
+               placeholder="วันที่เริ่มต้น"
+               value="{{ sale_start }}" id="saleStart">
+        <input type="date" name="sale_end" class="form-control luxury-input" 
+               placeholder="วันที่สิ้นสุด"
+               value="{{ sale_end }}" id="saleEnd">
         <button type="button" class="btn btn-luxury btn-secondary-luxury" onclick="searchSales()">
           <i class="bi bi-search"></i> ค้นหา
         </button>
@@ -283,17 +296,6 @@
         </table>
       </div>
 
-      {% if sales.has_other_pages %}
-      <div class="pagination-mini">
-        {% if sales.has_previous %}
-          <a href="?sale_page={{ sales.previous_page_number }}&exp_page={{ expenses.number }}&sale_q={{ sale_q }}&expense_q={{ expense_q }}&expense_cat={{ expense_cat }}"><i class="bi bi-chevron-left"></i></a>
-        {% endif %}
-        <span class="active">{{ sales.number }} / {{ sales.paginator.num_pages }}</span>
-        {% if sales.has_next %}
-          <a href="?sale_page={{ sales.next_page_number }}&exp_page={{ expenses.number }}&sale_q={{ sale_q }}&expense_q={{ expense_q }}&expense_cat={{ expense_cat }}"><i class="bi bi-chevron-right"></i></a>
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
 
     <!-- Expenses Selection -->
@@ -347,18 +349,6 @@
           </tbody>
         </table>
       </div>
-
-      {% if expenses.has_other_pages %}
-      <div class="pagination-mini">
-        {% if expenses.has_previous %}
-          <a href="?exp_page={{ expenses.previous_page_number }}&sale_page={{ sales.number }}&sale_q={{ sale_q }}&expense_q={{ expense_q }}&expense_cat={{ expense_cat }}"><i class="bi bi-chevron-left"></i></a>
-        {% endif %}
-        <span class="active">{{ expenses.number }} / {{ expenses.paginator.num_pages }}</span>
-        {% if expenses.has_next %}
-          <a href="?exp_page={{ expenses.next_page_number }}&sale_page={{ sales.number }}&sale_q={{ sale_q }}&expense_q={{ expense_q }}&expense_cat={{ expense_cat }}"><i class="bi bi-chevron-right"></i></a>
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
 
     <!-- Submit Buttons -->
@@ -386,13 +376,21 @@
 </div>
 
 <script>
-  // Storage keys - use unique keys per group/session
-  const PAGE_KEY = '{{ action }}_{% if group %}{{ group.pk }}{% else %}new{% endif %}';
-  const SALES_KEY = 'reportGroup_selectedSales_' + PAGE_KEY;
-  const EXPENSES_KEY = 'reportGroup_selectedExpenses_' + PAGE_KEY;
+  // Use consistent storage keys (not page-specific for create mode)
+  {% if action == 'edit' %}
+  const SALES_KEY = 'reportGroup_sales_edit_{{ group.pk }}';
+  const EXPENSES_KEY = 'reportGroup_expenses_edit_{{ group.pk }}';
+  {% else %}
+  const SALES_KEY = 'reportGroup_sales_create';
+  const EXPENSES_KEY = 'reportGroup_expenses_create';
+  {% endif %}
   
-  // Check if this is a fresh page load (not pagination)
-  const isFromPagination = document.referrer.includes('{{ request.path }}');
+  // Track if user is navigating within the same form (pagination/search)
+  const SESSION_FLAG = 'reportGroup_session_active';
+  const isNewSession = !sessionStorage.getItem(SESSION_FLAG);
+  
+  // Mark session as active
+  sessionStorage.setItem(SESSION_FLAG, 'true');
   
   // Initialize from localStorage or server data
   function initSelections() {
@@ -400,49 +398,46 @@
     let selectedExpenses = [];
     
     {% if action == 'edit' %}
-    // For edit mode: 
     const serverSales = [{% for id in selected_sale_ids %}{{ id }},{% endfor %}];
     const serverExpenses = [{% for id in selected_expense_ids %}{{ id }},{% endfor %}];
     
-    // If coming from pagination, use localStorage; otherwise use server data
-    if (isFromPagination) {
-      selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
-      selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
-      // Merge with server data (keep selection from other pages)
-      if (selectedSales.length === 0) selectedSales = serverSales;
-      if (selectedExpenses.length === 0) selectedExpenses = serverExpenses;
-    } else {
-      // Fresh load from detail page - use server data
+    if (isNewSession) {
+      // First time entering edit page - use server data
       selectedSales = serverSales;
       selectedExpenses = serverExpenses;
-    }
-    {% else %}
-    // For create mode: check if from pagination
-    if (isFromPagination) {
+      localStorage.setItem(SALES_KEY, JSON.stringify(selectedSales));
+      localStorage.setItem(EXPENSES_KEY, JSON.stringify(selectedExpenses));
+    } else {
+      // Pagination/search - use localStorage
       selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
       selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
-    } else {
-      // Fresh load - clear any old data
+    }
+    {% else %}
+    // Create mode: Always clear on new session, preserve during pagination/search
+    if (isNewSession) {
+      // First time entering create page - clear old data
+      selectedSales = [];
+      selectedExpenses = [];
       localStorage.removeItem(SALES_KEY);
       localStorage.removeItem(EXPENSES_KEY);
+    } else {
+      // Pagination/search - use localStorage
+      selectedSales = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
+      selectedExpenses = JSON.parse(localStorage.getItem(EXPENSES_KEY) || '[]');
     }
     {% endif %}
     
-    // Save to localStorage
+    // Save current state
     localStorage.setItem(SALES_KEY, JSON.stringify(selectedSales));
     localStorage.setItem(EXPENSES_KEY, JSON.stringify(selectedExpenses));
     
     // Apply selections to visible checkboxes
     document.querySelectorAll('.sale-checkbox').forEach(cb => {
-      if (selectedSales.includes(parseInt(cb.value))) {
-        cb.checked = true;
-      }
+      cb.checked = selectedSales.includes(parseInt(cb.value));
     });
     
     document.querySelectorAll('.expense-checkbox').forEach(cb => {
-      if (selectedExpenses.includes(parseInt(cb.value))) {
-        cb.checked = true;
-      }
+      cb.checked = selectedExpenses.includes(parseInt(cb.value));
     });
     
     updateCounters();
@@ -548,9 +543,10 @@
       expensesContainer.appendChild(input);
     });
     
-    // Clear localStorage after submit
+    // Clear storage after submit
     localStorage.removeItem(SALES_KEY);
     localStorage.removeItem(EXPENSES_KEY);
+    sessionStorage.removeItem(SESSION_FLAG);
     
     // Submit hidden form
     document.getElementById('mainForm').submit();
@@ -560,9 +556,11 @@
   function searchSales() {
     saveSelection('sales');
     const q = document.getElementById('saleSearch').value;
+    const start = document.getElementById('saleStart').value;
+    const end = document.getElementById('saleEnd').value;
     const expQ = document.getElementById('expenseSearch').value;
     const expCat = document.getElementById('expenseCat').value;
-    window.location.href = `?sale_q=${encodeURIComponent(q)}&expense_q=${encodeURIComponent(expQ)}&expense_cat=${encodeURIComponent(expCat)}`;
+    window.location.href = `?sale_q=${encodeURIComponent(q)}&sale_start=${encodeURIComponent(start)}&sale_end=${encodeURIComponent(end)}&expense_q=${encodeURIComponent(expQ)}&expense_cat=${encodeURIComponent(expCat)}`;
   }
 
   function searchExpenses() {

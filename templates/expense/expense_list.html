@@ -754,9 +754,7 @@
 
             <td class="text-center">
               {% if expense.receipt_image %}
-                <div class="receipt-img-box mx-auto"
-                     data-bs-toggle="modal"
-                     data-bs-target="#imageModal"
+                <div class="receipt-img-box mx-auto receipt-trigger"
                      data-img-url="{{ expense.receipt_image.url }}"
                      style="cursor:pointer"
                      title="View receipt">
@@ -853,9 +851,7 @@
       <div class="expense-card">
         <div class="expense-top">
           {% if expense.receipt_image %}
-            <div class="expense-img"
-                 data-bs-toggle="modal"
-                 data-bs-target="#imageModal"
+            <div class="expense-img receipt-trigger"
                  data-img-url="{{ expense.receipt_image.url }}"
                  style="cursor:pointer">
               <img src="{{ expense.receipt_image.url }}" alt="receipt" loading="lazy" decoding="async">
@@ -940,32 +936,142 @@
 
 </div>
 
-<!-- IMAGE MODAL -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+<!-- ✅ CUSTOM IMAGE MODAL (with manual backdrop control) -->
+<div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg" style="background:var(--surface);">
-      <div class="modal-body p-0 d-flex justify-content-center align-items-center" style="min-height: 200px;">
-        <button type="button" class="btn-close position-absolute top-0 end-0 m-3"
-                data-bs-dismiss="modal" aria-label="Close"></button>
-        <img id="modalImage" src="" class="img-fluid" style="max-height: 85vh; border-radius: 12px;" loading="lazy" decoding="async" referrerpolicy="no-referrer" alt="Receipt preview">
+    <div class="modal-content border-0 shadow-lg" style="background:var(--surface); border-radius: 16px;">
+      <div class="modal-header border-0 pb-2">
+        <button type="button" class="btn-close" id="closeModalBtn" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-3 text-center">
+        <img id="receiptImage" src="" class="img-fluid" style="max-height: 70vh; border-radius: 12px; cursor: pointer;" alt="Receipt preview">
       </div>
     </div>
   </div>
 </div>
 
-<script>
-  // Modal image preview
-  const imageModal = document.getElementById('imageModal');
-  if (imageModal) {
-    imageModal.addEventListener('show.bs.modal', e => {
-      const btn = e.relatedTarget;
-      const url = btn?.getAttribute('data-img-url') || '';
-      imageModal.querySelector('#modalImage').src = url;
-    });
-    imageModal.addEventListener('hidden.bs.modal', () => {
-      imageModal.querySelector('#modalImage').src = '';
-    });
+<!-- Custom backdrop -->
+<div id="customBackdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1050; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease;"></div>
+
+<style>
+  #receiptModal {
+    z-index: 1055;
   }
+</style>
+
+<script>
+  // Wait for DOM and Bootstrap to be ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Function to initialize modal (will retry if bootstrap not ready)
+    function initReceiptModal() {
+      // Check if bootstrap is available
+      if (typeof bootstrap === 'undefined') {
+        console.log('Bootstrap not ready yet, retrying...');
+        setTimeout(initReceiptModal, 100);
+        return;
+      }
+      
+      const modal = document.getElementById('receiptModal');
+      const backdrop = document.getElementById('customBackdrop');
+      const modalImage = document.getElementById('receiptImage');
+      const closeBtn = document.getElementById('closeModalBtn');
+      
+      if (!modal || !backdrop || !modalImage) {
+        console.error('Modal elements not found');
+        return;
+      }
+      
+      let bsModal = null;
+      
+      // Initialize Bootstrap modal
+      try {
+        bsModal = new bootstrap.Modal(modal, {
+          backdrop: false,
+          keyboard: true
+        });
+      } catch(e) {
+        console.error('Failed to initialize modal:', e);
+        return;
+      }
+      
+      // Function to show modal
+      function showModal(imageUrl) {
+        console.log('Showing modal with image:', imageUrl);
+        modalImage.src = imageUrl;
+        backdrop.style.display = 'block';
+        requestAnimationFrame(() => {
+          backdrop.style.opacity = '1';
+        });
+        bsModal.show();
+      }
+      
+      // Function to hide modal
+      function hideModal() {
+        console.log('Hiding modal');
+        backdrop.style.opacity = '0';
+        setTimeout(() => {
+          backdrop.style.display = 'none';
+        }, 300);
+        bsModal.hide();
+        setTimeout(() => {
+          modalImage.src = '';
+        }, 300);
+      }
+      
+      // Click on receipt images to open modal
+      document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('.receipt-trigger');
+        if (trigger) {
+          const imageUrl = trigger.getAttribute('data-img-url');
+          console.log('Receipt trigger clicked, image URL:', imageUrl);
+          if (imageUrl) {
+            e.preventDefault();
+            e.stopPropagation();
+            showModal(imageUrl);
+          }
+        }
+      });
+      
+      // Close button
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          hideModal();
+        });
+      }
+      
+      // Click on backdrop to close
+      backdrop.addEventListener('click', function(e) {
+        e.preventDefault();
+        hideModal();
+      });
+      
+      // Click on image to close
+      modalImage.addEventListener('click', function(e) {
+        e.preventDefault();
+        hideModal();
+      });
+      
+      // ESC key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+          hideModal();
+        }
+      });
+      
+      // Cleanup on modal hidden
+      modal.addEventListener('hidden.bs.modal', function() {
+        backdrop.style.display = 'none';
+        backdrop.style.opacity = '0';
+        modalImage.src = '';
+      });
+      
+      console.log('Receipt modal initialized successfully');
+    }
+    
+    // Start initialization
+    initReceiptModal();
+  });
 
   // Filter chevron rotate
   const filterCollapse = document.getElementById('filterCollapse');

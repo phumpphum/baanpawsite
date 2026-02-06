@@ -113,12 +113,12 @@
   }
 
   /* ✅ Dropdown Elevation (เฉพาะ variant dropdown) */
-  .luxury-card.dropdown-elevated{z-index:4000;}
+  .luxury-card.dropdown-elevated{z-index:5000 !important;}
 
   /* ✅ Scope z-index ให้เฉพาะ dropdown variant (กันไปชน SORT dropdown/อื่นๆ) */
   .variant-dd{position:relative;}
-  .variant-dd.show{z-index:4500;}
-  .variant-dd .variant-dropdown-menu{z-index:4510;}
+  .variant-dd.show{z-index:5500 !important;}
+  .variant-dd .variant-dropdown-menu{z-index:5510 !important;}
 
   /* ปกติ (desktop/tablet) */
   .dropdown-menu.variant-dropdown-menu{
@@ -500,7 +500,7 @@
   .luxury-table tbody tr:hover{background-color:#fbfdff;}
 
   /* ✅ กำหนดความกว้างคอลัมน์ */
-  .luxury-table .col-img{width:92px;}
+  .luxury-table .col-img{width:110px;}
   .luxury-table .col-product{width:auto;}
   .luxury-table .col-sku{width:160px;text-align:right;}
   .luxury-table .col-price{width:140px;}
@@ -509,7 +509,7 @@
   .luxury-table .col-actions{width:190px;}
 
   .list-img{
-    width:52px;height:52px;
+    width:72px;height:72px;
     border-radius:12px;
     object-fit:cover;
     border:1px solid var(--border-color);
@@ -651,6 +651,12 @@
     background:#fff;
   }
 
+  /* ✅ Apply flexbox only when dropdown is shown */
+  .variant-dropdown-menu.show{
+    display:flex;
+    flex-direction:column;
+  }
+
   .variant-menu-head{
     position:sticky;
     top:0;
@@ -695,8 +701,10 @@
   }
 
   .variant-menu-body{
-    max-height:calc(75vh - 110px)!important;
-    overflow:auto;
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
     padding:12px;
   }
 
@@ -1847,16 +1855,19 @@
 
     setActiveView(initialView);
 
-    // ✅ click -> reload page with view param (and reset page)
+    // ✅ Client-side view switching (no page reload)
     viewButtons.forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         const view = btn.dataset.view;
 
+        // Use existing setActiveView function
+        setActiveView(view);
+
+        // Update URL without reload (for browser history)
         const url = new URL(window.location.href);
         url.searchParams.set('view', view);
-        url.searchParams.delete('page'); // กัน pagination ค้าง
-        window.location.href = url.toString();
+        window.history.replaceState({}, '', url.toString());
       });
     });
 

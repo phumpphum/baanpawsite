@@ -1,7 +1,10 @@
 from django.db import models, transaction
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-
+from decimal import Decimal
+# ============================================================================
+#  Product and Sale models
+# ============================================================================
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
@@ -29,6 +32,7 @@ class Sale(models.Model):
     actual_received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     note = models.CharField(max_length=200, blank=True, null=True)
+    order_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Order ID")
     sold_at = models.DateTimeField(default=timezone.now)
 
     is_deleted = models.BooleanField(default=False)
@@ -204,40 +208,54 @@ class ReportGroup(models.Model):
         return self.expenses.filter(is_deleted=False).count()
 
     def get_total_sales(self):
-        """Total received amount from sales."""
-        from decimal import Decimal
+        """Total received amount (actual_received per unit * qty)."""
         return sum(
-            (s.actual_received * s.quantity) 
+            (Decimal(s.actual_received or 0) * Decimal(s.quantity or 0))
             for s in self.sales.filter(is_deleted=False)
-        ) or Decimal('0')
+        ) or Decimal("0")
 
-    def get_total_expenses(self):
-        """Total expenses amount."""
-        from decimal import Decimal
+    def get_net_sales(self):
+        """Net sales after discount = price_at_sale per unit * qty."""
         return sum(
-            e.amount for e in self.expenses.filter(is_deleted=False)
-        ) or Decimal('0')
-
-    def get_total_cost(self):
-        """Total cost of products sold."""
-        from decimal import Decimal
-        return sum(
-            (s.product.cost * s.quantity) 
+            (Decimal(s.price_at_sale or 0) * Decimal(s.quantity or 0))
             for s in self.sales.filter(is_deleted=False)
-        ) or Decimal('0')
+        ) or Decimal("0")
 
     def get_total_discount(self):
-        """Total discount given on sales."""
-        from decimal import Decimal
-        total = Decimal('0')
+        """Total discount = (original_unit - price_at_sale) * qty."""
+        total = Decimal("0")
         for s in self.sales.filter(is_deleted=False):
-            if s.discount_percent and s.discount_percent > 0:
-                # Calculate original price before discount
-                original = s.price_at_sale * 100 / (100 - s.discount_percent)
-                discount = (original - s.price_at_sale) * s.quantity
-                total += discount
+            pct = Decimal(s.discount_percent or 0)
+            if pct > 0 and pct < 100:
+                original = Decimal(s.price_at_sale or 0) * Decimal("100") / (Decimal("100") - pct)
+                total += (original - Decimal(s.price_at_sale or 0)) * Decimal(s.quantity or 0)
+        return total
+
+    def get_gross_sales(self):
+        """Gross sales before discount = net_sales + discount."""
+        return self.get_net_sales() + self.get_total_discount()
+
+    def get_total_expenses(self):
+        return sum(
+            Decimal(e.amount or 0)
+            for e in self.expenses.filter(is_deleted=False)
+        ) or Decimal("0")
+
+    def get_total_cost(self):
+        return sum(
+            (Decimal(getattr(s.product, "cost", 0) or 0) * Decimal(s.quantity or 0))
+            for s in self.sales.filter(is_deleted=False).select_related("product")
+        ) or Decimal("0")
+
+    def get_total_commission(self):
+        """Commission = (price_at_sale - actual_received) * qty (only if positive)."""
+        total = Decimal("0")
+        for s in self.sales.filter(is_deleted=False):
+            commission_unit = Decimal(s.price_at_sale or 0) - Decimal(s.actual_received or 0)
+            if commission_unit > 0:
+                total += commission_unit * Decimal(s.quantity or 0)
         return total
 
     def get_net_profit(self):
-        """Net profit = Sales - Expenses - Cost."""
-        return self.get_total_sales() - self.get_total_expenses() - self.get_total_cost()
+        """Net profit = Total Received - Total Cost (sum of profit from all sales)."""
+        return self.get_total_sales() - self.get_total_cost()

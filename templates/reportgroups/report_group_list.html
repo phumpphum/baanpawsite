@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+{% block title %}Report Groups{% endblock %}
+{% block content %}
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+  :root{
+    --bg-body:#f3f4f6;
+    --surface:#ffffff;
+    --text-primary:#0f172a;
+    --text-secondary:#64748b;
+    --border-color:#e5e7eb;
+    --radius-xl:18px;
+    --shadow-md: 0 12px 26px -20px rgba(15,23,42,.35);
+    --accent:#6366f1;
+    --success-text:#059669;
+    --danger-text:#dc2626;
+    --info-text:#2563eb;
+  }
+
+  [data-bs-theme="dark"]{
+    --bg-body: #0f1115;
+    --surface:#0b1220;
+    --text-primary:#e5e7eb;
+    --text-secondary:#9aa7bd;
+    --border-color: rgba(148,163,184,.18);
+  }
+
+  body{ font-family:"Inter",sans-serif; background:var(--bg-body)!important; }
+
+  /* Header */
+  .page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:1rem;
+    margin-bottom:1.5rem;
+  }
+
+  .page-title{
+    font-size:1.35rem;
+    font-weight:900;
+    color:var(--text-primary);
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+    margin:0;
+  }
+
+  .page-subtitle{
+    color:var(--text-secondary);
+    font-size:.85rem;
+    margin-top:.35rem;
+  }
+
+  /* Groups Grid */
+  .groups-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));
+    gap:1rem;
+  }
+  @media(max-width:576px){
+    .groups-grid{
+      grid-template-columns:1fr;
+    }
+  }
+
+  /* Group Card */
+  .group-card{
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:var(--radius-xl);
+    padding:1.25rem;
+    transition:transform .15s ease, box-shadow .15s ease;
+    position:relative;
+  }
+  .group-card:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-md);
+  }
+
+  .group-icon{
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(99,102,241,.1);
+    border-radius:12px;
+    margin-bottom:.75rem;
+    color:var(--accent);
+    font-size:1.1rem;
+  }
+
+  .group-name{
+    font-size:1.1rem;
+    font-weight:800;
+    color:var(--text-primary);
+    margin-bottom:.25rem;
+  }
+
+  .group-description{
+    font-size:.85rem;
+    color:var(--text-secondary);
+    margin-bottom:1rem;
+    line-height:1.4;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  /* Stats Section */
+  .group-stats{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:.5rem;
+    padding-top:1rem;
+    border-top:1px solid var(--border-color);
+  }
+
+  .stat-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding:.5rem .25rem;
+    border-radius:12px;
+  }
+
+  .stat-icon{
+    width:28px;
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:8px;
+    font-size:.8rem;
+    margin-bottom:.4rem;
+  }
+  .stat-icon.expense{
+    background:rgba(220,38,38,.1);
+    color:var(--danger-text);
+  }
+  .stat-icon.sales{
+    background:rgba(37,99,235,.1);
+    color:var(--info-text);
+  }
+  .stat-icon.profit{
+    background:rgba(5,150,105,.1);
+    color:var(--success-text);
+  }
+
+  .stat-label{
+    font-size:.6rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    color:var(--text-secondary);
+    margin-bottom:.2rem;
+  }
+
+  .stat-value{
+    font-size:.85rem;
+    font-weight:800;
+  }
+  .stat-value.expense{ color:var(--danger-text); }
+  .stat-value.sales{ color:var(--info-text); }
+  .stat-value.profit{ color:var(--success-text); }
+
+  /* Buttons */
+  .btn-luxury{
+    height:44px;
+    border-radius:999px;
+    padding:0 20px;
+    font-weight:800;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+    text-decoration:none;
+    transition:all .15s ease;
+    border:1px solid transparent;
+  }
+  .btn-primary-luxury{
+    background:linear-gradient(180deg, #0f172a, #0b1224);
+    color:#fff;
+  }
+  .btn-primary-luxury:hover{
+    transform:translateY(-1px);
+    box-shadow:var(--shadow-md);
+    color:#fff;
+  }
+
+  /* Empty State */
+  .empty-state{
+    text-align:center;
+    padding:4rem 2rem;
+    background:var(--surface);
+    border-radius:var(--radius-xl);
+    border:1px dashed var(--border-color);
+  }
+  .empty-state-icon{
+    width:64px;
+    height:64px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(99,102,241,.1);
+    border-radius:16px;
+    margin:0 auto 1rem;
+    color:var(--accent);
+    font-size:1.5rem;
+  }
+  .empty-state h3{
+    font-size:1.1rem;
+    font-weight:800;
+    color:var(--text-primary);
+    margin-bottom:.5rem;
+  }
+  .empty-state p{
+    color:var(--text-secondary);
+    margin-bottom:1.5rem;
+    font-size:.9rem;
+  }
+
+  @media(max-width:768px){
+    .page-header{
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+    }
+    .page-title{ font-size:1.15rem; justify-content:center; }
+  }
+</style>
+
+<div class="container-fluid px-3 px-md-4 pt-3 pb-5">
+
+  <div class="page-header">
+    <div>
+      <h1 class="h3 fw-bold mb-0" style="color:var(--text-primary);">
+        <i class="bi bi-collection"></i> Report Groups
+      </h1>
+    </div>
+    <a href="{% url 'report_group_create' %}" class="btn btn-luxury btn-primary-luxury">
+      <i class="bi bi-plus-lg"></i><span class="d-none d-sm-inline"> New Group</span>
+    </a>
+  </div>
+
+  {% if groups %}
+  <div class="groups-grid">
+    {% for group in groups %}
+    <a href="{% url 'report_group_detail' group.pk %}" class="group-card text-decoration-none">
+      <div class="group-icon">
+        <i class="bi bi-folder2"></i>
+      </div>
+      <div class="group-name">{{ group.name }}</div>
+      {% if group.description %}
+      <div class="group-description">{{ group.description|truncatewords:20 }}</div>
+      {% endif %}
+      <div class="group-stats">
+        <div class="stat-item">
+          <div class="stat-icon expense">
+            <i class="bi bi-graph-down-arrow"></i>
+          </div>
+          <div class="stat-label">Expense</div>
+          <div class="stat-value expense">฿ {{ group.get_total_expenses|floatformat:0 }}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon sales">
+            <i class="bi bi-cart-check"></i>
+          </div>
+          <div class="stat-label">Gross Sales</div>
+          <div class="stat-value sales">฿ {{ group.get_gross_sales|floatformat:0 }}</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon profit">
+            <i class="bi bi-cash-coin"></i>
+          </div>
+          <div class="stat-label">Profit</div>
+          <div class="stat-value profit">฿ {{ group.get_net_profit|floatformat:0 }}</div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon">
+      <i class="bi bi-folder-plus"></i>
+    </div>
+    <h3>ยังไม่มีกลุ่มรายงาน</h3>
+    <p>สร้างกลุ่มแรกเพื่อเริ่มจัดการรายงานของคุณ</p>
+    <a href="{% url 'report_group_create' %}" class="btn btn-luxury btn-primary-luxury">
+      <i class="bi bi-plus-lg"></i> สร้างกลุ่มแรก
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

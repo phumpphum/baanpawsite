@@ -28,7 +28,7 @@ class SaleForm(forms.ModelForm):
 
     class Meta:
         model = Sale
-        fields = ['product', 'quantity', 'price_at_sale', 'actual_received','discount_percent', 'note', 'sold_at']  # ✅ เพิ่ม sold_at ที่นี่
+        fields = ['product', 'quantity', 'price_at_sale', 'actual_received','discount_percent', 'note', 'order_id', 'sold_at']  # ✅ เพิ่ม order_id
         widgets = {
             'product': forms.Select(attrs={'class': 'form-select'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'step': 1}),
@@ -36,6 +36,7 @@ class SaleForm(forms.ModelForm):
             'actual_received': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),  # ✅
             'discount_percent': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0}),  # ⬅️ ใหม่
             'note': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'เช่น ลูกค้าประจำ / ส่วนลด'}),
+            'order_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'เช่น ORD-12345'}),
         }
 
     def __init__(self, *args, **kwargs):

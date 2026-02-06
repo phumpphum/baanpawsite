@@ -821,6 +821,9 @@
               <button type="button" class="chip {% if preset == 'today' %}active{% endif %}" data-preset="today">
                 <i class="bi bi-sun"></i> Today
               </button>
+              <button type="button" class="chip {% if preset == 'yesterday' %}active{% endif %}" data-preset="yesterday">
+                <i class="bi bi-moon"></i> Yesterday
+              </button>
               <button type="button" class="chip {% if preset == '7d' %}active{% endif %}" data-preset="7d">
                 <i class="bi bi-calendar-week"></i> Last 7 Days
               </button>
@@ -917,6 +920,7 @@
             <th>Date</th>
             <th style="width:80px;">Img</th>
             <th>Product / Stock / Note</th>
+            <th>Order ID</th>
             <th class="text-center">Qty</th>
             <th class="text-end">Cost</th>
             <th class="text-end">Price</th>
@@ -943,9 +947,7 @@
 
               <td>
                 {% if s.product.image %}
-                  <div class="product-img-box"
-                       data-bs-toggle="modal"
-                       data-bs-target="#imageModal"
+                  <div class="product-img-box product-trigger"
                        data-img-url="{{ s.product.image.url }}"
                        style="cursor:pointer">
                     <img src="{{ s.product.image.url }}" alt="img" loading="lazy" decoding="async">
@@ -971,6 +973,17 @@
                     <i class="bi bi-pen" style="font-size:.75rem;"></i>
                     {{ s.note|truncatechars:18 }}
                   </div>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if s.order_id %}
+                  <div class="badge-frame" style="font-size:.82rem; font-family:'JetBrains Mono',monospace;">
+                    <i class="bi bi-hash" style="font-size:.75rem;"></i>
+                    {{ s.order_id }}
+                  </div>
+                {% else %}
+                  <span class="text-tertiary">-</span>
                 {% endif %}
               </td>
 
@@ -1030,7 +1043,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="12" class="text-center py-5 text-secondary">
+              <td colspan="13" class="text-center py-5 text-secondary">
                 <div class="mb-2"><i class="bi bi-inbox fs-1 opacity-25"></i></div>
                 No sales records found.
               </td>
@@ -1065,9 +1078,7 @@
         <div class="sale-card">
           <div class="sale-top">
             {% if s.product.image %}
-              <div class="sale-img"
-                   data-bs-toggle="modal"
-                   data-bs-target="#imageModal"
+              <div class="sale-img product-trigger"
                    data-img-url="{{ s.product.image.url }}"
                    style="cursor:pointer">
                 <img src="{{ s.product.image.url }}" alt="img" loading="lazy" decoding="async">
@@ -1095,6 +1106,15 @@
               {% if s.note %}
                 <div class="text-secondary small mt-2" style="font-size:.82rem">
                   <i class="bi bi-pen me-1"></i>{{ s.note|truncatechars:52 }}
+                </div>
+              {% endif %}
+
+              {% if s.order_id %}
+                <div class="mt-2">
+                  <span class="badge-frame" style="font-size:.78rem; font-family:'JetBrains Mono',monospace;">
+                    <i class="bi bi-hash" style="font-size:.7rem;"></i>
+                    {{ s.order_id }}
+                  </span>
                 </div>
               {% endif %}
             </div>
@@ -1248,6 +1268,10 @@
     if (p==="today"){
       s=new Date(now.getFullYear(), now.getMonth(), now.getDate());
       e=new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    } else if (p==="yesterday"){
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate()-1);
+      s=yesterday;
+      e=yesterday;
     } else if (p==="7d"){
       e=new Date(now.getFullYear(), now.getMonth(), now.getDate());
       s=new Date(e); s.setDate(s.getDate()-6);
@@ -1348,6 +1372,144 @@
   }
 
   rebuildActiveTags();
+</script>
+
+<!-- ✅ CUSTOM IMAGE MODAL (with manual backdrop control) -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false" data-bs-keyboard="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="background:var(--surface); border-radius: 16px;">
+      <div class="modal-header border-0 pb-2">
+        <button type="button" class="btn-close" id="closeProductModalBtn" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-3 text-center">
+        <img id="productImage" src="" class="img-fluid" style="max-height: 70vh; border-radius: 12px; cursor: pointer;" alt="Product preview">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Custom backdrop -->
+<div id="customProductBackdrop" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1050; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease;"></div>
+
+<style>
+  #productModal {
+    z-index: 1055;
+  }
+</style>
+
+<script>
+  // Wait for DOM and Bootstrap to be ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Function to initialize modal (will retry if bootstrap not ready)
+    function initProductModal() {
+      // Check if bootstrap is available
+      if (typeof bootstrap === 'undefined') {
+        console.log('Bootstrap not ready yet, retrying...');
+        setTimeout(initProductModal, 100);
+        return;
+      }
+      
+      const modal = document.getElementById('productModal');
+      const backdrop = document.getElementById('customProductBackdrop');
+      const modalImage = document.getElementById('productImage');
+      const closeBtn = document.getElementById('closeProductModalBtn');
+      
+      if (!modal || !backdrop || !modalImage) {
+        console.error('Product modal elements not found');
+        return;
+      }
+      
+      let bsModal = null;
+      
+      // Initialize Bootstrap modal
+      try {
+        bsModal = new bootstrap.Modal(modal, {
+          backdrop: false,
+          keyboard: true
+        });
+      } catch(e) {
+        console.error('Failed to initialize product modal:', e);
+        return;
+      }
+      
+      // Function to show modal
+      function showModal(imageUrl) {
+        console.log('Showing product modal with image:', imageUrl);
+        modalImage.src = imageUrl;
+        backdrop.style.display = 'block';
+        requestAnimationFrame(() => {
+          backdrop.style.opacity = '1';
+        });
+        bsModal.show();
+      }
+      
+      // Function to hide modal
+      function hideModal() {
+        console.log('Hiding product modal');
+        backdrop.style.opacity = '0';
+        setTimeout(() => {
+          backdrop.style.display = 'none';
+        }, 300);
+        bsModal.hide();
+        setTimeout(() => {
+          modalImage.src = '';
+        }, 300);
+      }
+      
+      // Click on product images to open modal
+      document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('.product-trigger');
+        if (trigger) {
+          const imageUrl = trigger.getAttribute('data-img-url');
+          console.log('Product trigger clicked, image URL:', imageUrl);
+          if (imageUrl) {
+            e.preventDefault();
+            e.stopPropagation();
+            showModal(imageUrl);
+          }
+        }
+      });
+      
+      // Close button
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          hideModal();
+        });
+      }
+      
+      // Click on backdrop to close
+      backdrop.addEventListener('click', function(e) {
+        e.preventDefault();
+        hideModal();
+      });
+      
+      // Click on image to close
+      modalImage.addEventListener('click', function(e) {
+        e.preventDefault();
+        hideModal();
+      });
+      
+      // ESC key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+          hideModal();
+        }
+      });
+      
+      // Cleanup on modal hidden
+      modal.addEventListener('hidden.bs.modal', function() {
+        backdrop.style.display = 'none';
+        backdrop.style.opacity = '0';
+        modalImage.src = '';
+      });
+      
+      console.log('Product modal initialized successfully');
+    }
+    
+    // Start initialization
+    initProductModal();
+  });
 </script>
 
 {% endblock %}

@@ -473,8 +473,12 @@
       <div class="filter-content">
         <div class="row g-3">
 
-          <!-- ✅ เลือกช่วงเวลาแบบ preset -->
+          <!-- ✅ Quick Range Presets -->
           <div class="col-12">
+            <label class="small fw-bold text-secondary mb-2 d-block">
+              <i class="bi bi-lightning-fill me-1" style="font-size:0.85rem;"></i>
+              Quick Range
+            </label>
             <div class="chip-group" id="presetChips">
               <div class="chip-btn" data-range="today">Today</div>
               <div class="chip-btn" data-range="7d">7 Days</div>
@@ -484,43 +488,83 @@
             </div>
           </div>
 
-          <!-- ✅ Day/Month + Year -->
+          <!-- Divider -->
           <div class="col-12">
-            <div class="d-flex flex-wrap gap-2 align-items-center">
-              <div class="chip-group" id="groupChips">
-                <div class="chip-btn active" data-group="day"><i class="bi bi-calendar3"></i> Day</div>
-                <div class="chip-btn" data-group="month"><i class="bi bi-calendar3-week"></i> Month</div>
-              </div>
+            <hr style="margin: 0.5rem 0; border-color: var(--border-color); opacity: 0.5;">
+          </div>
 
-              <div style="min-width: 180px; margin-left:auto;">
-                <div class="input-group-modern">
-                  <i class="bi bi-calendar-event"></i>
-                  <select id="year" class="modern-select with-icon">
-                    <option value="">All Years</option>
-                    <option value="2025">Year 2025</option>
-                    <option value="2026">Year 2026</option>
-                  </select>
-                </div>
-              </div>
+          <!-- Data Grouping -->
+          <div class="col-12">
+            <label class="small fw-bold text-secondary mb-2 d-block">
+              <i class="bi bi-grid-3x3-gap me-1" style="font-size:0.85rem;"></i>
+              Data Grouping
+            </label>
+          </div>
+
+          <div class="col-md-6">
+            <label class="small text-secondary mb-1" style="font-size:0.75rem;">Group By</label>
+            <div class="chip-group" id="groupChips">
+              <div class="chip-btn active" data-group="day"><i class="bi bi-calendar3"></i> Day</div>
+              <div class="chip-btn" data-group="month"><i class="bi bi-calendar3-week"></i> Month</div>
             </div>
           </div>
 
-          <div class="col-md-4">
-            <label class="small fw-bold text-secondary mb-1">Date Range</label>
-            <div class="d-flex gap-2">
-              <div class="input-group-modern w-100">
-                <i class="bi bi-calendar"></i>
-                <input type="date" id="start" class="modern-input with-icon" value="{{ start|default:'' }}">
-              </div>
-              <div class="input-group-modern w-100">
-                <i class="bi bi-arrow-right" style="font-size:0.8rem;"></i>
-                <input type="date" id="end" class="modern-input with-icon" value="{{ end|default:'' }}">
-              </div>
+          <div class="col-md-6">
+            <label class="small text-secondary mb-1" style="font-size:0.75rem;">Year Filter</label>
+            <div class="input-group-modern">
+              <i class="bi bi-calendar-event"></i>
+              <select id="year" class="modern-select with-icon">
+                <option value="">All Years</option>
+                <option value="2025">Year 2025</option>
+                <option value="2026">Year 2026</option>
+              </select>
             </div>
           </div>
 
-          <div class="col-md-4">
-            <label class="small fw-bold text-secondary mb-1">Product</label>
+          <!-- Divider -->
+          <div class="col-12">
+            <hr style="margin: 0.5rem 0; border-color: var(--border-color); opacity: 0.5;">
+          </div>
+
+          <!-- Custom Date Range -->
+          <div class="col-12">
+            <label class="small fw-bold text-secondary mb-2 d-block">
+              <i class="bi bi-calendar-range me-1" style="font-size:0.85rem;"></i>
+              Custom Date Range
+            </label>
+          </div>
+
+          <div class="col-md-6">
+            <label class="small text-secondary mb-1" style="font-size:0.75rem;">Start Date</label>
+            <div class="input-group-modern">
+              <i class="bi bi-calendar"></i>
+              <input type="date" id="start" class="modern-input with-icon" value="{{ start|default:'' }}">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="small text-secondary mb-1" style="font-size:0.75rem;">End Date</label>
+            <div class="input-group-modern">
+              <i class="bi bi-calendar-check"></i>
+              <input type="date" id="end" class="modern-input with-icon" value="{{ end|default:'' }}">
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="col-12">
+            <hr style="margin: 0.5rem 0; border-color: var(--border-color); opacity: 0.5;">
+          </div>
+
+          <!-- Additional Filters -->
+          <div class="col-12">
+            <label class="small fw-bold text-secondary mb-2 d-block">
+              <i class="bi bi-funnel me-1" style="font-size:0.85rem;"></i>
+              Additional Filters
+            </label>
+          </div>
+
+          <div class="col-md-6">
+            <label class="small text-secondary mb-1" style="font-size:0.75rem;">Product</label>
             <div class="input-group-modern">
               <i class="bi bi-box"></i>
               <select id="product" class="modern-select with-icon">
@@ -532,20 +576,38 @@
             </div>
           </div>
 
-          <div class="col-md-4 d-flex align-items-end gap-2">
-            <button id="apply" type="button" class="btn-action btn-primary-action flex-grow-1">
-              <span id="applyText">Apply Filter</span>
-            </button>
+          <div class="col-md-6">
+            <label class="small text-secondary mb-1" style="font-size:0.75rem;">Note</label>
+            <div class="input-group-modern">
+              <i class="bi bi-chat-left-text"></i>
+              <select id="note" class="modern-select with-icon">
+                <option value="">All Notes</option>
+                {% for n in all_notes %}
+                  <option value="{{ n }}" {% if note == n %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
 
-            <button
-              id="download"
-              type="button"
-              class="btn-action btn-success-action"
-              title="Export CSV"
-              data-export-url="{% url 'api_sales_export_csv' %}"
-            >
-              <i class="bi bi-filetype-csv"></i>
-            </button>
+          <!-- Action Buttons -->
+          <div class="col-12 mt-3">
+            <div class="d-flex gap-2 flex-wrap">
+              <button id="apply" type="button" class="btn-action btn-primary-action flex-grow-1">
+                <i class="bi bi-check2-circle"></i>
+                <span id="applyText">Apply Filter</span>
+              </button>
+
+              <button
+                id="download"
+                type="button"
+                class="btn-action btn-success-action"
+                title="Export CSV"
+                data-export-url="{% url 'api_sales_export_csv' %}"
+              >
+                <i class="bi bi-filetype-csv"></i>
+                <span class="d-none d-sm-inline">Export</span>
+              </button>
+            </div>
           </div>
 
         </div>
@@ -782,6 +844,7 @@
       end: $('#end')?.value || '',
       g: currentGroup,
       product: $('#product')?.value || '',
+      note: $('#note')?.value || '',
       year: $('#year')?.value || '' // ✅ ส่งไปด้วย (ไม่ใช้ก็ไม่เป็นไร)
     });
 
@@ -1002,6 +1065,13 @@
     loadDataDebounced();
   });
 
+  // ✅ Product & Note dropdowns: reload when changed
+  $('#product')?.addEventListener('change', loadDataDebounced);
+  $('#note')?.addEventListener('change', loadDataDebounced);
+
+  // ✅ Apply button: reload data
+  $('#apply')?.addEventListener('click', loadData);
+
   // restore group state
   (function restoreGroup(){
     const saved = localStorage.getItem('baanpaw-sales-report-group');
@@ -1023,6 +1093,7 @@
       start: $('#start')?.value || '',
       end: $('#end')?.value || '',
       product: $('#product')?.value || '',
+      note: $('#note')?.value || '',
       g: currentGroup,
       year: $('#year')?.value || ''
     });

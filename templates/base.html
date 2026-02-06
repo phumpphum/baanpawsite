@@ -9,29 +9,9 @@
   <meta name="theme-color" content="#0f1115">
   <title>{% block title %}Baanpaw Shop{% endblock %}</title>
 
-  <link rel="icon" type="image/png" id="favicon" href="{% static 'img/favicon.png' %}?v=final">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/favicon.png' %}?v=final">
-
-  <script>
-    (function() {
-      try {
-        const savedTheme = localStorage.getItem('baanpaw-theme') || 'dark';
-        document.documentElement.setAttribute('data-bs-theme', savedTheme);
-        
-        // ✅ Set favicon based on theme on initial load
-        const faviconEl = document.getElementById('favicon');
-        if (faviconEl) {
-          const currentHref = faviconEl.href;
-          const basePath = currentHref.substring(0, currentHref.lastIndexOf('/') + 1);
-          faviconEl.href = (savedTheme === 'dark') 
-            ? basePath + 'favicon_white.png?v=final'
-            : basePath + 'favicon.png?v=final';
-        }
-      } catch (e) {
-        console.warn('Theme preference not available:', e);
-      }
-    })();
-  </script>
+  <!-- ✅ HiDREAM favicon (theme-aware via JS below) -->
+  <link rel="icon" type="image/png" id="favicon" href="{% static 'img/hidream_logo.png' %}?v=hidream2">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/hidream_logo.png' %}?v=hidream2">
 
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -414,404 +394,303 @@
 
     /* ✅ MOBILE: remove capsule shadows */
     @media (max-width: 991.98px){
-
-      /* เอาเงาทุก capsule ออก */
       .brand-chip,
       ul.navbar-nav.nav-chip,
       .icon-circle-btn,
       .navbar-toggler{
         box-shadow: none !important;
       }
-
-      /* (ถ้ายังรู้สึกมีเงาจากบางตัว) ปิดเงารวมของ topbar ด้วย */
       .topbar-shell{
         box-shadow: none !important;
       }
     }
-  
+
     /* =========================
-    FORCE TABBAR/NAV TEXT WHITE (DARK)
-    ใส่ท้ายสุดของ base.html
-    ========================= */
-  [data-bs-theme="dark"] .navbar,
-  [data-bs-theme="dark"] .navbar *{
-    text-shadow: none;
-  }
+       FORCE TABBAR/NAV TEXT WHITE (DARK)
+       ========================= */
+    [data-bs-theme="dark"] .navbar,
+    [data-bs-theme="dark"] .navbar *{
+      text-shadow: none;
+    }
 
-  /* ลิงก์บนแถบเมนู / tabbar */
-  [data-bs-theme="dark"] .navbar .navbar-brand,
-  [data-bs-theme="dark"] .navbar .nav-link,
-  [data-bs-theme="dark"] .navbar .navbar-text,
-  [data-bs-theme="dark"] .navbar .dropdown-toggle{
-    color: rgba(255,255,255,.95) !important;
-  }
+    [data-bs-theme="dark"] .navbar .navbar-brand,
+    [data-bs-theme="dark"] .navbar .nav-link,
+    [data-bs-theme="dark"] .navbar .navbar-text,
+    [data-bs-theme="dark"] .navbar .dropdown-toggle{
+      color: rgba(255,255,255,.95) !important;
+    }
 
-  /* hover/active */
-  [data-bs-theme="dark"] .navbar .nav-link:hover,
-  [data-bs-theme="dark"] .navbar .nav-link:focus{
-    color: #fff !important;
-  }
+    [data-bs-theme="dark"] .navbar .nav-link:hover,
+    [data-bs-theme="dark"] .navbar .nav-link:focus{
+      color: #fff !important;
+    }
 
-  [data-bs-theme="dark"] .navbar .nav-link.active,
-  [data-bs-theme="dark"] .navbar .nav-link[aria-current="page"],
-  [data-bs-theme="dark"] .navbar .show > .nav-link{
-    color: #fff !important;
-  }
+    [data-bs-theme="dark"] .navbar .nav-link.active,
+    [data-bs-theme="dark"] .navbar .nav-link[aria-current="page"],
+    [data-bs-theme="dark"] .navbar .show > .nav-link{
+      color: #fff !important;
+    }
 
-  /* dropdown menu + items */
-  [data-bs-theme="dark"] .dropdown-menu{
-    background: rgba(15,23,42,.92) !important;
-    border: 1px solid rgba(255,255,255,.12) !important;
-    backdrop-filter: blur(14px) saturate(160%);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-  }
+    [data-bs-theme="dark"] .dropdown-menu{
+      background: rgba(15,23,42,.92) !important;
+      border: 1px solid rgba(255,255,255,.12) !important;
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+    }
 
-  [data-bs-theme="dark"] .dropdown-item{
-    color: rgba(255,255,255,.92) !important;
-  }
+    [data-bs-theme="dark"] .dropdown-item{
+      color: rgba(255,255,255,.92) !important;
+    }
 
-  [data-bs-theme="dark"] .dropdown-item:hover,
-  [data-bs-theme="dark"] .dropdown-item:focus{
-    background: rgba(255,255,255,.08) !important;
-    color: #fff !important;
-  }
+    [data-bs-theme="dark"] .dropdown-item:hover,
+    [data-bs-theme="dark"] .dropdown-item:focus{
+      background: rgba(255,255,255,.08) !important;
+      color: #fff !important;
+    }
 
-  [data-bs-theme="dark"] .dropdown-divider{
-    border-top-color: rgba(255,255,255,.10) !important;
-  }
+    [data-bs-theme="dark"] .dropdown-divider{
+      border-top-color: rgba(255,255,255,.10) !important;
+    }
 
-  /* toggler icon (มือถือ) */
-  [data-bs-theme="dark"] .navbar-toggler{
-    border-color: rgba(255,255,255,.18) !important;
-  }
-  [data-bs-theme="dark"] .navbar-toggler-icon{
-    filter: invert(1) opacity(.9);
-  }
+    [data-bs-theme="dark"] .navbar-toggler{
+      border-color: rgba(255,255,255,.18) !important;
+    }
+    [data-bs-theme="dark"] .navbar-toggler-icon{
+      filter: invert(1) opacity(.9);
+    }
 
-  /* ถ้าใช้ offcanvas ในมือถือ */
-  [data-bs-theme="dark"] .offcanvas,
-  [data-bs-theme="dark"] .offcanvas .nav-link{
-    color: rgba(255,255,255,.95) !important;
-  }
+    [data-bs-theme="dark"] .offcanvas,
+    [data-bs-theme="dark"] .offcanvas .nav-link{
+      color: rgba(255,255,255,.95) !important;
+    }
 
-  /* =========================
-    FIX: Navbar text in DARK MODE
-    - Baanpaw brand
-    - time number / clock
-    - theme toggle button/icon
-    ========================= */
+    /* Brand pill + text */
+    html[data-bs-theme="dark"] .brand-chip,
+    html[data-bs-theme="dark"] .brand-chip .brand-text{
+      color: #ffffff !important;
+      opacity: 0.95;
+    }
 
-  /* 1) Brand "Baanpaw" */
-  html[data-bs-theme="dark"] .navbar .navbar-brand,
-  html[data-bs-theme="dark"] .navbar .navbar-brand *{
-    color: #ffffff !important;
-    opacity: 0.95;
-  }
+    /* Clock pill + number */
+    html[data-bs-theme="dark"] .clock-chip,
+    html[data-bs-theme="dark"] #clock{
+      color: #ffffff !important;
+      opacity: 0.92;
+    }
 
-  /* 2) Time / clock (ครอบคลุมทั้ง id/class ที่พบบ่อย) */
-  html[data-bs-theme="dark"] #navClock,
-  html[data-bs-theme="dark"] #clock,
-  html[data-bs-theme="dark"] .nav-clock,
-  html[data-bs-theme="dark"] .nav-time,
-  html[data-bs-theme="dark"] .navbar-text,
-  html[data-bs-theme="dark"] .navbar .time,
-  html[data-bs-theme="dark"] .navbar .time .num,
-  html[data-bs-theme="dark"] .navbar .num{
-    color: #ffffff !important;
-    opacity: 0.92;
-  }
+    /* Theme toggle button + icon */
+    html[data-bs-theme="dark"] #themeToggler,
+    html[data-bs-theme="dark"] #themeToggler i,
+    html[data-bs-theme="dark"] #themeIcon{
+      color: #ffffff !important;
+      opacity: 0.95;
+    }
 
-  /* 3) Theme toggle button/icon */
-  html[data-bs-theme="dark"] #themeToggle,
-  html[data-bs-theme="dark"] .theme-toggle,
-  html[data-bs-theme="dark"] .btn-theme-toggle{
-    color: #ffffff !important;
-    border-color: rgba(255,255,255,.22) !important;
-    background: rgba(255,255,255,.08) !important;
-  }
+    html[data-bs-theme="dark"] .icon-circle-btn i{
+      color: #ffffff !important;
+    }
 
-  html[data-bs-theme="dark"] #themeToggle i,
-  html[data-bs-theme="dark"] .theme-toggle i,
-  html[data-bs-theme="dark"] .btn-theme-toggle i{
-    color: #ffffff !important;
-    opacity: 0.95;
-  }
+    .navbar{
+      border-bottom: 0 !important;
+      box-shadow: none !important;
+    }
 
-  /* (กันเคสปุ่มเป็น link) */
-  html[data-bs-theme="dark"] .navbar a:not(.dropdown-item){
-    color: rgba(255,255,255,.90);
-  }
-  html[data-bs-theme="dark"] .navbar a:not(.dropdown-item):hover{
-    color: #ffffff;
-  }
+    a, a:hover, a:focus, a:active,
+    .navbar a, .navbar a:hover, .navbar a:focus,
+    .brand-chip, .brand-chip:hover,
+    .modern-nav-link, .modern-nav-link:hover,
+    .dropdown-toggle, .dropdown-toggle:hover{
+      text-decoration: none !important;
+    }
 
-    /* ==========================================================
-    ✅ HARD FIX: Make Brand / Clock / Theme Toggle WHITE in DARK
-    (ยิงตรง class/id ที่คุณใช้จริง)
-    ========================================================== */
+    html{
+      scrollbar-gutter: stable;
+      overflow-y: scroll;
+    }
 
-  /* Brand pill + text */
-  html[data-bs-theme="dark"] .brand-chip,
-  html[data-bs-theme="dark"] .brand-chip .brand-text{
-    color: #ffffff !important;
-    opacity: 0.95;
-  }
+    @keyframes navBreath {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        filter: brightness(1);
+      }
+      50% {
+        transform: translateY(-1px) scale(1.02);
+        filter: brightness(1.08);
+      }
+    }
 
-  /* Clock pill + number */
-  html[data-bs-theme="dark"] .clock-chip,
-  html[data-bs-theme="dark"] #clock{
-    color: #ffffff !important;
-    opacity: 0.92;
-  }
-
-  /* Theme toggle button + icon */
-  html[data-bs-theme="dark"] #themeToggler,
-  html[data-bs-theme="dark"] #themeToggler i,
-  html[data-bs-theme="dark"] #themeIcon{
-    color: #ffffff !important;
-    opacity: 0.95;
-  }
-
-  /* กันเคสมี rule อื่นไปย้อมสี <i> */
-  html[data-bs-theme="dark"] .icon-circle-btn i{
-    color: #ffffff !important;
-  }
-
-  /* ถ้าเป็นเส้นคั่นใต้ navbar */
-  .navbar{
-    border-bottom: 0 !important;
-    box-shadow: none !important; /* เผื่อมี shadow ที่ดูเหมือนเส้น */
-  }
-
-  /* =========================
-    REMOVE UNDERLINE (all links)
-    ใส่ท้ายสุดของ <style>
-    ========================= */
-  a, a:hover, a:focus, a:active,
-  .navbar a, .navbar a:hover, .navbar a:focus,
-  .brand-chip, .brand-chip:hover,
-  .modern-nav-link, .modern-nav-link:hover,
-  .dropdown-toggle, .dropdown-toggle:hover{
-    text-decoration: none !important;
-  }
-
-    /* ✅ FIX layout shift เวลา scrollbar มี/ไม่มี */
-  html{
-    scrollbar-gutter: stable;   /* browser ใหม่ ๆ */
-    overflow-y: scroll;         /* fallback: บังคับให้มี scrollbar ตลอด */
-  }
+    .modern-nav-link.active{
+      animation: navBreath 2s ease-in-out infinite;
+      will-change: transform, filter;
+      position: relative;
+    }
+    .modern-nav-link.active::after{
+      content:"";
+      position:absolute;
+      inset:-6px;
+      border-radius: 9999px;
+      pointer-events:none;
+      opacity:.55;
+      filter: blur(10px);
+      background: radial-gradient(circle at 30% 40%, rgba(99,102,241,.35), transparent 55%);
+    }
+    html[data-bs-theme="dark"] .modern-nav-link.active::after{
+      opacity:.6;
+      background: radial-gradient(circle at 30% 40%, rgba(165,180,252,.28), transparent 60%);
+    }
+    @media (prefers-reduced-motion: reduce){
+      .modern-nav-link.active{ animation: none !important; }
+      .modern-nav-link.active::after{ display:none !important; }
+    }
 
     /* =========================================
-    ACTIVE NAV "BREATHING" (subtle)
-    ========================================= */
-  @keyframes navBreath {
-    0%, 100% {
-      transform: translateY(0) scale(1);
-      filter: brightness(1);
+       LOADING SPINNER OVERLAY
+       ========================================= */
+    .loading-overlay{
+      position: fixed;
+      inset: 0;
+      z-index: 1040;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
     }
-    50% {
-      transform: translateY(-1px) scale(1.02);
-      filter: brightness(1.08);
-    }
-  }
-
-  /* ทำให้ active หายใจ */
-  .modern-nav-link.active{
-    animation: navBreath 2s ease-in-out infinite;
-    will-change: transform, filter;
-  }
-
-  /* เพิ่ม glow เบาๆ ให้ดู premium ขึ้น (ทั้ง light/dark) */
-  .modern-nav-link.active{
-    position: relative;
-  }
-  .modern-nav-link.active::after{
-    content:"";
-    position:absolute;
-    inset:-6px;
-    border-radius: 9999px;
-    pointer-events:none;
-    opacity:.55;
-    filter: blur(10px);
-    background: radial-gradient(circle at 30% 40%, rgba(99,102,241,.35), transparent 55%);
-  }
-
-  /* Dark mode ให้ glow นุ่มขึ้น */
-  html[data-bs-theme="dark"] .modern-nav-link.active::after{
-    opacity:.6;
-    background: radial-gradient(circle at 30% 40%, rgba(165,180,252,.28), transparent 60%);
-  }
-
-  /* เคารพคนไม่ชอบ motion */
-  @media (prefers-reduced-motion: reduce){
-    .modern-nav-link.active{ animation: none !important; }
-    .modern-nav-link.active::after{ display:none !important; }
-  }
-
-  /* =========================================
-     LOADING SPINNER OVERLAY
-     ========================================= */
-  .loading-overlay{
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    background: rgba(255,255,255,0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
-  }
-  .loading-overlay.active{
-    opacity: 1;
-    visibility: visible;
-  }
-
-  html[data-bs-theme="dark"] .loading-overlay{
-    background: rgba(15,17,21,0.88);
-  }
-
-  .spinner-box{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .spinner{
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(99,102,241,0.18);
-    border-top-color: #6366f1;
-    border-radius: 50%;
-    animation: spin 0.85s linear infinite;
-  }
-
-  html[data-bs-theme="dark"] .spinner{
-    border-color: rgba(165,180,252,0.18);
-    border-top-color: #a5b4fc;
-  }
-
-  @keyframes spin{
-    to{ transform: rotate(360deg); }
-  }
-
-  .loading-text{
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary, #64748b);
-    letter-spacing: 0.02em;
-  }
-
-  html[data-bs-theme="dark"] .loading-text{
-    color: rgba(255,255,255,0.72);
-  }
-
-  /* =========================================
-     MOBILE RESPONSIVE IMPROVEMENTS
-     ========================================= */
-  
-  /* Better touch targets on mobile */
-  @media (max-width: 576px){
-    /* Minimum touch target size */
-    .btn, button, .form-control, .form-select{
-      min-height: 44px;
+    .loading-overlay.active{
+      opacity: 1;
+      visibility: visible;
     }
 
-    /* Better button sizing */
-    .btn{
-      padding: 10px 16px;
-      font-size: 0.9rem;
+    html[data-bs-theme="dark"] .loading-overlay{
+      background: rgba(15,17,21,0.88);
     }
 
-    /* Icon-only buttons should be square, not full-width */
-    .btn-icon-only,
-    .btn:has(> i:only-child),
-    .btn:has(> svg:only-child){
-      width: 44px !important;
-      min-width: 44px !important;
-      max-width: 44px !important;
-      padding: 10px !important;
-      flex: 0 0 auto !important;
-    }
-
-    /* Form inputs bigger on mobile */
-    .form-control, .form-select{
-      font-size: 16px !important; /* Prevents iOS zoom on focus */
-      padding: 12px 14px;
-    }
-
-    /* Better card spacing */
-    .card, .luxury-card{
-      margin-bottom: 16px;
-    }
-
-    /* Stack flex containers */
-    .d-flex.gap-2,
-    .d-flex.gap-3{
-      flex-wrap: wrap;
-    }
-
-    /* Make action bars stack on mobile */
-    .action-bar,
-    .btn-group-mobile{
+    .spinner-box{
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      gap: 16px;
     }
 
-    /* Page header improvements */
-    .page-header{
-      flex-direction: column !important;
-      text-align: center;
-    }
-    .page-header .page-title{
-      text-align: center;
-      width: 100%;
-    }
-
-    /* Input group adjustments */
-    .input-group-mobile{
-      flex-direction: column;
-    }
-    .input-group-mobile > *{
-      width: 100% !important;
-      border-radius: 8px !important;
-      margin-bottom: 8px;
+    .spinner{
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(99,102,241,0.18);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.85s linear infinite;
     }
 
-    /* Stat cards grid */
-    .stat-card{
-      padding: 14px !important;
-    }
-    .stat-card .stat-value{
-      font-size: 1.5rem !important;
-    }
-  }
-
-  /* Medium mobile adjustments */
-  @media (max-width: 768px){
-    /* 2-column form inputs stack to 1 */
-    .row-mobile-stack > .col-6,
-    .row-mobile-stack > .col-md-6{
-      flex: 0 0 100%;
-      max-width: 100%;
+    html[data-bs-theme="dark"] .spinner{
+      border-color: rgba(165,180,252,0.18);
+      border-top-color: #a5b4fc;
     }
 
-    /* Better table scrolling */
-    .table-responsive-mobile{
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+    @keyframes spin{
+      to{ transform: rotate(360deg); }
     }
-    .table-responsive-mobile table{
-      min-width: 600px;
-    }
-  }
 
-</style>
+    .loading-text{
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary, #64748b);
+      letter-spacing: 0.02em;
+    }
+
+    html[data-bs-theme="dark"] .loading-text{
+      color: rgba(255,255,255,0.72);
+    }
+
+    /* =========================================
+       MOBILE RESPONSIVE IMPROVEMENTS
+       ========================================= */
+    @media (max-width: 576px){
+      .btn, button, .form-control, .form-select{
+        min-height: 44px;
+      }
+
+      .btn{
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
+
+      .btn-icon-only,
+      .btn:has(> i:only-child),
+      .btn:has(> svg:only-child){
+        width: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        padding: 10px !important;
+        flex: 0 0 auto !important;
+      }
+
+      .form-control, .form-select{
+        font-size: 16px !important;
+        padding: 12px 14px;
+      }
+
+      .card, .luxury-card{
+        margin-bottom: 16px;
+      }
+
+      .d-flex.gap-2,
+      .d-flex.gap-3{
+        flex-wrap: wrap;
+      }
+
+      .action-bar,
+      .btn-group-mobile{
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .page-header{
+        flex-direction: column !important;
+        text-align: center;
+      }
+      .page-header .page-title{
+        text-align: center;
+        width: 100%;
+      }
+
+      .input-group-mobile{
+        flex-direction: column;
+      }
+      .input-group-mobile > *{
+        width: 100% !important;
+        border-radius: 8px !important;
+        margin-bottom: 8px;
+      }
+
+      .stat-card{
+        padding: 14px !important;
+      }
+      .stat-card .stat-value{
+        font-size: 1.5rem !important;
+      }
+    }
+
+    @media (max-width: 768px){
+      .row-mobile-stack > .col-6,
+      .row-mobile-stack > .col-md-6{
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+
+      .table-responsive-mobile{
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .table-responsive-mobile table{
+        min-width: 600px;
+      }
+    }
+  </style>
 
   {% block extra_head %}{% endblock %}
 </head>
@@ -834,8 +713,8 @@
 
         <!-- LEFT: Brand pill -->
         <a class="brand-chip" href="{% url 'admin_home' %}">
-          <img src="{% static 'img/favicon.png' %}" class="brand-logo" id="brandLogo" alt="Baanpaw">
-          <span class="brand-text">Baanpaw</span>
+          <img src="{% static 'img/hidream_logo.png' %}" class="brand-logo" id="brandLogo" alt="HiDREAM">
+          <span class="brand-text">HiDREAM®-TH</span>
         </a>
 
         <!-- CENTER: Menu pill -->
@@ -914,7 +793,7 @@
           {% if user.is_authenticated %}
           <form action="{% url 'logout' %}" method="post" style="display:inline;">
             {% csrf_token %}
-            <button type="submit" class="icon-circle-btn" 
+            <button type="submit" class="icon-circle-btn"
                     aria-label="ออกจากระบบ" title="ออกจากระบบ">
               <i class="bi bi-box-arrow-right"></i>
             </button>
@@ -965,6 +844,16 @@
     const toggler = document.getElementById('themeToggler');
     const themeIcon = document.getElementById('themeIcon');
 
+    // ✅ ใช้ไฟล์ HiDREAM โดยตรง (static/img/)
+    const ASSET_LIGHT = {
+      favicon: "{% static 'img/hidream_logo.png' %}",
+      brand:   "{% static 'img/hidream_logo.png' %}"
+    };
+    const ASSET_DARK = {
+      favicon: "{% static 'img/hidreamlogo_white.png' %}",
+      brand:   "{% static 'img/hidreamlogo_white.png' %}"
+    };
+
     function setIcon(theme){
       if (!themeIcon) return;
       themeIcon.className = (theme === 'dark') ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
@@ -975,22 +864,18 @@
       localStorage.setItem(THEME_KEY, theme);
       setIcon(theme);
 
-      // ✅ Switch favicon for dark/light mode
+      // ✅ Switch favicon for dark/light mode (HiDREAM)
       const faviconEl = document.getElementById('favicon');
       if (faviconEl) {
-        const basePath = faviconEl.href.split('/img/')[0] + '/img/';
-        faviconEl.href = (theme === 'dark') 
-          ? basePath + 'favicon_white.png?v=final'
-          : basePath + 'favicon.png?v=final';
+        faviconEl.href = (theme === 'dark')
+          ? (ASSET_DARK.favicon + '?v=hidream2')
+          : (ASSET_LIGHT.favicon + '?v=hidream2');
       }
 
-      // ✅ Switch brand logo in navbar for dark/light mode
+      // ✅ Switch brand logo in navbar for dark/light mode (HiDREAM)
       const brandLogoEl = document.getElementById('brandLogo');
       if (brandLogoEl) {
-        const basePath = brandLogoEl.src.split('/img/')[0] + '/img/';
-        brandLogoEl.src = (theme === 'dark') 
-          ? basePath + 'favicon_white.png'
-          : basePath + 'favicon.png';
+        brandLogoEl.src = (theme === 'dark') ? ASSET_DARK.brand : ASSET_LIGHT.brand;
       }
 
       const navbarTogglerIcon = document.querySelector('.navbar-toggler-icon');
@@ -1062,44 +947,51 @@
       const overlay = document.getElementById('loadingOverlay');
       if (!overlay) return;
 
-      // Show loading
       window.showLoading = function(text){
         const textEl = overlay.querySelector('.loading-text');
         if (textEl && text) textEl.textContent = text;
         overlay.classList.add('active');
       };
 
-      // Hide loading
       window.hideLoading = function(){
         overlay.classList.remove('active');
       };
 
-      // Auto-show on internal link navigation (except # links)
       document.addEventListener('click', function(e){
         const link = e.target.closest('a[href]');
         if (!link) return;
-        
+
         const href = link.getAttribute('href');
-        // Skip: external links, hash links, download links, new tab links
-        if (!href || 
-            href.startsWith('#') || 
+        if (!href ||
+            href.startsWith('#') ||
             href.startsWith('javascript:') ||
             link.target === '_blank' ||
             link.hasAttribute('download') ||
-            link.dataset.noLoading === 'true') return;
-        
-        // Show loading for internal navigation
+            link.dataset.noLoading === 'true' ||
+            href.includes('export=') ||
+            href.includes('download=') ||
+            e.ctrlKey ||
+            e.metaKey ||
+            e.shiftKey ||
+            e.button === 1) return;
+
         showLoading('Loading...');
       });
 
-      // Auto-show on form submit
       document.addEventListener('submit', function(e){
         const form = e.target;
-        if (form.dataset.noLoading === 'true') return;
+        const action = form.getAttribute('action') || '';
+        if (form.dataset.noLoading === 'true' ||
+            action.includes('export=') ||
+            action.includes('download=')) return;
+
         showLoading('Saving...');
+
+        setTimeout(function(){
+          hideLoading();
+        }, 3000);
       });
 
-      // Hide on page show (back/forward navigation)
       window.addEventListener('pageshow', hideLoading);
     })();
   </script>
